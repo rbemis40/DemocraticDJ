@@ -5,10 +5,10 @@ export default function Home() {
   return ( 
     <div>
       <form action="/join">
-            <label htmlFor="id">Join Game</label>
+            <label htmlFor="game_id">Join Game</label>
             <input
-                id="id"
-                name="id"
+                id="game_id"
+                name="game_id"
             />
             <button id="joinButton">Join</button>
         </form>
