@@ -10,17 +10,14 @@ interface GameInfo {
 export default function CreatePage() {
     const router = useRouter();
 
-    const [gameInfo, setGameInfo] = useState<GameInfo | undefined>(undefined)
-
     // Contact the game management server to get a game id and user token for the host
     useEffect(() => {
-        fetch('http://127.0.0.1:80/create').then(res => 
-            res.json()
-        ).then(body => setGameInfo(body));
+        fetch('http://127.0.0.1:80/create')
+            .then(res => res.json())
+            .then(body => router.push(`/game/${body.game_id}`));
     }, []);
     
     return (
-        gameInfo ? <h1>Created game {gameInfo.game_id} as user {gameInfo.host_token}</h1> : <h1>Creating new game...</h1>
-        
+        <h1>Creating game...</h1>        
     );
 }

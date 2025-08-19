@@ -7,6 +7,8 @@ export function getCreateRouter(gm: GameManager): Router {
 
     createRouter.get('/', async (_, res) => {
         const gameInfo: NewGameInfo = await gm.generateNewGame();
+        res.cookie('user_token', gameInfo.host_token);
+        res.cookie('game_id', gameInfo.game_id);
         res.status(201).json(gameInfo);
     });
 
