@@ -16,11 +16,6 @@ export default function Home() {
             <label htmlFor="createGame">Create Game</label>
             <button id="createGame">Create</button>
         </form>
-
-        <script>
-            console.log('hello!');
-            const socket = new WebSocket('ws://localhost:80')
-        </script>
     </div>
   );
 }

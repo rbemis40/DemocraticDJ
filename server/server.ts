@@ -13,8 +13,7 @@ const app = express();
 const server = http.createServer(app)
 const wsServer = new WebSocketServer({server: server});
 
-app.use(cors());
-
+app.use(cors({origin: 'http://localhost:3000', credentials: true}));
 const gm: GameManager = new SimpleGameManager();
 
 // Add routes
@@ -25,14 +24,31 @@ app.use('/game', getGameRouter());
 // TODO: This is a temporary solution. 
 // Instead, each game server should actually have it's own server, 
 // and the client could ask the web server how to connect
+
+
 wsServer.on('connection', (ws, req) => {
-    ws.on('message', (msg) => {
-        console.log(`Received message: ${msg}`);
-        ws.send('Message received');
-    });
-    ws.on('close', () => {
-        console.log('Client disconnected');
-    });
+    let gameId;
+    try {
+        let splitUrl = req.url.split('/');
+        if (splitUrl.length !== 3 || splitUrl[0] !== '' || splitUrl[1] !== 'game') {
+            throw new Error('Invalid game URL shape');
+        }
+
+        gameId = Number.parseInt(splitUrl[2]);
+        console.log(`Client connecting to game id: ${gameId}`);
+        ws.on('message', (msg) => {
+            console.log(`Received message: ${msg}`);
+            ws.send('Message received');
+        });
+        ws.on('close', () => {
+            console.log('Client disconnected');
+        });
+    }
+    catch (e) {
+        console.error(e);
+        ws.send('Invalid game URL');
+        ws.close();
+    }
 });
 
 const port = 80;

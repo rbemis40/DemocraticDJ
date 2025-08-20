@@ -9,7 +9,7 @@ export default function CreatePage() {
     // Contact the game management server to get a game id and user token for the host
     console.log(process.env.NEXT_PUBLIC_API_URL)
     useEffect(() => {
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/create`)
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/create`, {credentials: 'include'})
             .then(res => res.json())
             .then((body: GameInfo) => router.push(`/game/${body.game_id}`));
     }, []);

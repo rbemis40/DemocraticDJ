@@ -9,7 +9,8 @@ export default function JoinedGame({params} : {params: Promise<{id: number}>}) {
     const { id } = use(params);
 
     useEffect(() => {
-        const ws = new WebSocket(`ws://localhost:80/game/`);
+        const ws = new WebSocket(`ws://localhost:80/game/${id}`);
+        
         ws.addEventListener('error', (error) => {
             console.error(error);
         });
