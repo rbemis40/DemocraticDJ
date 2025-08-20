@@ -1,10 +1,15 @@
 {
   "scripts": {
-    "start": "node build/server"
+    "start": "node build/server",
+    "build": "tsc",
+    "restart": "npm run build && npm run start"
   },
   "dependencies": {
     "@types/express": "^5.0.3",
+    "@types/express-ws": "^3.0.5",
     "cors": "^2.8.5",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "express-ws": "^5.0.2",
+    "ws": "^8.18.3"
   }
 }
