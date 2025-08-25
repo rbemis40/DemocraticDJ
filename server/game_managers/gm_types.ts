@@ -1,7 +1,11 @@
-import { Game } from "../game";
-import { GameId, NewGameInfo } from "../shared_types";
+import { GameServer } from "../game_servers/gs_types";
+import { GameId } from "../shared_types";
 
+/*
+    Responsible for creating new unique GameIds and choosing which game server will be used to host each new game
+*/
 export interface GameManager {
-    generateNewGame(): Promise<NewGameInfo>;
-    getGame(id: GameId): Promise<Game>;
+    generateNewGame(): Promise<GameId>;
+    getServerByGameId(id: GameId): Promise<GameServer>;
+    addGameServer(gs: GameServer): boolean;
 };

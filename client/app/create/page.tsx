@@ -11,7 +11,10 @@ export default function CreatePage() {
     useEffect(() => {
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/create`, {credentials: 'include'})
             .then(res => res.json())
-            .then((body: GameInfo) => router.push(`/game/${body.game_id}`));
+            .then((gameInfo: GameInfo) => {
+                console.log(gameInfo);
+                router.push(`/game/${gameInfo.game_id}`);
+            });
     }, []);
     
     return (

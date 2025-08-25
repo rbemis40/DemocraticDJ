@@ -1,36 +1,52 @@
-import { Game } from '../game';
+import { GameServer } from '../game_servers/gs_types';
 import { GameId, NewGameInfo } from '../shared_types';
 import { GameManager } from './gm_types';
 
+/*
+    The simple game manager only handles a single GameServer, avoiding load balancing
+*/
 export class SimpleGameManager implements GameManager {
-    activeGames: Map<GameId, Game>;
+    gameMap: Map<GameId, GameServer>;
+    gameServers: GameServer[];
+
     constructor() {
-        this.activeGames = new Map();
+        this.gameMap = new Map();
+        this.gameServers = [];
     }
 
-    generateNewGame(): Promise<NewGameInfo> {
+    generateNewGame(): Promise<GameId> {
         // Generate a random 7 digit game id
         const MAX_GAME_ID = 9999999
         let gameId;
         do {
             gameId = Math.floor(Math.random() * MAX_GAME_ID);
-        } while (this.activeGames.has(gameId)); // Continue generating until we create a new gameId
+        } while (this.gameMap.has(gameId)); // Continue generating until we create a new gameId
         
-        const game = new Game(gameId);
-        this.activeGames.set(gameId, game);
-
-        return Promise.resolve({
-            host_token: game.getHostUserToken(),
-            game_id: game.gameId
-        });
-    }
-
-    getGame(id: GameId): Promise<Game> {
-        let game = this.activeGames.get(id);
-        if (game === undefined) {
-            return Promise.reject(`Failed to get game with id=${id}`);
+        if (this.gameServers.length < 1) {
+            return Promise.reject('No available game server');
         }
 
-        return Promise.resolve(game);
+        this.gameMap.set(gameId, this.gameServers[0]);
+        this.gameServers[0].createGame(gameId);
+
+        return Promise.resolve(gameId);
+    }
+
+    addGameServer(gs: GameServer): boolean {
+        if (this.gameServers.length !== 0) {
+            return false;
+        }
+
+        this.gameServers.push(gs);
+        return true;
+    }
+
+    getServerByGameId(id: GameId): Promise<GameServer> {
+        const gs = this.gameMap.get(id);
+        if (gs === undefined) {
+            return Promise.reject('Unknown game id');
+        }
+
+        return Promise.resolve(gs);
     }
 }

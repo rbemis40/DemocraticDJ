@@ -1,32 +1,16 @@
-'use client';
-
-import { useSearchParams } from "next/navigation";
-import { use, useEffect } from "react";
+import { cookies } from "next/headers";
+import GameUI from "./game_ui";
 
 // This page will be the page that displays the actual content for the game (host vs player)
-export default function JoinedGame({params} : {params: Promise<{id: number}>}) {
-    const searchParams = useSearchParams();
-    const { id } = use(params);
+export default async function JoinedGame({params} : {params: Promise<{id: number}>}) {
+    const { id } = await params;
+    const cookieStore = await cookies();
+    const game_id = cookieStore.get('game_id');
+    const user_token = cookieStore.get('user_token');
+    const server_url = cookieStore.get('server_url');
 
-    useEffect(() => {
-        const ws = new WebSocket(`ws://localhost:80/game/${id}`);
-        
-        ws.addEventListener('error', (error) => {
-            console.error(error);
-        });
-        
-        ws.addEventListener('open', () => {
-            ws.send('hello from the client!');
-        });
-
-        ws.addEventListener('message', (msg) => {
-            console.log(`Message received from server: ${msg.data}`);
-        });
-
-        return () => { ws.close(); };
-    }, []);
-
+    // TODO: Do proper checking here
     return (
-        <h1>You have joined game {id}</h1>
+        <GameUI game_id={Number.parseInt(game_id!.value)} user_token={user_token!.value} server_url={server_url!.value}></GameUI>
     );
 }
