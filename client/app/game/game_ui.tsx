@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from "react";
+
 interface GameInfoProps {
     game_id: number;
     user_token: string;
@@ -7,6 +9,29 @@ interface GameInfoProps {
 };
 
 export default function GameUI(props: GameInfoProps) {
+    // Connect to game server
+    useEffect(() => {
+        const ws = new WebSocket(props.server_url);
+        ws.addEventListener('error', (e) => {
+            console.error('A websocket error was encountered!');
+        });
+
+        ws.addEventListener('open', () => {
+            console.log(`Websocket connection established to game server ${props.server_url}`);
+        });
+
+        ws.addEventListener('message', (e) => {
+            console.log(`Received message from game server: ${e.data}`);
+        });
+
+        ws.addEventListener('close', (e) => {
+            console.log(`Closing connection to game server`);
+            ws.close();
+        });
+
+        return () => ws.close();
+    }, []);
+
     return (
         <div>
             <h1>You have joined a game with info: </h1>
