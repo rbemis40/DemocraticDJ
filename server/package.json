@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start": "node build/server",
+    "start": "node --env-file=.env build/server",
     "build": "tsc",
     "restart": "npm run build && npm run start"
   },

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface GameInfoProps {
     game_id: number;
@@ -9,6 +9,8 @@ interface GameInfoProps {
 };
 
 export default function GameUI(props: GameInfoProps) {
+    const [userList, setUserList] = useState<string[]>([]);
+
     // Connect to game server
     useEffect(() => {
         // Send the user token using the Sec-WebSocket-Protocol header, 
@@ -34,12 +36,15 @@ export default function GameUI(props: GameInfoProps) {
             switch (serverMsg.type) {
                 case 'user_list':
                     console.log(`Received user list: \n${serverMsg.user_names}`);
+                    setUserList(serverMsg.user_names);
                     break;
                 case 'new_user':
                     console.log(`New user joined: ${serverMsg.user_name}`);
+                    setUserList(curList => [...curList, serverMsg.user_name]);
                     break;
                 case 'user_left':
                     console.log(`User "${serverMsg.user_name}" has left`);
+                    setUserList(curList => curList.filter(curUser => curUser !== serverMsg.user_name));
                     break;
                 default:
                     console.log(`Unknown server msg: \n`);
@@ -56,12 +61,18 @@ export default function GameUI(props: GameInfoProps) {
         return () => ws.close();
     }, []);
 
+    console.log('Current user list:');
+    console.log(userList);
+
     return (
         <div>
             <h1>You have joined a game with info: </h1>
             <h2>Game Id: {props.game_id}</h2>
             <h2>User Token: {props.user_token}</h2>
             <h2>Server URL: {props.server_url}</h2>
+
+            <h1>Users:</h1>
+            {userList.map((username, i) => <h2 key={i}>{username}</h2>)}
         </div>
     );
 }

@@ -4,7 +4,7 @@ import styles from "./page.module.css";
 export default function Home() {
   return ( 
     <div>
-      <form action="/join">
+      <form action={`http://${process.env.NEXT_PUBLIC_HOST}:${process.env.NEXT_PUBLIC_PORT}/join`}>
             <label htmlFor="game_id">Join Game</label>
             <input
                 id="game_id"
@@ -17,7 +17,7 @@ export default function Home() {
             />
             <button id="joinButton">Join</button>
         </form>
-        <form action="/create">
+        <form action={`http://${process.env.NEXT_PUBLIC_HOST}:${process.env.NEXT_PUBLIC_PORT}/create`}>
             <label htmlFor="createGame">Create Game</label>
             <button id="createGame">Create</button>
         </form>

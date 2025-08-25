@@ -17,6 +17,7 @@ export class SimpleGameServer implements GameServer {
     constructor(port=8081) {
         this.wss = new WebSocketServer({port: port}, () => console.log(`Game serving running on port ${port}`));
         this.connections = new Map();
+        this.url = new URL(`ws://${process.env.HOST_NAME}:8081`);
 
         this.wss.on('connection', (ws, req) => {
             ws.on('message', (data) => {
@@ -25,7 +26,6 @@ export class SimpleGameServer implements GameServer {
                 switch (userMsg.type) {
                     case 'auth':
                         const authMsg = userMsg as Auth_ClientMsg;
-                        console.log(authMsg);
                         if (!this.gameState.isValidToken(authMsg.user_token)) {
                             ws.close(); // This is not a valid user
                         }
@@ -84,8 +84,6 @@ export class SimpleGameServer implements GameServer {
                 this.connections.forEach((_, otherWs) => otherWs.send(leftMsgStr));
             })
         });
-
-        this.url = new URL('ws://localhost:8081');
     }
 
     createGame(id: GameId): Promise<boolean> {
