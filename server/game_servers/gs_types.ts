@@ -2,10 +2,15 @@ import { GameId, UserToken } from "../shared_types";
 
 export type ClientAction = 'start';
 
-export type ClientMsg = {
+export type ClientMsgType = 'auth';
+export interface ClientMsg {
+    type: ClientMsgType;
+}
+
+export interface Auth_ClientMsg extends ClientMsg {
+    type: 'auth';
     user_token: UserToken;
-    action: ClientAction;
-};
+}
 
 export type ServerMsgType = 'new_user' | 'user_left' | 'user_list';
 
@@ -39,8 +44,12 @@ export interface GameServer {
     /* Initial setup of a new game */
     createGame(id: GameId): Promise<boolean>;
     generateHostToken(id: GameId): Promise<UserToken>;
-    generateUserToken(id: GameId): Promise<UserToken>;
+    generateUserToken(id: GameId, name: string): Promise<UserToken>;
 
     /* Methods for connecting new users */
     getServerURL(): Promise<URL>;
 }
+
+export type UserInfo = {
+    name: string;
+};

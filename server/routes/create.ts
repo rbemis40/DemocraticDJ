@@ -12,10 +12,6 @@ export function getCreateRouter(gm: GameManager): Router {
         const hostToken: UserToken = await gameServer.generateHostToken(gameId);
         const serverURL: URL = await gameServer.getServerURL();
 
-        res.cookie('user_token', hostToken, {});
-        res.cookie('game_id', gameId, {});
-        res.cookie('server_url', serverURL.toString(), {});
-
         const gameInfo: NewGameInfo = {
             host_token: hostToken,
             game_id: gameId,

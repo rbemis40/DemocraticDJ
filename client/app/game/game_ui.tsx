@@ -11,6 +11,10 @@ interface GameInfoProps {
 export default function GameUI(props: GameInfoProps) {
     // Connect to game server
     useEffect(() => {
+        // Send the user token using the Sec-WebSocket-Protocol header, 
+        // as suggested here https://stackoverflow.com/questions/4361173/http-headers-in-websockets-client-api
+        console.log(`GameUI props:`);
+        console.log(props);
         const ws = new WebSocket(props.server_url);
         ws.addEventListener('error', (e) => {
             console.error('A websocket error was encountered!');
@@ -18,10 +22,30 @@ export default function GameUI(props: GameInfoProps) {
 
         ws.addEventListener('open', () => {
             console.log(`Websocket connection established to game server ${props.server_url}`);
+            // Send the token to authenticate with the server
+            ws.send(JSON.stringify({
+                type: 'auth',
+                user_token: props.user_token
+            }));
         });
 
         ws.addEventListener('message', (e) => {
-            console.log(`Received message from game server: ${e.data}`);
+            const serverMsg = JSON.parse(e.data);
+            switch (serverMsg.type) {
+                case 'user_list':
+                    console.log(`Received user list: \n${serverMsg.user_names}`);
+                    break;
+                case 'new_user':
+                    console.log(`New user joined: ${serverMsg.user_name}`);
+                    break;
+                case 'user_left':
+                    console.log(`User "${serverMsg.user_name}" has left`);
+                    break;
+                default:
+                    console.log(`Unknown server msg: \n`);
+                    console.log(serverMsg);
+                    break;
+            }
         });
 
         ws.addEventListener('close', (e) => {

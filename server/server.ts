@@ -1,7 +1,6 @@
 import * as express  from 'express';
 import * as cors from 'cors';
 import { getCreateRouter } from './routes/create';
-import { getGameRouter } from './routes/game';
 import { SimpleGameManager } from './game_managers/simple_gm';
 import { GameManager } from './game_managers/gm_types';
 import { getJoinRouter } from './routes/join';
@@ -20,7 +19,6 @@ const gm: GameManager = new SimpleGameManager();
 // Add routes
 app.use('/create', getCreateRouter(gm));
 app.use('/join', getJoinRouter(gm));
-app.use('/game', getGameRouter());
 
 // TODO: Add a single game server (for now)
 const tempServer: GameServer = new SimpleGameServer();

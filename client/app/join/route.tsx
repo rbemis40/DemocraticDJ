@@ -9,7 +9,8 @@ interface GameInfo {
 export async function GET(request: NextRequest) {
     const params = request.nextUrl.searchParams;
     const gameId = params.get('game_id');
-    const gameInfo: GameInfo = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/join/${gameId}`, {credentials: 'include'})
+    const name = params.get('name');
+    const gameInfo: GameInfo = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/join/${gameId}?name=${name}`)
             .then(res => res.json());
     
     let response = NextResponse.redirect(new URL('/game', request.url));

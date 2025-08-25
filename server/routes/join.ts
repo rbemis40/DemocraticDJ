@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { GameManager } from "../game_managers/gm_types";
+import { GameServer } from "../game_servers/gs_types";
 
 export function getJoinRouter(gm: GameManager): Router {
     const joinRouter = Router();
@@ -8,6 +9,15 @@ export function getJoinRouter(gm: GameManager): Router {
         if (!req.params.game_id) {
             res.status(400).json({error: `game_id must be provided`});
         }
+
+        if (!req.query.name) {
+            res.status(400).json({error: `name must be provided in query string`});
+        }
+
+        if (typeof req.query.name !== 'string') {
+            res.status(400).json({error: `name must be a string`});
+        }
+        const name: string = req.query.name as string;
 
         let gameIdInt;
         try {
@@ -18,7 +28,7 @@ export function getJoinRouter(gm: GameManager): Router {
             return;
         }
 
-        let gameServer;
+        let gameServer: GameServer;
         try {
             gameServer = await gm.getServerByGameId(gameIdInt);
         }
@@ -27,13 +37,9 @@ export function getJoinRouter(gm: GameManager): Router {
             return;
         }
         
-        const newUserToken = await gameServer.generateUserToken(gameIdInt);
+        const newUserToken = await gameServer.generateUserToken(gameIdInt, name);
         const serverURLStr = (await gameServer.getServerURL()).toString();
 
-
-        res.cookie('user_token', newUserToken);
-        res.cookie('game_id', gameIdInt);
-        res.cookie('server_url', serverURLStr);
         res.status(200).json({game_id: gameIdInt, user_token: newUserToken, server_url: serverURLStr});
     });
 

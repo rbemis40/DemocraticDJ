@@ -10,6 +10,11 @@ export default function Home() {
                 id="game_id"
                 name="game_id"
             />
+            <label htmlFor="name">Name</label>
+            <input
+              id="name"
+              name="name"
+            />
             <button id="joinButton">Join</button>
         </form>
         <form action="/create">
