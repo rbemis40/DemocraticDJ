@@ -12,7 +12,9 @@ export default function JoinPage() {
     useEffect(() => {
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/join/${gameId}`)
             .then(res => res.json())
-            .then((body: GameInfo) => router.push(`/game/${body.game_id}`));
+            .then((gameInfo: GameInfo) => {
+                router.push(`/game`)
+            });
     }, []);
 
     return (

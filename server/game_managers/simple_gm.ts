@@ -44,7 +44,7 @@ export class SimpleGameManager implements GameManager {
     getServerByGameId(id: GameId): Promise<GameServer> {
         const gs = this.gameMap.get(id);
         if (gs === undefined) {
-            return Promise.reject('Unknown game id');
+            return Promise.reject(`getServerByGameId: Unknown game id ${id}`);
         }
 
         return Promise.resolve(gs);

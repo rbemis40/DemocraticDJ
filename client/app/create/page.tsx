@@ -13,7 +13,7 @@ export default function CreatePage() {
             .then(res => res.json())
             .then((gameInfo: GameInfo) => {
                 console.log(gameInfo);
-                router.push(`/game/${gameInfo.game_id}`);
+                router.push(`/game`);
             });
     }, []);
     

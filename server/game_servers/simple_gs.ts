@@ -38,7 +38,7 @@ export class SimpleGameServer implements GameServer {
 
     generateHostToken(id: GameId): Promise<UserToken> {
         if (this.gameState === undefined || this.gameState.gameId !== id) {
-            return Promise.reject('Unknown game id');
+            return Promise.reject(`generateHostToken: Unknown game id ${id}`);
         }
 
         return Promise.resolve(this.gameState.getHostUserToken());
@@ -46,7 +46,7 @@ export class SimpleGameServer implements GameServer {
 
     generateUserToken(id: GameId): Promise<UserToken> {
         if (this.gameState === undefined || this.gameState.gameId !== id) {
-            return Promise.reject('Unknown game id');
+            return Promise.reject(`generateUserToken: Unknown game id ${id}`);
         }
 
         return Promise.resolve(this.gameState.addNewUser());
