@@ -1,10 +1,11 @@
 import { GameId, UserToken } from "../shared_types";
 import { randomBytes } from 'crypto';
-import { UserInfo } from "./gs_types";
+import { StateName, UserInfo } from "./gs_types";
 import { WebSocket } from "ws";
 
 export class GameState {
     gameId: GameId;
+    state: StateName;
     private tokenMap: Map<UserToken, UserInfo>;
     private nameMap: Map<string, UserInfo>;
 
@@ -14,9 +15,10 @@ export class GameState {
         this.gameId = gameId;
         this.tokenMap = new Map();
         this.nameMap = new Map();
+        this.state = 'lobby'; // Users can join
     }
 
-    addNewUser(name: string): UserToken {
+    addNewUser(name?: string): UserToken {
         let userToken: UserToken;
         do {
             userToken = randomBytes(GameState.tokenLen).toString('base64');
@@ -26,7 +28,7 @@ export class GameState {
         const userInfo: UserInfo = {
             name: name,
             token: userToken,
-            authed: false,
+            joined: false,
             isHost: false
         };
 
@@ -36,7 +38,7 @@ export class GameState {
     }
 
     addNewHost(): UserToken {
-        const hostToken = this.addNewUser('host');
+        const hostToken = this.addNewUser();
         this.tokenMap.get(hostToken).isHost = true;
 
         return hostToken;
@@ -54,8 +56,11 @@ export class GameState {
         return true;
     }
 
-    getAuthedUserList(): string[] {
-        return Array.from(this.nameMap.keys()).filter((name) => this.getUserInfoByName(name).authed); // Only return useres that have already authenticated with the server
+    getJoinedUserList(): string[] {
+        return Array.from(this.nameMap.keys()).filter((name) => {
+            const userInfo = this.getUserInfoByName(name);
+            return userInfo.joined && !userInfo.isHost
+        }); // Only return useres that have already authenticated with the server / joined, and exclude the host
     }
 
     getUserInfoByToken(token: UserToken): UserInfo | undefined {

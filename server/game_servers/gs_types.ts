@@ -5,7 +5,7 @@ import { WebSocket } from "ws";
 export type ClientAction = 'start';
 
 export type ClientMsgType = 'auth';
-export type ClientHostMsgType = 'remove_user';
+export type ClientHostMsgType = 'remove_user' | 'start_game';
 
 export interface ClientMsg {
     type: ClientMsgType | ClientHostMsgType;
@@ -22,7 +22,7 @@ export interface Auth_ClientMsg extends ClientMsg {
 }
 
 /* Server types */
-export type ServerMsgType = 'new_user' | 'user_left' | 'user_list' | 'promotion';
+export type ServerMsgType = 'new_user' | 'user_left' | 'user_list' | 'promotion' | 'state_change';
 
 export interface ServerMsg {
     type: ServerMsgType;
@@ -37,6 +37,12 @@ export interface UserList_ServerMsg extends ServerMsg {
     type: 'user_list';
     user_names: string[];
 }
+
+export type StateName = 'lobby' | 'voting';
+export interface StateChange_ServerMsg extends ServerMsg {
+    type: 'state_change',
+    state_name: StateName
+};
 
 /* Useful types */
 
@@ -63,10 +69,10 @@ export interface GameServer {
 }
 
 export type UserInfo = {
-    name: string;
+    name?: string;
     token: UserToken;
     isHost: boolean;
-    authed: boolean;
+    joined: boolean;
 };
 
 export type ConnectionMap = {
