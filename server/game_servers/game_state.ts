@@ -1,15 +1,15 @@
-import { UserToken } from "../shared_types";
+import { GameId, UserToken } from "../shared_types";
 import { randomBytes } from 'crypto';
 import { UserInfo } from "./gs_types";
 
 export class GameState {
-    gameId: number;
+    gameId: GameId;
     private hostToken: string;
     private users: Map<UserToken, UserInfo>;
 
     static tokenLen: number = 36;
 
-    constructor(gameId) {
+    constructor(gameId?: GameId) {
         this.gameId = gameId;
         this.hostToken = GameState.generateHostToken();
         this.users = new Map();

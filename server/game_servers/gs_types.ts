@@ -1,18 +1,28 @@
 import { GameId, UserToken } from "../shared_types";
+import { WebSocket } from "ws";
 
+/* Client types */
 export type ClientAction = 'start';
 
 export type ClientMsgType = 'auth';
+export type ClientHostMsgType = 'remove_user';
+
 export interface ClientMsg {
-    type: ClientMsgType;
+    type: ClientMsgType | ClientHostMsgType;
 }
+
+export interface RemoveUser_ClientMsg {
+    type: 'remove_user';
+    user_name: string;
+};
 
 export interface Auth_ClientMsg extends ClientMsg {
     type: 'auth';
     user_token: UserToken;
 }
 
-export type ServerMsgType = 'new_user' | 'user_left' | 'user_list';
+/* Server types */
+export type ServerMsgType = 'new_user' | 'user_left' | 'user_list' | 'promotion';
 
 export interface ServerMsg {
     type: ServerMsgType;
@@ -27,6 +37,8 @@ export interface UserList_ServerMsg extends ServerMsg {
     type: 'user_list';
     user_names: string[];
 }
+
+/* Useful types */
 
 /*
     1. User starts on democraticdj.com
@@ -53,3 +65,5 @@ export interface GameServer {
 export type UserInfo = {
     name: string;
 };
+
+export type ConnectionMap = Map<WebSocket, UserToken>;
