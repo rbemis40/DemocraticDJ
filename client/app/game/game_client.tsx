@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import HostUI from "./host_ui";
-import PlayerUI from "./player_ui";
+import HostUI from "./_host/host_ui";
+import PlayerUI from "./_player/player_ui";
 import { useRouter } from "next/navigation";
 
 interface GameInfoProps {
@@ -15,6 +15,7 @@ export default function GameClient(props: GameInfoProps) {
     const [userList, setUserList] = useState<string[]>([]);
     const [isHost, setIsHost] = useState<boolean>(false);
     const [ws, setWs] = useState<WebSocket | undefined>();
+    const [gameState, setGameState] = useState<string>('lobby');
     const router = useRouter();
 
     // Allows child components to communicate with the game server when necessary
@@ -70,6 +71,9 @@ export default function GameClient(props: GameInfoProps) {
                 case 'promotion':
                     setIsHost(true);
                     break;
+                case 'state_change':
+                    setGameState(serverMsg.state_name);
+                    break;
                 default:
                     console.log(`Unknown server msg: \n`);
                     console.log(serverMsg);
@@ -85,6 +89,6 @@ export default function GameClient(props: GameInfoProps) {
     }, [ws]);
 
     return (
-        isHost ? <HostUI sendMsg={sendMsg} userList={userList} gameId={props.game_id}/> : <PlayerUI sendMsg={sendMsg} userList={userList}/>
+        isHost ? <HostUI sendMsg={sendMsg} gameState={gameState} userList={userList} gameId={props.game_id}/> : <PlayerUI gameState={gameState} sendMsg={sendMsg} userList={userList}/>
     );
 }
