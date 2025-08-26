@@ -64,6 +64,12 @@ export interface GameServer {
 
 export type UserInfo = {
     name: string;
+    token: UserToken;
+    isHost: boolean;
+    authed: boolean;
 };
 
-export type ConnectionMap = Map<WebSocket, UserToken>;
+export type ConnectionMap = {
+    socketToToken: Map<WebSocket, UserToken>;
+    tokenToSocket: Map<UserToken, WebSocket>;
+};

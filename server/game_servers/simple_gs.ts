@@ -2,7 +2,7 @@ import { GameManager } from "../game_managers/gm_types";
 import { GameId, UserToken } from "../shared_types";
 import { ClientMsgHandler } from "./client_msg_handler";
 import { GameState } from "./game_state";
-import { Auth_ClientMsg, ClientMsg, GameServer, ServerMsg, UserChange_ServerMsg, UserList_ServerMsg } from "./gs_types";
+import { Auth_ClientMsg, ClientMsg, ConnectionMap, GameServer, ServerMsg, UserChange_ServerMsg, UserList_ServerMsg } from "./gs_types";
 import { prototype, WebSocket, WebSocketServer } from "ws";
 
 /*
@@ -13,11 +13,15 @@ export class SimpleGameServer implements GameServer {
     private gameState: GameState;
     private wss: WebSocketServer;
     private url: URL;
-    private connections: Map<WebSocket, UserToken>;
+    private connections: ConnectionMap;
 
     constructor(port=8081) {
         this.wss = new WebSocketServer({port: port}, () => console.log(`Game serving running on port ${port}`));
-        this.connections = new Map();
+        this.connections = {
+            socketToToken: new Map(),
+            tokenToSocket: new Map()
+        };
+
         this.url = new URL(`ws://${process.env.HOST_NAME}:8081`);
         this.gameState = new GameState();
 
@@ -27,37 +31,37 @@ export class SimpleGameServer implements GameServer {
             ws.on('message', (data) => {
                 // TODO: Don't assume that the client is sending a proper message
                 const userMsg: ClientMsg = JSON.parse(data.toString());
-                console.log(userMsg);
-                clientMsgHandler.handleClientMsg(userMsg, ws);
+                clientMsgHandler.handleClientMsg(userMsg, ws, );
             });
 
             ws.on('close', () => {
                 // TODO: For now assume the host hasn't left. In the future, handle this case separately (disconnect all other clients)
-                const token = this.connections.get(ws);
-                const userInfo = this.gameState.getUserInfo(token);
+                const token = this.connections.socketToToken.get(ws);
+                const userInfo = this.gameState.getUserInfoByToken(token);
 
                 // Remove the connection from the list of connections
-                this.connections.delete(ws);
+                this.connections.socketToToken.delete(ws);
+                this.connections.tokenToSocket.delete(token);
                 this.gameState.removeUser(token);
 
-                if (token == this.gameState.getHostUserToken()) {
+                if (userInfo.isHost) {
                     // Close all connections
                     // TODO: Send a more graceful message so clients know that the host left
 
-                    this.connections.forEach((_, otherWs) => otherWs.close());
+                    this.connections.socketToToken.forEach((_, otherWs) => otherWs.close());
                     return;
                 }
+                else {
+                    const leftMsg: UserChange_ServerMsg = {
+                        type: 'user_left',
+                        user_name: userInfo.name
+                    };
 
+                    const leftMsgStr: string = JSON.stringify(leftMsg);
 
-                const leftMsg: UserChange_ServerMsg = {
-                    type: 'user_left',
-                    user_name: userInfo.name
-                };
-
-                const leftMsgStr: string = JSON.stringify(leftMsg);
-
-                // Inform all other clients that the user left
-                this.connections.forEach((_, otherWs) => otherWs.send(leftMsgStr));
+                    // Inform all other clients that the user left
+                    this.connections.socketToToken.forEach((_, otherWs) => otherWs.send(leftMsgStr));
+                }
             })
         });
     }
@@ -80,7 +84,7 @@ export class SimpleGameServer implements GameServer {
             return Promise.reject(`generateHostToken: Unknown game id ${id}`);
         }
 
-         return Promise.resolve(this.gameState.getHostUserToken());
+         return Promise.resolve(this.gameState.addNewHost());
     }
 
     generateUserToken(id: GameId, name: string): Promise<UserToken> {

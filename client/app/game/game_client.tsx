@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import HostUI from "./host_ui";
 import PlayerUI from "./player_ui";
+import { useRouter } from "next/navigation";
 
 interface GameInfoProps {
     game_id: number;
@@ -14,6 +15,7 @@ export default function GameClient(props: GameInfoProps) {
     const [userList, setUserList] = useState<string[]>([]);
     const [isHost, setIsHost] = useState<boolean>(false);
     const [ws, setWs] = useState<WebSocket | undefined>();
+    const router = useRouter();
 
     // Allows child components to communicate with the game server when necessary
     function sendMsg(msg: string) {
@@ -78,6 +80,7 @@ export default function GameClient(props: GameInfoProps) {
         ws.addEventListener('close', (e) => {
             console.log(`Closing connection to game server`);
             ws.close();
+            router.replace(`http://${process.env.NEXT_PUBLIC_HOST}:${process.env.NEXT_PUBLIC_PORT}/`);
         });
     }, [ws]);
 
