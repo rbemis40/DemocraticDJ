@@ -21,9 +21,11 @@ type VoteCount = {
 
 export class VotingMode implements GameMode {
     private voteCount : VoteCount;
+    private voterToVote: Map<string, string>; // Stores a record of who has already voted and on who
     
     constructor(userList: string[]) {
         this.voteCount = {};
+        this.voterToVote = new Map();
         userList.forEach(name => this.voteCount[name] = 0); // Initialize all votes to zero
     }
 
@@ -34,21 +36,42 @@ export class VotingMode implements GameMode {
     handleClientMsg(msg: ClientMsg, clientWs: WebSocket, cons: ConnectionMap, um: UserManager): GameModeName {
         switch (msg.type) {
             case 'add_vote': {
-                // TODO: Make sure user didn't vote for themselves
                 const addMsg = msg as AddVote_ClientMsg;
                 
                 const voterName = um.getUserInfoByToken(cons.socketToToken.get(clientWs)).name;
 
+                if (voterName === addMsg.user_name) { // Make sure they aren't voting for themselves
+                    // TODO: Send an error so UI can update
+                    break;
+                }
 
-                this.voteCount[addMsg.user_name] += 1;
+                if (!this.voterToVote.has(voterName)) { // It's this person's first time voting
+                    this.voteCount[addMsg.user_name] += 1;
+                }
+                else { // Change their vote to the new person
+                    const prevVote = this.voterToVote.get(voterName);
+                    if (prevVote in this.voteCount) { // Make sure the person they previously voted on hasn't left
+                        this.voteCount[this.voterToVote.get(voterName)] -= 1; // Unvote
+                    }
+                    this.voteCount[addMsg.user_name] += 1; // Vote
+                }
 
+                this.voterToVote.set(voterName, addMsg.user_name);
                 this.sendVoteCount(cons);
                 break;
             }
             case 'user_left': {
                 const leaveMsg = msg as UserLeft_ClientMsg;
                 const userInfo = um.getUserInfoByToken(leaveMsg.user_token);
+
+                // Remove their vote (if they voted)
+                const prevVote = this.voterToVote.get(userInfo.name);
+                if (prevVote in this.voteCount) {
+                    this.voteCount[prevVote] -= 1;
+                }
+
                 delete this.voteCount[userInfo.name];
+                delete this.voterToVote[userInfo.name];
             
                 this.sendVoteCount(cons);
                 break;
