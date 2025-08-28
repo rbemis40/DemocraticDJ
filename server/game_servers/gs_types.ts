@@ -1,41 +1,25 @@
-import { GameModeName } from "../modes/game_mode";
+import { GameMode, GameModeName } from "../modes/game_mode";
 import { GameId, UserToken } from "../shared_types";
 import { WebSocket } from "ws";
 
 /* Client types */
-export type ClientMsgType = 'auth' | 'add_vote';
+export type ClientMsgType = 'user_join' | 'user_left' | 'joined_mode' | 'add_vote';
 export type ClientHostMsgType = 'remove_user' | 'start_game';
 
 export interface ClientMsg {
     type: ClientMsgType | ClientHostMsgType;
 }
 
-export interface RemoveUser_ClientMsg {
-    type: 'remove_user';
-    user_name: string;
-};
-
-export interface Auth_ClientMsg extends ClientMsg {
-    type: 'auth';
-    user_token: UserToken;
-}
-
-export interface AddVote_ClientMsg extends ClientMsg {
-    type: 'add_vote';
-    user_name: string;    
+export interface JoinedMode_ClientMsg extends ClientMsg {
+    type: 'joined_mode',
+    mode: GameModeName
 }
 
 /* Server types */
-export type ServerMsgType = 'new_user' | 'user_left' | 'user_list' | 'promotion' | 'mode_change';
-export type ServerMsgVotingType = 'vote_count';
-
+export type ServerMsgType = 'user_list' | 'mode_change';
 export interface ServerMsg {
-    type: ServerMsgType | ServerMsgVotingType;
-}
-
-export interface UserChange_ServerMsg extends ServerMsg {
-    type: 'new_user' | 'user_left';
-    user_name: string;
+    //type: ServerMsgType | ServerMsgVotingType;
+    type: string;
 }
 
 export interface UserList_ServerMsg extends ServerMsg {
@@ -48,11 +32,11 @@ export interface ModeChange_ServerMsg extends ServerMsg {
     game_mode: GameModeName;
 };
 
-/* Server Voting */
-export interface VoteCount_ServerMsg extends ServerMsg {
-    type: 'vote_count',
-    count: {[name: string]: number}   
-};
+/* Internal Message Types */
+export type InternalMsgType = string;
+export interface InternalMsg {
+    type: InternalMsgType 
+}
 
 /* Useful types */
 

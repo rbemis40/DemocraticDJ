@@ -16,10 +16,9 @@ interface GameInfoProps {
 };
 
 export default function GameClient(props: GameInfoProps) {
-    const [userList, setUserList] = useState<string[]>([]);
     const [isHost, setIsHost] = useState<boolean>(false);
     const [ws, setWs] = useState<WebSocket | undefined>();
-    const [gameState, setGameState] = useState<string>('lobby');
+    const [gameMode, setGameMode] = useState<string>('join');
     const router = useRouter();
     const [smTrigger] = useContext(ServerMsgContext);
 
@@ -29,20 +28,24 @@ export default function GameClient(props: GameInfoProps) {
     }
 
     function getUIPage() {
+        if (gameMode === 'join') {
+            return <h1>Joining...</h1>
+        }
+
         if (isHost) {   
-            switch (gameState) {
+            switch (gameMode) {
                 case 'lobby':
-                    return <HostLobby sendMsg={sendMsg} userList={userList} gameId={props.game_id}/>
+                    return <HostLobby sendMsg={sendMsg} gameId={props.game_id}/>
                 case 'voting':
-                    return <HostVoting sendMsg={sendMsg} userList={userList}/>
+                    return <HostVoting sendMsg={sendMsg}/>
             }
         }
         else {
-            switch (gameState) {
+            switch (gameMode) {
                 case 'lobby':
-                    return <PlayerLobby sendMsg={sendMsg} userList={userList}/>
+                    return <PlayerLobby sendMsg={sendMsg}/>
                 case 'voting':
-                    return <PlayerVoting sendMsg={sendMsg} userList={userList}/>
+                    return <PlayerVoting sendMsg={sendMsg}/>
             }
         }
     }
@@ -52,7 +55,7 @@ export default function GameClient(props: GameInfoProps) {
         let newWs = new WebSocket(props.server_url);
         setWs(newWs);
         
-        return () => {newWs.close()};
+        return () => {setWs(undefined); newWs.close()};
     }, []);
 
     // Add event listeners for the websocket
@@ -71,14 +74,13 @@ export default function GameClient(props: GameInfoProps) {
             console.log(`Websocket connection established to game server ${props.server_url}`);
             // Send the token to authenticate with the server
             ws.send(JSON.stringify({
-                type: 'auth',
+                type: 'user_join',
                 user_token: props.user_token
             }));
         });
 
         ws.addEventListener('message', (e) => {
             const serverMsg = JSON.parse(e.data);
-            console.log(serverMsg);
             smTrigger(serverMsg.type, serverMsg);
         });
 
@@ -91,26 +93,15 @@ export default function GameClient(props: GameInfoProps) {
 
     useServerMsg((serverMsg) => {
         switch (serverMsg.type) {
-            case 'user_list':
-                console.log(`Received user list: \n${serverMsg.user_names}`);
-                setUserList(serverMsg.user_names);
-                break;
-            case 'new_user':
-                console.log(`New user joined: ${serverMsg.user_name}`);
-                setUserList(curList => [...curList, serverMsg.user_name]);
-                break;
-            case 'user_left':
-                console.log(`User "${serverMsg.user_name}" has left`);
-                setUserList(curList => curList.filter(curUser => curUser !== serverMsg.user_name));
-                break;
-            case 'promotion':
-                setIsHost(true);
+            case 'welcome':
+                setGameMode(serverMsg.game_mode);
+                setIsHost(serverMsg.role === 'host');
                 break;
             case 'mode_change':
-                setGameState(serverMsg.game_mode);
+                setGameMode(serverMsg.game_mode);
                 break;
         }
-    }, ['user_list', 'new_user', 'user_left', 'promotion', 'mode_change']);
+    }, ['welcome', 'mode_change']);
 
     return getUIPage();
 }

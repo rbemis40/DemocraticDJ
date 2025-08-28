@@ -1,3 +1,4 @@
-interface UIProps {
-    sendMsg: (msg: string) => void; // Function to send a msg to the game server
+export type SendFn = (msg: string) => void;
+export interface UIProps {
+    sendMsg: SendFn; // Function to send a msg to the game server
 };

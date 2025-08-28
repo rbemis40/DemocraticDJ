@@ -1,11 +1,27 @@
 import { GameManager } from "../game_managers/gm_types";
-import { GameMode } from "../modes/game_mode";
+import { GameMode, GameModeName } from "../modes/game_mode";
 import { LobbyMode } from "../modes/lobby_mode";
+import { VotingMode } from "../modes/voting_mode";
 import { GameId, UserToken } from "../shared_types";
 import { UserManager } from "../user_manager";
-import { VotingMode } from "../voting_mode";
-import { Auth_ClientMsg, ClientMsg, ConnectionMap, GameServer, ModeChange_ServerMsg, RemoveUser_ClientMsg, ServerMsg, UserChange_ServerMsg, UserList_ServerMsg } from "./gs_types";
-import { prototype, WebSocket, WebSocketServer } from "ws";
+import { ClientMsg, ConnectionMap, GameServer, ModeChange_ServerMsg, ServerMsg } from "./gs_types";
+import { WebSocket, WebSocketServer } from "ws";
+
+export interface Welcome_ServerMsg extends ServerMsg {
+    type: 'welcome';
+    role: 'player' | 'host';
+    game_mode: GameModeName;
+}
+
+export interface UserJoin_ClientMsg extends ClientMsg {
+    type: 'user_join';
+    user_token: UserToken;
+}
+
+export interface UserLeft_ClientMsg extends ClientMsg {
+    type: 'user_left';
+    user_token: UserToken;   
+}
 
 /*
     - A game server that simply runs on the same system as the HTTP server
@@ -45,7 +61,7 @@ export class SimpleGameServer implements GameServer {
                             this.curMode = new LobbyMode();
                             break;
                         case 'voting':
-                            this.curMode = new VotingMode();
+                            this.curMode = new VotingMode(this.userManager.getJoinedUserList());
                             break;
                     }
 
@@ -57,6 +73,9 @@ export class SimpleGameServer implements GameServer {
 
                     const modeChangeMsgStr = JSON.stringify(modeChangeMsg);
                     this.connections.tokenToSocket.forEach(curWs => curWs.send(modeChangeMsgStr));
+
+                    // And finally, inform the new mode to send it's initial data
+                    this.curMode.handleInternalMsg({type: 'mode_start'}, this.connections, this.userManager);
                 }
             });
 
@@ -67,25 +86,23 @@ export class SimpleGameServer implements GameServer {
                 // Remove the connection from the list of connections
                 this.connections.socketToToken.delete(ws);
                 this.connections.tokenToSocket.delete(token);
+
+                userInfo.joined = false; // Mark the user as no longer connected. The user won't show up in userManager.getJoinedUserList()
+
+                // Refire this event as user_leave client msg for the current mode to handle
+                const userLeaveMsg: UserLeft_ClientMsg = {
+                    type: 'user_left',
+                    user_token: userInfo.token
+                };
+                this.curMode.handleClientMsg(userLeaveMsg, ws, this.connections, this.userManager);
+
+                // NOTE: The user is removed from the user manager after the current mode handles the event,
+                // since the current mode might need to access the user's info for cleanup.
                 this.userManager.removeUser(token);
 
-                if (userInfo.isHost) {
-                    // Close all connections
-                    // TODO: Send a more graceful message so clients know that the host left
-
+                if (userInfo.isHost) { // Close all connections
                     this.connections.socketToToken.forEach((_, otherWs) => otherWs.close());
                     return;
-                }
-                else {
-                    const leftMsg: UserChange_ServerMsg = {
-                        type: 'user_left',
-                        user_name: userInfo.name
-                    };
-
-                    const leftMsgStr: string = JSON.stringify(leftMsg);
-
-                    // Inform all other clients that the user left
-                    this.connections.socketToToken.forEach((_, otherWs) => otherWs.send(leftMsgStr));
                 }
             })
         });
@@ -123,46 +140,31 @@ export class SimpleGameServer implements GameServer {
 
     private handleCommonClientMsg(userMsg: ClientMsg, ws: WebSocket) {
         switch (userMsg.type) {
-            case 'auth':
-                const authMsg = userMsg as Auth_ClientMsg;
-                if (!this.userManager.isValidToken(authMsg.user_token)) {
+            case 'user_join': {
+                const joinMsg = userMsg as UserJoin_ClientMsg;
+                if (!this.userManager.isValidToken(joinMsg.user_token)) {
                     // If the token is not valid, close the connection because they are not a valid user
                     ws.close();
                 }
 
-                // Otherwise send the list of currently joined users
-                const userListMsg: UserList_ServerMsg = {
-                    type: 'user_list',
-                    user_names: this.userManager.getJoinedUserList()
-                };
+                const userInfo = this.userManager.getUserInfoByToken(joinMsg.user_token);
 
-                ws.send(JSON.stringify(userListMsg));
+                // Send a welcome message
+                const welcomeMsg: Welcome_ServerMsg = {
+                    type: 'welcome',
+                    game_mode: this.curMode.getModeName(),
+                    role: userInfo.isHost ? 'host' : 'player'
+                }
+
+                ws.send(JSON.stringify(welcomeMsg));
 
                 
                 // Mark this user as joined and add them to the list of known connections
-                this.userManager.getUserInfoByToken(authMsg.user_token).joined = true;
-                this.connections.socketToToken.set(ws, authMsg.user_token);
-                this.connections.tokenToSocket.set(authMsg.user_token, ws);
-
-                // If they are the host, send a promotion message
-                if (this.userManager.getUserInfoByToken(authMsg.user_token).isHost) {
-                    const promotionMsg: ServerMsg = {
-                        type: 'promotion'
-                    };
-
-                    ws.send(JSON.stringify(promotionMsg));
-                }
-                else {
-                    // Otherwise inform users that a new user has joined
-                    const userJoinMsg: UserChange_ServerMsg = {
-                        type: 'new_user',
-                        user_name: this.userManager.getUserInfoByToken(authMsg.user_token).name // TODO: Currently this fails if the user disconnects and reconnects using saved cookies
-                    };
-
-                    const userJoinMsgStr: string = JSON.stringify(userJoinMsg);
-                    this.connections.socketToToken.forEach((_, curWs) => curWs.send(userJoinMsgStr));   
-                }
+                userInfo.joined = true;
+                this.connections.socketToToken.set(ws, joinMsg.user_token);
+                this.connections.tokenToSocket.set(joinMsg.user_token, ws);
                 break;
+            }
         }
     }
 }
