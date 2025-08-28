@@ -1,10 +1,9 @@
-export default function PlayerUI(props: UIProps) {
+interface PlayerLobbyProps extends UIProps {
+    userList: string[];
+};
+
+export default function PlayerLobby(props: PlayerLobbyProps) {
     return (
-        props.gameState === 'voting' ?
-        <>
-            <h1>You are seeing the voting screen as a player!</h1>
-        </>
-        :
         <>
             <h1>You are a player.</h1>
             <h1>Users:</h1>

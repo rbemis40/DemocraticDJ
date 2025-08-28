@@ -2,9 +2,7 @@ import { GameId, UserToken } from "../shared_types";
 import { WebSocket } from "ws";
 
 /* Client types */
-export type ClientAction = 'start';
-
-export type ClientMsgType = 'auth';
+export type ClientMsgType = 'auth' | 'voting_vote';
 export type ClientHostMsgType = 'remove_user' | 'start_game';
 
 export interface ClientMsg {
@@ -19,6 +17,11 @@ export interface RemoveUser_ClientMsg {
 export interface Auth_ClientMsg extends ClientMsg {
     type: 'auth';
     user_token: UserToken;
+}
+
+export interface VotingVote_ClientMsg extends ClientMsg {
+    type: 'voting_vote';
+    user_name: string;    
 }
 
 /* Server types */

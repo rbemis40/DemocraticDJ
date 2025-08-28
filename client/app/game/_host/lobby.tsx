@@ -1,4 +1,18 @@
-export default function HostUI(props: HostProps) {
+import useServerMsg from "../server_msg_hook";
+
+interface HostLobbyProps extends UIProps {
+    gameId: number;
+    userList: string[];
+};
+
+export default function HostLobby(props: HostLobbyProps) {
+    useServerMsg((msgData: any) => {
+        console.log("HELLO FROM INSIDE LOBBY! A NEW USER JOINED!");
+        console.log(msgData);
+        console.log("^^^^^");
+    }, ['new_user', 'user_left']);
+
+
     function removeUser(name: string) {
         props.sendMsg(JSON.stringify({
             type: 'remove_user',
@@ -13,11 +27,6 @@ export default function HostUI(props: HostProps) {
     }
 
     return (
-        props.gameState === 'voting' ?
-        <>
-            <h1>You are now seeing the voting screen as the host</h1>
-        </>
-        :
         <>
             <h1>You are the host.</h1>
             <h1>Join the game using {props.gameId}</h1>

@@ -1,9 +1,12 @@
 'use client';
 
-import { useEffect, useState } from "react";
-import HostUI from "./_host/host_ui";
-import PlayerUI from "./_player/player_ui";
+import { useContext, useEffect, useState } from "react";
+import HostLobby from "./_host/lobby";
+import PlayerLobby from "./_player/lobby";
 import { useRouter } from "next/navigation";
+import HostVoting from "./_host/voting";
+import PlayerVoting from "./_player/voting";
+import { ServerMsgContext } from "./server_msg_provider";
 
 interface GameInfoProps {
     game_id: number;
@@ -17,10 +20,30 @@ export default function GameClient(props: GameInfoProps) {
     const [ws, setWs] = useState<WebSocket | undefined>();
     const [gameState, setGameState] = useState<string>('lobby');
     const router = useRouter();
+    const [trigger] = useContext(ServerMsgContext);
 
     // Allows child components to communicate with the game server when necessary
     function sendMsg(msg: string) {
         ws?.send(msg);
+    }
+
+    function getUIPage() {
+        if (isHost) {   
+            switch (gameState) {
+                case 'lobby':
+                    return <HostLobby sendMsg={sendMsg} userList={userList} gameId={props.game_id}/>
+                case 'voting':
+                    return <HostVoting sendMsg={sendMsg} userList={userList}/>
+            }
+        }
+        else {
+            switch (gameState) {
+                case 'lobby':
+                    return <PlayerLobby sendMsg={sendMsg} userList={userList}/>
+                case 'voting':
+                    return <PlayerVoting sendMsg={sendMsg} userList={userList}/>
+            }
+        }
     }
 
     // Connect to game server
@@ -79,6 +102,8 @@ export default function GameClient(props: GameInfoProps) {
                     console.log(serverMsg);
                     break;
             }
+
+            trigger(serverMsg.type, serverMsg);
         });
 
         ws.addEventListener('close', (e) => {
@@ -88,7 +113,5 @@ export default function GameClient(props: GameInfoProps) {
         });
     }, [ws]);
 
-    return (
-        isHost ? <HostUI sendMsg={sendMsg} gameState={gameState} userList={userList} gameId={props.game_id}/> : <PlayerUI gameState={gameState} sendMsg={sendMsg} userList={userList}/>
-    );
+    return getUIPage();
 }
