@@ -1,42 +1,22 @@
-import { GameId, UserToken } from "../shared_types";
+import { UserInfo } from "./game_servers/gs_types";
+import { UserToken } from "./shared_types";
 import { randomBytes } from 'crypto';
-import { StateName, UserInfo } from "../game_servers/gs_types";
-import { WebSocket } from "ws";
 
-export abstract class StateData {
-    constructor() {}
-    abstract getStateName(): string;
-    abstract handleNewUser(name: string);
-    abstract handleUserLeft(name: string);
-}
-
-export class LobbyData extends StateData {
-    getStateName(): string {
-        return 'lobby';
-    }
-    handleNewUser(name: string) {}
-    handleUserLeft(name: string) {}
-}
-
-export class GameState {
-    gameId: GameId;
-    stateData: StateData;
+export class UserManager {
     private tokenMap: Map<UserToken, UserInfo>;
     private nameMap: Map<string, UserInfo>;
 
     static tokenLen: number = 36;
 
-    constructor(gameId?: GameId) {
-        this.gameId = gameId;
+    constructor() {
         this.tokenMap = new Map();
         this.nameMap = new Map();
-        this.stateData = new LobbyData();
     }
 
     addNewUser(name?: string): UserToken {
         let userToken: UserToken;
         do {
-            userToken = randomBytes(GameState.tokenLen).toString('base64');
+            userToken = randomBytes(UserManager.tokenLen).toString('base64');
         } while (this.tokenMap.has(userToken)); // Generate until we get a unique token
 
         console.log('adding user with name ' + name);
@@ -89,4 +69,5 @@ export class GameState {
     isValidToken(token: UserToken): boolean {
         return this.tokenMap.has(token);
     }
+
 }

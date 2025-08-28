@@ -1,3 +1,4 @@
+import { GameModeName } from "../modes/game_mode";
 import { GameId, UserToken } from "../shared_types";
 import { WebSocket } from "ws";
 
@@ -25,7 +26,7 @@ export interface AddVote_ClientMsg extends ClientMsg {
 }
 
 /* Server types */
-export type ServerMsgType = 'new_user' | 'user_left' | 'user_list' | 'promotion' | 'state_change';
+export type ServerMsgType = 'new_user' | 'user_left' | 'user_list' | 'promotion' | 'mode_change';
 export type ServerMsgVotingType = 'vote_count';
 
 export interface ServerMsg {
@@ -42,10 +43,9 @@ export interface UserList_ServerMsg extends ServerMsg {
     user_names: string[];
 }
 
-export type StateName = 'lobby' | 'voting';
-export interface StateChange_ServerMsg extends ServerMsg {
-    type: 'state_change',
-    state_name: StateName
+export interface ModeChange_ServerMsg extends ServerMsg {
+    type: 'mode_change';
+    game_mode: GameModeName;
 };
 
 /* Server Voting */

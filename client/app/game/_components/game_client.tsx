@@ -106,11 +106,11 @@ export default function GameClient(props: GameInfoProps) {
             case 'promotion':
                 setIsHost(true);
                 break;
-            case 'state_change':
-                setGameState(serverMsg.state_name);
+            case 'mode_change':
+                setGameState(serverMsg.game_mode);
                 break;
         }
-    }, ['user_list', 'new_user', 'user_left', 'promotion', 'state_change']);
+    }, ['user_list', 'new_user', 'user_left', 'promotion', 'mode_change']);
 
     return getUIPage();
 }
