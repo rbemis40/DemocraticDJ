@@ -61,7 +61,10 @@ export class SimpleGameServer implements GameServer {
                             this.curMode = new LobbyMode();
                             break;
                         case 'voting':
-                            this.curMode = new VotingMode(this.userManager.getJoinedUserList());
+                            this.curMode = new VotingMode(
+                                this.userManager.getJoinedUserList(), 
+                                (msg) => this.curMode.handleInternalMsg(msg, this.connections, this.userManager)
+                            );
                             break;
                     }
 
@@ -73,9 +76,6 @@ export class SimpleGameServer implements GameServer {
 
                     const modeChangeMsgStr = JSON.stringify(modeChangeMsg);
                     this.connections.tokenToSocket.forEach(curWs => curWs.send(modeChangeMsgStr));
-
-                    // And finally, inform the new mode to send it's initial data
-                    this.curMode.handleInternalMsg({type: 'mode_start'}, this.connections, this.userManager);
                 }
             });
 
