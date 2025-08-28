@@ -1,7 +1,7 @@
 import { WebSocket } from "ws";
-import { Auth_ClientMsg, ClientMsg, ConnectionMap, GameServer, RemoveUser_ClientMsg, ServerMsg, StateChange_ServerMsg, UserChange_ServerMsg, UserList_ServerMsg } from "./gs_types";
-import { GameState } from "./game_state";
-import { UserToken } from "../shared_types";
+import { AddVote_ClientMsg, Auth_ClientMsg, ClientMsg, ConnectionMap, GameServer, RemoveUser_ClientMsg, ServerMsg, StateChange_ServerMsg, UserChange_ServerMsg, UserList_ServerMsg, VoteCount_ServerMsg } from "./gs_types";
+import { GameState } from "../states/game_state";
+import { VotingData } from "../states/voting_state";
 
 export class ClientMsgHandler {
     private gameState: GameState;
@@ -22,6 +22,9 @@ export class ClientMsgHandler {
                 break;
             case 'start_game':
                 this.handleStartGame();
+                break;
+            case 'add_vote':
+                this.handleAddVote(userMsg as AddVote_ClientMsg, ws);
                 break;
         }
     }
@@ -77,6 +80,9 @@ export class ClientMsgHandler {
 
     private handleStartGame() {
         // Enter the voting state
+        this.gameState.stateData = new VotingData(this.gameState.getJoinedUserList());
+
+        // Inform clients
         const votingStateMsg: StateChange_ServerMsg = {
             type: 'state_change',
             state_name: 'voting'
@@ -84,5 +90,40 @@ export class ClientMsgHandler {
 
         const votingStateMsgStr = JSON.stringify(votingStateMsg);
         this.connections.tokenToSocket.forEach(curWs => curWs.send(votingStateMsgStr));
+    }
+
+    private handleAddVote(voteMsg: AddVote_ClientMsg, ws: WebSocket) {
+        if (this.gameState.stateData.getStateName() !== 'voting') {
+            console.log(`Attempt to add vote during game state '${this.gameState.stateData.getStateName()}'`);
+            return;
+        }
+
+        const voteData = this.gameState.stateData as VotingData;
+
+        // Make sure a player didn't vote for themselves
+        const voterToken = this.connections.socketToToken.get(ws)
+        const voterInfo = this.gameState.getUserInfoByToken(voterToken);
+
+        if (voteMsg.user_name === voterInfo.name) {
+            // TODO: Send a message to the voter that their vote was unsuccessful so they can vote again
+            return;
+        }
+
+        // Update vote count
+        if (!(voteMsg.user_name in voteData.count)) {
+            // This shouldn't happen naturally since the count should update to players leaving and joining
+            // TODO: Send unsuccessful message
+            return;
+        }
+
+        voteData.count[voteMsg.user_name] += 1;
+
+        const voteCountMsg: VoteCount_ServerMsg = {
+            type: 'vote_count',
+            count: voteData.count
+        };
+
+        const voteCountMsgStr = JSON.stringify(voteCountMsg);
+        this.connections.tokenToSocket.forEach(curWs => curWs.send(voteCountMsgStr));
     }
 }

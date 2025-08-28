@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import HostVoting from "./_host/voting";
 import PlayerVoting from "./_player/voting";
 import { ServerMsgContext } from "./server_msg_provider";
+import useServerMsg from "../_hooks/server_msg_hook";
 
 interface GameInfoProps {
     game_id: number;
@@ -20,7 +21,7 @@ export default function GameClient(props: GameInfoProps) {
     const [ws, setWs] = useState<WebSocket | undefined>();
     const [gameState, setGameState] = useState<string>('lobby');
     const router = useRouter();
-    const [trigger] = useContext(ServerMsgContext);
+    const [smTrigger] = useContext(ServerMsgContext);
 
     // Allows child components to communicate with the game server when necessary
     function sendMsg(msg: string) {
@@ -78,32 +79,7 @@ export default function GameClient(props: GameInfoProps) {
         ws.addEventListener('message', (e) => {
             const serverMsg = JSON.parse(e.data);
             console.log(serverMsg);
-            switch (serverMsg.type) {
-                case 'user_list':
-                    console.log(`Received user list: \n${serverMsg.user_names}`);
-                    setUserList(serverMsg.user_names);
-                    break;
-                case 'new_user':
-                    console.log(`New user joined: ${serverMsg.user_name}`);
-                    setUserList(curList => [...curList, serverMsg.user_name]);
-                    break;
-                case 'user_left':
-                    console.log(`User "${serverMsg.user_name}" has left`);
-                    setUserList(curList => curList.filter(curUser => curUser !== serverMsg.user_name));
-                    break;
-                case 'promotion':
-                    setIsHost(true);
-                    break;
-                case 'state_change':
-                    setGameState(serverMsg.state_name);
-                    break;
-                default:
-                    console.log(`Unknown server msg: \n`);
-                    console.log(serverMsg);
-                    break;
-            }
-
-            trigger(serverMsg.type, serverMsg);
+            smTrigger(serverMsg.type, serverMsg);
         });
 
         ws.addEventListener('close', (e) => {
@@ -112,6 +88,29 @@ export default function GameClient(props: GameInfoProps) {
             router.replace(`http://${process.env.NEXT_PUBLIC_HOST}:${process.env.NEXT_PUBLIC_PORT}/`);
         });
     }, [ws]);
+
+    useServerMsg((serverMsg) => {
+        switch (serverMsg.type) {
+            case 'user_list':
+                console.log(`Received user list: \n${serverMsg.user_names}`);
+                setUserList(serverMsg.user_names);
+                break;
+            case 'new_user':
+                console.log(`New user joined: ${serverMsg.user_name}`);
+                setUserList(curList => [...curList, serverMsg.user_name]);
+                break;
+            case 'user_left':
+                console.log(`User "${serverMsg.user_name}" has left`);
+                setUserList(curList => curList.filter(curUser => curUser !== serverMsg.user_name));
+                break;
+            case 'promotion':
+                setIsHost(true);
+                break;
+            case 'state_change':
+                setGameState(serverMsg.state_name);
+                break;
+        }
+    }, ['user_list', 'new_user', 'user_left', 'promotion', 'state_change']);
 
     return getUIPage();
 }

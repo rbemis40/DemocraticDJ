@@ -5,7 +5,7 @@ interface PlayerVotingProps extends UIProps {
 export default function PlayerVoting(props: PlayerVotingProps) {
     function sendVote(name: string) {
         props.sendMsg(JSON.stringify({
-            type: 'voting_vote',
+            type: 'add_vote',
             user_name: name
         }));
     }

@@ -1,11 +1,26 @@
 import { GameId, UserToken } from "../shared_types";
 import { randomBytes } from 'crypto';
-import { StateName, UserInfo } from "./gs_types";
+import { StateName, UserInfo } from "../game_servers/gs_types";
 import { WebSocket } from "ws";
+
+export abstract class StateData {
+    constructor() {}
+    abstract getStateName(): string;
+    abstract handleNewUser(name: string);
+    abstract handleUserLeft(name: string);
+}
+
+export class LobbyData extends StateData {
+    getStateName(): string {
+        return 'lobby';
+    }
+    handleNewUser(name: string) {}
+    handleUserLeft(name: string) {}
+}
 
 export class GameState {
     gameId: GameId;
-    state: StateName;
+    stateData: StateData;
     private tokenMap: Map<UserToken, UserInfo>;
     private nameMap: Map<string, UserInfo>;
 
@@ -15,7 +30,7 @@ export class GameState {
         this.gameId = gameId;
         this.tokenMap = new Map();
         this.nameMap = new Map();
-        this.state = 'lobby'; // Users can join
+        this.stateData = new LobbyData();
     }
 
     addNewUser(name?: string): UserToken {

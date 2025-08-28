@@ -2,7 +2,7 @@ import { GameId, UserToken } from "../shared_types";
 import { WebSocket } from "ws";
 
 /* Client types */
-export type ClientMsgType = 'auth' | 'voting_vote';
+export type ClientMsgType = 'auth' | 'add_vote';
 export type ClientHostMsgType = 'remove_user' | 'start_game';
 
 export interface ClientMsg {
@@ -19,16 +19,17 @@ export interface Auth_ClientMsg extends ClientMsg {
     user_token: UserToken;
 }
 
-export interface VotingVote_ClientMsg extends ClientMsg {
-    type: 'voting_vote';
+export interface AddVote_ClientMsg extends ClientMsg {
+    type: 'add_vote';
     user_name: string;    
 }
 
 /* Server types */
 export type ServerMsgType = 'new_user' | 'user_left' | 'user_list' | 'promotion' | 'state_change';
+export type ServerMsgVotingType = 'vote_count';
 
 export interface ServerMsg {
-    type: ServerMsgType;
+    type: ServerMsgType | ServerMsgVotingType;
 }
 
 export interface UserChange_ServerMsg extends ServerMsg {
@@ -45,6 +46,12 @@ export type StateName = 'lobby' | 'voting';
 export interface StateChange_ServerMsg extends ServerMsg {
     type: 'state_change',
     state_name: StateName
+};
+
+/* Server Voting */
+export interface VoteCount_ServerMsg extends ServerMsg {
+    type: 'vote_count',
+    count: {[name: string]: number}   
 };
 
 /* Useful types */

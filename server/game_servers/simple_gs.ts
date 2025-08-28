@@ -1,7 +1,7 @@
 import { GameManager } from "../game_managers/gm_types";
 import { GameId, UserToken } from "../shared_types";
 import { ClientMsgHandler } from "./client_msg_handler";
-import { GameState } from "./game_state";
+import { GameState } from "../states/game_state";
 import { Auth_ClientMsg, ClientMsg, ConnectionMap, GameServer, ServerMsg, UserChange_ServerMsg, UserList_ServerMsg } from "./gs_types";
 import { prototype, WebSocket, WebSocketServer } from "ws";
 

@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
-import GameClient from "./game_client";
-import ServerMsgProvider from "./server_msg_provider";
+import GameClient from "./_components/game_client";
+import ServerMsgProvider from "./_components/server_msg_provider";
 
 // This page will be the page that displays the actual content for the game (host vs player)
 export default async function Game({params} : {params: Promise<{id: number}>}) {

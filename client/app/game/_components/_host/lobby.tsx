@@ -1,18 +1,9 @@
-import useServerMsg from "../server_msg_hook";
-
 interface HostLobbyProps extends UIProps {
     gameId: number;
     userList: string[];
 };
 
 export default function HostLobby(props: HostLobbyProps) {
-    useServerMsg((msgData: any) => {
-        console.log("HELLO FROM INSIDE LOBBY! A NEW USER JOINED!");
-        console.log(msgData);
-        console.log("^^^^^");
-    }, ['new_user', 'user_left']);
-
-
     function removeUser(name: string) {
         props.sendMsg(JSON.stringify({
             type: 'remove_user',
