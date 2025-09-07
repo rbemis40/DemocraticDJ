@@ -9,6 +9,7 @@ import PlayerVoting from "./_player/voting";
 import { ServerMsgContext } from "./server_msg_provider";
 import useServerMsg from "../_hooks/server_msg_hook";
 import { ServerMsg } from "../_types/server_msg";
+import SpotifySearch from "./spotify_search";
 
 interface GameInfoProps {
     game_id: number;
@@ -102,5 +103,8 @@ export default function GameClient(props: GameInfoProps) {
         }
     }, ['welcome', 'mode_change']);
 
-    return getUIPage();
+    return <>
+        <SpotifySearch sendMsg={sendMsg}/> {/* TODO: This should only be shown to a player who is the active voter!!! */}
+        {getUIPage()}
+    </>
 }

@@ -3,9 +3,9 @@ import { GameMode, GameModeName } from "../modes/game_mode";
 import { LobbyMode } from "../modes/lobby_mode";
 import { VotingMode } from "../modes/voting_mode";
 import { GameId, UserToken } from "../shared_types";
-import { SpotifyManager } from "../spotify/spotify_manager";
+import { SpotifyManager, SpotifyResults_ServerMsg } from "../spotify/spotify_manager";
 import { UserManager } from "../user_manager";
-import { ClientMsg, ConnectionMap, GameServer, ModeChange_ServerMsg, ServerMsg } from "./gs_types";
+import { ClientMsg, ConnectionMap, GameServer, ModeChange_ServerMsg, ServerMsg, SpotifySearch_ClientMsg } from "./gs_types";
 import { WebSocket, WebSocketServer } from "ws";
 
 export interface Welcome_ServerMsg extends ServerMsg {
@@ -169,6 +169,20 @@ export class SimpleGameServer implements GameServer {
                 userInfo.joined = true;
                 this.connections.socketToToken.set(ws, joinMsg.user_token);
                 this.connections.tokenToSocket.set(joinMsg.user_token, ws);
+                break;
+            }
+            case 'spotify_search': {
+                console.log("HELLO!!!!!!!");
+                const spotifySearchMsg = userMsg as SpotifySearch_ClientMsg;
+                this.spotifyManager.search(spotifySearchMsg.query).then( // TODO: Error handling
+                    results => {
+                        const spotifyResults: SpotifyResults_ServerMsg = {
+                            type: 'spotify_results',
+                            tracks: results
+                        }
+                        ws.send(JSON.stringify(spotifyResults)) ;
+                    }
+                );
                 break;
             }
         }

@@ -1,3 +1,5 @@
+import { SpotifySearchResult } from "./spotify_types";
+
 export type ServerMsg = 
     WelcomeMsg
     | ModeChangeMsg
@@ -5,6 +7,7 @@ export type ServerMsg =
     | VoteCountMsg
     | BeginCountdownMsg
     | EndCountdownMsg
+    | SpotifyResultsMsg
 
 export interface WelcomeMsg {
     type: 'welcome';
@@ -34,4 +37,9 @@ export interface BeginCountdownMsg {
 
 export interface EndCountdownMsg {
     type: 'end_countdown';
+};
+
+export interface SpotifyResultsMsg {
+    type: 'spotify_results';
+    tracks: SpotifySearchResult[]
 };

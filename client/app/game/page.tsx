@@ -1,9 +1,10 @@
 import { cookies } from "next/headers";
 import GameClient from "./_components/game_client";
+import SpotifySearch from "./_components/spotify_search";
 import ServerMsgProvider from "./_components/server_msg_provider";
 
-// This page will be the page that displays the actual content for the game (host vs player)
-export default async function Game({params} : {params: Promise<{id: number}>}) {
+// This page must be a server component that reads the cookies in order to establish a connection to the game server (responsibility of GameClient)
+export default async function Game() {
     // const { id } = await params;
     const cookieStore = await cookies();
     const game_id = cookieStore.get('game_id');

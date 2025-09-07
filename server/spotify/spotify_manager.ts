@@ -1,3 +1,5 @@
+import { ServerMsg } from "../game_servers/gs_types";
+
 interface SpotifySearchResult {
     tracks: {
         items: {
@@ -26,6 +28,11 @@ interface TrackInfo {
     name: string;
     artists: string[];
     image: TrackImg;
+};
+
+export interface SpotifyResults_ServerMsg extends ServerMsg {
+    type: 'spotify_results',
+    tracks: TrackInfo[]
 };
 
 export class SpotifyManager {
