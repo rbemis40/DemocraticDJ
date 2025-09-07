@@ -14,9 +14,9 @@ export class SimpleGameManager implements GameManager {
         this.gameServers = [];
     }
 
-    generateNewGame(): Promise<GameId> {
+    generateNewGame(spotifyCode: string): Promise<GameId> {
         // Generate a random 7 digit game id
-        const MAX_GAME_ID = 9999999
+        const MAX_GAME_ID = 9999999;
         let gameId;
         do {
             gameId = Math.floor(Math.random() * MAX_GAME_ID);
@@ -27,7 +27,7 @@ export class SimpleGameManager implements GameManager {
         }
 
         this.gameMap.set(gameId, this.gameServers[0]);
-        this.gameServers[0].createGame(gameId);
+        this.gameServers[0].createGame(gameId, spotifyCode);
 
         return Promise.resolve(gameId);
     }

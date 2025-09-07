@@ -14,7 +14,7 @@ export default function Home() {
             />
             <button id="joinButton">Join</button>
         </form>
-        <form action={`http://${process.env.NEXT_PUBLIC_HOST}:${process.env.NEXT_PUBLIC_PORT}/create`}>
+        <form action={`http://${process.env.NEXT_PUBLIC_HOST}:${process.env.NEXT_PUBLIC_PORT}/create/spotify`}>
             <label htmlFor="createGame">Create Game</label>
             <button id="createGame">Create</button>
         </form>

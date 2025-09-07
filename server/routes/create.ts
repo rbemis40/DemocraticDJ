@@ -7,7 +7,16 @@ export function getCreateRouter(gm: GameManager): Router {
     const createRouter = Router();
 
     createRouter.get('/', async (req, res) => {
-        const gameId: GameId = await gm.generateNewGame();
+        // Get the Spotify API code to request an access token
+        if (req.query.code === undefined || typeof req.query.code !== 'string') {
+            res.status(400).json({
+                error: 'Expected "code" query paramater in /create request'
+            });
+
+            return;
+        }
+
+        const gameId: GameId = await gm.generateNewGame(req.query.code);
         const gameServer: GameServer = await gm.getServerByGameId(gameId);
         const hostToken: UserToken = await gameServer.generateHostToken(gameId);
         const serverURL: URL = await gameServer.getServerURL();

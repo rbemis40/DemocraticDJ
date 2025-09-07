@@ -3,6 +3,7 @@ import { GameMode, GameModeName } from "../modes/game_mode";
 import { LobbyMode } from "../modes/lobby_mode";
 import { VotingMode } from "../modes/voting_mode";
 import { GameId, UserToken } from "../shared_types";
+import { SpotifyManager } from "../spotify/spotify_manager";
 import { UserManager } from "../user_manager";
 import { ClientMsg, ConnectionMap, GameServer, ModeChange_ServerMsg, ServerMsg } from "./gs_types";
 import { WebSocket, WebSocketServer } from "ws";
@@ -34,8 +35,10 @@ export class SimpleGameServer implements GameServer {
     private connections: ConnectionMap;
     private gameId: GameId;
     private curMode: GameMode;
+    private spotifyManager: SpotifyManager;
 
     constructor(port=8081) {
+        this.spotifyManager = new SpotifyManager();
         this.wss = new WebSocketServer({port: port}, () => console.log(`Game serving running on port ${port}`));
         this.connections = {
             socketToToken: new Map(),
@@ -108,14 +111,17 @@ export class SimpleGameServer implements GameServer {
         });
     }
 
-    createGame(id: GameId): Promise<boolean> {
+    async createGame(id: GameId, spotifyCode: string): Promise<boolean> {
         if (this.gameId !== undefined) {
             console.error(`Server is already running game with id ${this.gameId}`);
-            return Promise.resolve(false);
+            return false;
         }
 
         this.gameId = id;
-        return Promise.resolve(true);
+        await this.spotifyManager.connect(spotifyCode, process.env.SPOTIFY_REDIRECT_URI);
+        console.log(await this.spotifyManager.search('wheel in the sky'));
+
+        return true;
     }
 
     getServerURL(): Promise<URL> {

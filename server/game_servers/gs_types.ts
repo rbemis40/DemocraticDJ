@@ -54,7 +54,7 @@ export interface InternalMsg {
 */
 export interface GameServer {
     /* Initial setup of a new game */
-    createGame(id: GameId): Promise<boolean>;
+    createGame(id: GameId, spotifyCode: string): Promise<boolean>;
     generateHostToken(id: GameId): Promise<UserToken>;
     generateUserToken(id: GameId, name: string): Promise<UserToken>;
 
