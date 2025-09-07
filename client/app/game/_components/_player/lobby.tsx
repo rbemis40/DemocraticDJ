@@ -2,11 +2,12 @@ import { useState } from "react";
 import useServerMsg from "../../_hooks/server_msg_hook";
 import { UIProps } from "../../types";
 import useSendModeChanged from "../../_hooks/send_joined_mode";
+import { ServerMsg } from "../../_types/server_msg";
 
 export default function PlayerLobby(props: UIProps) {
     const [userList, setUserList] = useState<string[]>([]);
 
-    useServerMsg((serverMsg) => {
+    useServerMsg((serverMsg: ServerMsg) => {
         switch(serverMsg.type) {
             case 'user_list':
                 setUserList(serverMsg.user_names);

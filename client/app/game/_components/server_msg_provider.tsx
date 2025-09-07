@@ -1,10 +1,11 @@
 'use client';
 import { createContext, ReactNode, useRef } from "react";
+import { ServerMsg } from "../_types/server_msg";
 
-export type ServerMsgHandler = (msgData: any) => void;
+export type ServerMsgHandler = (msgData: ServerMsg) => void;
 
 export type ServerMsgSubscribeFn = (type: string, callback: ServerMsgHandler) => void; 
-export type ServerMsgTriggerFn = (type: string, msgData: any) => void;
+export type ServerMsgTriggerFn = (type: string, msgData: ServerMsg) => void;
 
 export type ServerMsgContextFns = [
     (ServerMsgTriggerFn),
@@ -42,7 +43,7 @@ export default function ServerMsgProvider(props: ServerMsgProviderProps) {
         typeToHandler.current.set(type, newHandlerArr);
     }
 
-    function trigger(type: string, msgData: any) {
+    function trigger(type: string, msgData: ServerMsg) {
         typeToHandler.current.get(type)?.forEach(callback => callback(msgData));
     }
 

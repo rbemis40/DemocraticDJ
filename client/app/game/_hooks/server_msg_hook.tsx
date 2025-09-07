@@ -9,5 +9,5 @@ export default function useServerMsg(handler: ServerMsgHandler, msgTypes: MsgTyp
     useEffect(() => {
         msgTypes.forEach(type => subscribe(type, handler));
         return () => msgTypes.forEach(type => unsubscribe(type, handler));
-    }, [subscribe, unsubscribe]);
+    }, [subscribe, unsubscribe, handler, msgTypes]);
 }

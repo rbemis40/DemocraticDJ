@@ -2,6 +2,7 @@ import { useState } from "react";
 import useServerMsg from "../../_hooks/server_msg_hook";
 import { UIProps } from "../../types";
 import useSendModeChanged from "../../_hooks/send_joined_mode";
+import { ServerMsg } from "../../_types/server_msg";
 
 interface HostLobbyProps extends UIProps {
     gameId: number;
@@ -10,7 +11,7 @@ interface HostLobbyProps extends UIProps {
 export default function HostLobby(props: HostLobbyProps) {
     const [userList, setUserList] = useState<string[]>([]);
 
-    useServerMsg((serverMsg: any) => {
+    useServerMsg((serverMsg: ServerMsg) => {
         switch (serverMsg.type) {
             case 'user_list':
                 setUserList(serverMsg.user_names);

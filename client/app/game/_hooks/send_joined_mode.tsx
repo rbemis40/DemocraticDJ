@@ -9,5 +9,5 @@ export default function useSendJoinedMode(mode: string, sendMsg: SendFn) {
 
     useEffect(() => {
         sendMsg(JSON.stringify(modeChangedMsg));
-    }, [sendMsg]);
+    }, [sendMsg, modeChangedMsg]);
 }

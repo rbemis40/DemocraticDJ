@@ -1,13 +1,14 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import useServerMsg from "../../_hooks/server_msg_hook";
 import { UIProps } from "../../types";
 import useSendModeChanged from "../../_hooks/send_joined_mode";
+import { ServerMsg } from "../../_types/server_msg";
 
 export default function PlayerVoting(props: UIProps) {
     const [voteCount, setVoteCount] = useState<{[name: string]: number}>({});
     const [timeRem, setTimeRem] = useState<number | undefined>();
 
-    useServerMsg((serverMsg) => {
+    useServerMsg((serverMsg: ServerMsg) => {
         switch(serverMsg.type) {
             case 'vote_count':
                 setVoteCount(serverMsg.count);
@@ -48,7 +49,7 @@ export default function PlayerVoting(props: UIProps) {
     return (
         <>
             {Object.keys(voteCount).map(curUser => 
-                <div>
+                <div key={curUser}>
                     {(timeRem !== undefined) ? <h1>{timeRem} seconds...</h1> : undefined}
                     <h2>{curUser}({voteCount[curUser]})</h2>
                     <button onClick={() => sendVote(curUser)}>Vote</button>

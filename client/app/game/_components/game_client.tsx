@@ -8,6 +8,7 @@ import HostVoting from "./_host/voting";
 import PlayerVoting from "./_player/voting";
 import { ServerMsgContext } from "./server_msg_provider";
 import useServerMsg from "../_hooks/server_msg_hook";
+import { ServerMsg } from "../_types/server_msg";
 
 interface GameInfoProps {
     game_id: number;
@@ -52,11 +53,11 @@ export default function GameClient(props: GameInfoProps) {
 
     // Connect to game server
     useEffect(() => {
-        let newWs = new WebSocket(props.server_url);
+        const newWs = new WebSocket(props.server_url);
         setWs(newWs);
         
         return () => {setWs(undefined); newWs.close()};
-    }, []);
+    }, [props.server_url]);
 
     // Add event listeners for the websocket
     useEffect(() => {
@@ -64,9 +65,7 @@ export default function GameClient(props: GameInfoProps) {
             return;
         }
 
-        console.log(`GameUI props:`);
-        console.log(props);
-        ws.addEventListener('error', (e) => {
+        ws.addEventListener('error', () => {
             console.error('A websocket error was encountered!');
         });
 
@@ -84,14 +83,14 @@ export default function GameClient(props: GameInfoProps) {
             smTrigger(serverMsg.type, serverMsg);
         });
 
-        ws.addEventListener('close', (e) => {
+        ws.addEventListener('close', () => {
             console.log(`Closing connection to game server`);
             ws.close();
             router.replace(`http://${process.env.NEXT_PUBLIC_HOST}:${process.env.NEXT_PUBLIC_PORT}/`);
         });
-    }, [ws]);
+    }, [ws, router, smTrigger, props.server_url, props.user_token]);
 
-    useServerMsg((serverMsg) => {
+    useServerMsg((serverMsg: ServerMsg) => {
         switch (serverMsg.type) {
             case 'welcome':
                 setGameMode(serverMsg.game_mode);

@@ -4,7 +4,7 @@ import ServerMsgProvider from "./_components/server_msg_provider";
 
 // This page will be the page that displays the actual content for the game (host vs player)
 export default async function Game({params} : {params: Promise<{id: number}>}) {
-    const { id } = await params;
+    // const { id } = await params;
     const cookieStore = await cookies();
     const game_id = cookieStore.get('game_id');
     const user_token = cookieStore.get('user_token');

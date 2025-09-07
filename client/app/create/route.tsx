@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     console.log(gameInfo);
 
     console.log(request.url);
-    let response = NextResponse.redirect(`http://${process.env.NEXT_PUBLIC_HOST}:${process.env.NEXT_PUBLIC_PORT}/game`);
+    const response = NextResponse.redirect(`http://${process.env.NEXT_PUBLIC_HOST}:${process.env.NEXT_PUBLIC_PORT}/game`);
     response.cookies.set('user_token', gameInfo.host_token);
     response.cookies.set('game_id', gameInfo.game_id.toString());
     response.cookies.set('server_url', gameInfo.server_url);
