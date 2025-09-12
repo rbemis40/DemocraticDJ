@@ -1,8 +1,9 @@
 import { WebSocket } from "ws";
-import { ClientMsg, ConnectionMap, InternalMsg, JoinedMode_ClientMsg, ServerMsg } from "../game_servers/gs_types";
+import { ConnectionMap, InternalMsg, ServerMsg } from "../game_servers/server_types";
 import { GameMode, GameModeName } from "./game_mode";
 import { UserManager } from "../user_manager";
 import { UserLeft_ClientMsg } from "../game_servers/simple_gs";
+import { ClientMsg, JoinedMode_ClientMsg } from "../game_servers/client_types";
 
 
 interface AddVote_ClientMsg extends ClientMsg {

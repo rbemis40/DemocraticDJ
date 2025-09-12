@@ -19,11 +19,17 @@ export default function SpotifySearch(props: SpotifySearchUI) {
         }));
     }
 
+    function queueSong(track_uri: string) {
+        props.sendMsg(JSON.stringify({
+            type: 'spotify_queue',
+            track_uri: track_uri
+        }))
+    }
+
     useServerMsg((msg) => {
         switch (msg.type) {
             case 'spotify_results': {
                 setResults(msg.tracks);
-                console.log(msg.tracks);
                 break;
             }
         }
@@ -36,10 +42,11 @@ export default function SpotifySearch(props: SpotifySearchUI) {
                 <button type='submit'>Submit</button>
             </form>
             {results?.map(result => 
-                <div key={result.name + result.image.url}>
+                <div key={result.track_uri}>
                     <h2>Name: {result.name}</h2>
                     <h2>Artist(s): {result.artists.join(', ')}</h2>
                     <img src={result.image.url} width={200} height={200} alt={result.image.url}></img>
+                    <button onClick={() => queueSong(result.track_uri)}>Add to Queue!</button>
                 </div>
             )}
         </>

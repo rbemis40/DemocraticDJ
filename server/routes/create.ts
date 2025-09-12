@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { GameManager } from "../game_managers/gm_types";
 import { GameId, NewGameInfo, UserToken } from "../shared_types";
-import { GameServer } from "../game_servers/gs_types";
+import { GameServer } from "../game_servers/server_types";
 
 export function getCreateRouter(gm: GameManager): Router {
     const createRouter = Router();

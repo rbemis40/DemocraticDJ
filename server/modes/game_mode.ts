@@ -1,6 +1,7 @@
 import { WebSocket } from "ws";
-import { ClientMsg, ConnectionMap, InternalMsg } from "../game_servers/gs_types";
 import { UserManager } from "../user_manager";
+import { ClientMsg } from "../game_servers/client_types";
+import { ConnectionMap, InternalMsg } from "../game_servers/server_types";
 
 export type GameModeName = 'lobby' | 'voting';
 

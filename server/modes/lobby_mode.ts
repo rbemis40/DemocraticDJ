@@ -1,8 +1,8 @@
 import { WebSocket } from "ws";
 import { GameMode, GameModeName } from "./game_mode";
-import { ClientMsg, ConnectionMap, InternalMsg, JoinedMode_ClientMsg, UserList_ServerMsg } from "../game_servers/gs_types";
+import { ConnectionMap, InternalMsg, UserList_ServerMsg } from "../game_servers/server_types";
 import { UserManager } from "../user_manager";
-import { UserToken } from "../shared_types";
+import { ClientMsg, JoinedMode_ClientMsg } from "../game_servers/client_types";
 
 interface RemoveUser_ClientMsg extends ClientMsg {
     type: 'remove_user',

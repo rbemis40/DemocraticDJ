@@ -6,4 +6,5 @@ export interface SpotifySearchResult {
         width: number;
         height: number;
     }
+    track_uri: string;
 }

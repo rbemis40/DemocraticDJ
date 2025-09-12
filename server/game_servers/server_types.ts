@@ -2,24 +2,6 @@ import { GameMode, GameModeName } from "../modes/game_mode";
 import { GameId, UserToken } from "../shared_types";
 import { WebSocket } from "ws";
 
-/* Client types */
-export type ClientMsgType = 'user_join' | 'user_left' | 'joined_mode' | 'add_vote' | 'spotify_search';
-export type ClientHostMsgType = 'remove_user' | 'start_game';
-
-export interface ClientMsg {
-    type: ClientMsgType | ClientHostMsgType;
-}
-
-export interface JoinedMode_ClientMsg extends ClientMsg {
-    type: 'joined_mode',
-    mode: GameModeName
-}
-
-export interface SpotifySearch_ClientMsg extends ClientMsg {
-    type: 'spotify_search',
-    query: string;
-}
-
 /* Server types */
 export type ServerMsgType = 'user_list' | 'mode_change';
 export interface ServerMsg {

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { GameManager } from "../game_managers/gm_types";
-import { GameServer } from "../game_servers/gs_types";
+import { GameServer } from "../game_servers/server_types";
 
 export function getJoinRouter(gm: GameManager): Router {
     const joinRouter = Router();

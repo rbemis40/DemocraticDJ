@@ -5,7 +5,8 @@ import { VotingMode } from "../modes/voting_mode";
 import { GameId, UserToken } from "../shared_types";
 import { SpotifyManager, SpotifyResults_ServerMsg } from "../spotify/spotify_manager";
 import { UserManager } from "../user_manager";
-import { ClientMsg, ConnectionMap, GameServer, ModeChange_ServerMsg, ServerMsg, SpotifySearch_ClientMsg } from "./gs_types";
+import { ClientMsg, SpotifyQueue_ClientMsg, SpotifySearch_ClientMsg } from "./client_types";
+import { ConnectionMap, GameServer, ModeChange_ServerMsg, ServerMsg } from "./server_types";
 import { WebSocket, WebSocketServer } from "ws";
 
 export interface Welcome_ServerMsg extends ServerMsg {
@@ -172,7 +173,6 @@ export class SimpleGameServer implements GameServer {
                 break;
             }
             case 'spotify_search': {
-                console.log("HELLO!!!!!!!");
                 const spotifySearchMsg = userMsg as SpotifySearch_ClientMsg;
                 this.spotifyManager.search(spotifySearchMsg.query).then( // TODO: Error handling
                     results => {
@@ -184,6 +184,10 @@ export class SimpleGameServer implements GameServer {
                     }
                 );
                 break;
+            }
+            case 'spotify_queue': {
+                const spotifyQueueMsg = userMsg as SpotifyQueue_ClientMsg;
+                this.spotifyManager.queue(spotifyQueueMsg.track_uri);
             }
         }
     }

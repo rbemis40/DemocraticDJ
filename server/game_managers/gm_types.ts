@@ -1,4 +1,4 @@
-import { GameServer } from "../game_servers/gs_types";
+import { GameServer } from "../game_servers/server_types";
 import { GameId } from "../shared_types";
 
 /*

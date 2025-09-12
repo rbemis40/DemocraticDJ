@@ -1,4 +1,4 @@
-import { UserInfo } from "./game_servers/gs_types";
+import { UserInfo } from "./game_servers/server_types";
 import { UserToken } from "./shared_types";
 import { randomBytes } from 'crypto';
 

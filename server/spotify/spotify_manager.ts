@@ -1,4 +1,4 @@
-import { ServerMsg } from "../game_servers/gs_types";
+import { ServerMsg } from "../game_servers/server_types";
 
 interface SpotifySearchResult {
     tracks: {
@@ -14,6 +14,7 @@ interface SpotifySearchResult {
                     height: number;
                 }[];
             };
+            uri: string;
         }[]
     }
 };
@@ -28,6 +29,7 @@ interface TrackInfo {
     name: string;
     artists: string[];
     image: TrackImg;
+    track_uri: string;
 };
 
 export interface SpotifyResults_ServerMsg extends ServerMsg {
@@ -93,10 +95,34 @@ export class SpotifyManager {
             const info: TrackInfo = {
                 name: item.name,
                 artists: item.artists.map(artist => artist.name),
-                image: item.album.images[0]
+                image: item.album.images[0],
+                track_uri: item.uri
             };
             return info;
         });
+    }
+
+    async queue(track_uri: string) {
+        if (!this.isReady()) {
+            throw new Error('Attempt to add to queue using Spotify API without valid connection');
+        }
+
+        const params = new URLSearchParams({
+            uri: track_uri
+        });
+
+        const url = 'https://api.spotify.com/v1/me/player/queue?' + params.toString();
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + this.access_token
+            }
+        })
+
+        if (res.status !== 204) {
+            //console.error(await res.json());
+            throw new Error('Failed to add to queue with response code: ' + res.status);
+        }
     }
 
     private isReady(): boolean {
