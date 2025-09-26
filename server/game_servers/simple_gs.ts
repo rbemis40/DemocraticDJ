@@ -37,6 +37,7 @@ export class SimpleGameServer implements GameServer {
     private gameId: GameId;
     private curMode: GameMode;
     private spotifyManager: SpotifyManager;
+    private messageHandler: MessageHandler;
 
     constructor(port=8081) {
         this.spotifyManager = new SpotifyManager();
