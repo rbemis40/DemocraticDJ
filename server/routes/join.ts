@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { GameManager } from "../game_managers/gm_types";
-import { GameServer } from "../game_servers/server_types";
+import { GameServer } from "../game_server/server_types";
+import { TokenHandler } from "../handlers/token_handler";
 
 export function getJoinRouter(gm: GameManager): Router {
     const joinRouter = Router();
@@ -37,7 +38,10 @@ export function getJoinRouter(gm: GameManager): Router {
             return;
         }
         
-        const newUserToken = await gameServer.generateUserToken(gameIdInt, name);
+        const newUserToken = TokenHandler.generateToken({
+            isHost: false,
+            username: name
+        });
         const serverURLStr = (await gameServer.getServerURL()).toString();
 
         res.status(200).json({game_id: gameIdInt, user_token: newUserToken, server_url: serverURLStr});

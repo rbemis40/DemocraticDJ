@@ -1,31 +1,5 @@
-import { GameMode, GameModeName } from "../modes/game_mode";
+import { JSONSchemaType } from "ajv";
 import { GameId, UserToken } from "../shared_types";
-import { WebSocket } from "ws";
-
-/* Server types */
-export type ServerMsgType = 'user_list' | 'mode_change';
-export interface ServerMsg {
-    //type: ServerMsgType | ServerMsgVotingType;
-    type: string;
-}
-
-export interface UserList_ServerMsg extends ServerMsg {
-    type: 'user_list';
-    user_names: string[];
-}
-
-export interface ModeChange_ServerMsg extends ServerMsg {
-    type: 'mode_change';
-    game_mode: GameModeName;
-};
-
-/* Internal Message Types */
-export type InternalMsgType = string;
-export interface InternalMsg {
-    type: InternalMsgType 
-}
-
-/* Useful types */
 
 /*
     1. User starts on democraticdj.com
@@ -42,21 +16,26 @@ export interface InternalMsg {
 export interface GameServer {
     /* Initial setup of a new game */
     createGame(id: GameId, spotifyCode: string): Promise<boolean>;
-    generateHostToken(id: GameId): Promise<UserToken>;
-    generateUserToken(id: GameId, name: string): Promise<UserToken>;
 
     /* Methods for connecting new users */
     getServerURL(): Promise<URL>;
 }
 
-export type UserInfo = {
-    name?: string;
+/* Schema / msg types */
+export type JoinData = {
     token: UserToken;
-    isHost: boolean;
-    joined: boolean;
 };
 
-export type ConnectionMap = {
-    socketToToken: Map<WebSocket, UserToken>;
-    tokenToSocket: Map<UserToken, WebSocket>;
+export const joinDataSchema: JSONSchemaType<JoinData> = {
+    type: 'object',
+    properties: {
+        token: {type: 'string'}
+    },
+
+    required: ['token']
+};
+
+export type LeaveData = {};
+export const leaveDataSchema: JSONSchemaType<LeaveData> = {
+    type: 'object'
 };

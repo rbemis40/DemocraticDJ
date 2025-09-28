@@ -1,5 +1,3 @@
-import { ServerMsg } from "../game_servers/server_types";
-
 interface SpotifySearchResult {
     tracks: {
         items: {
@@ -30,11 +28,6 @@ interface TrackInfo {
     artists: string[];
     image: TrackImg;
     track_uri: string;
-};
-
-export interface SpotifyResults_ServerMsg extends ServerMsg {
-    type: 'spotify_results',
-    tracks: TrackInfo[]
 };
 
 export class SpotifyManager {

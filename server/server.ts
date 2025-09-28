@@ -6,8 +6,8 @@ import { GameManager } from './game_managers/gm_types';
 import { getJoinRouter } from './routes/join';
 import * as http from 'http';
 
-import { GameServer } from './game_servers/server_types';
-import { SimpleGameServer } from './game_servers/simple_gs';
+import { GameServer } from './game_server/server_types';
+import { SimpleGameServer } from './game_server/simple_gs';
 
 const app = express();
 const server = http.createServer(app)
