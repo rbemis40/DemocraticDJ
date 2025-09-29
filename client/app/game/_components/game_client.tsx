@@ -8,7 +8,7 @@ import HostVoting from "./_host/voting";
 import PlayerVoting from "./_player/voting";
 import { ServerMsgContext } from "./server_msg_provider";
 import useServerMsg from "../_hooks/server_msg_hook";
-import { ServerMsg } from "../_types/server_msg";
+import { ServerMsg, WelcomeData } from "../_types/server_msg";
 import SpotifySearch from "./spotify_search";
 
 interface GameInfoProps {
@@ -74,14 +74,20 @@ export default function GameClient(props: GameInfoProps) {
             console.log(`Websocket connection established to game server ${props.server_url}`);
             // Send the token to authenticate with the server
             ws.send(JSON.stringify({
-                type: 'user_join',
-                user_token: props.user_token
+                game_mode: 'unknown',
+                action: {
+                    name: 'player_join',
+                    data: {
+                        token: props.user_token 
+                    }
+                }
             }));
         });
 
         ws.addEventListener('message', (e) => {
-            const serverMsg = JSON.parse(e.data);
-            smTrigger(serverMsg.type, serverMsg);
+            const serverMsg: ServerMsg = JSON.parse(e.data);
+            console.log(serverMsg);
+            smTrigger(serverMsg.action.name, serverMsg);
         });
 
         ws.addEventListener('close', () => {
@@ -92,10 +98,12 @@ export default function GameClient(props: GameInfoProps) {
     }, [ws, router, smTrigger, props.server_url, props.user_token]);
 
     useServerMsg((serverMsg: ServerMsg) => {
-        switch (serverMsg.type) {
+        console.log(serverMsg);
+        switch (serverMsg.action.name) {
             case 'welcome':
+                const welcomeData = serverMsg.action.data as WelcomeData;
                 setGameMode(serverMsg.game_mode);
-                setIsHost(serverMsg.role === 'host');
+                setIsHost(welcomeData.role === 'host');
                 break;
             case 'mode_change':
                 setGameMode(serverMsg.game_mode);

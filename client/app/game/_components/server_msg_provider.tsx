@@ -4,8 +4,8 @@ import { ServerMsg } from "../_types/server_msg";
 
 export type ServerMsgHandler = (msgData: ServerMsg) => void;
 
-export type ServerMsgSubscribeFn = (type: string, callback: ServerMsgHandler) => void; 
-export type ServerMsgTriggerFn = (type: string, msgData: ServerMsg) => void;
+export type ServerMsgSubscribeFn = (actionName: string, callback: ServerMsgHandler) => void; 
+export type ServerMsgTriggerFn = (actionName: string, msgData: ServerMsg) => void;
 
 export type ServerMsgContextFns = [
     (ServerMsgTriggerFn),
@@ -24,27 +24,27 @@ interface ServerMsgProviderProps {
 }
 
 export default function ServerMsgProvider(props: ServerMsgProviderProps) {
-    /* Need to store a map from (event type) -> (list of msg handlers for this event) */
-    const typeToHandler = useRef(new Map<string, ServerMsgHandler[]>());
+    /* Need to store a map from (action name) -> (list of msg handlers for this event) */
+    const actionNameToHandler = useRef(new Map<string, ServerMsgHandler[]>());
 
-    function subscribe(type: string, callback: ServerMsgHandler) {
+    function subscribe(actionName: string, callback: ServerMsgHandler) {
         // Add this callback to the map
-        const handlerArr = typeToHandler.current.get(type) || [];
+        const handlerArr = actionNameToHandler.current.get(actionName) || [];
         handlerArr.push(callback);
-        typeToHandler.current.set(type, handlerArr);
+        actionNameToHandler.current.set(actionName, handlerArr);
     }
 
-    function unsubscribe(type: string, callback: ServerMsgHandler) {
-        if (!typeToHandler.current.has(type)) {
+    function unsubscribe(actionName: string, callback: ServerMsgHandler) {
+        if (!actionNameToHandler.current.has(actionName)) {
             return;
         }
 
-        const newHandlerArr = typeToHandler.current.get(type)!.filter((curCallback) => curCallback !== callback);
-        typeToHandler.current.set(type, newHandlerArr);
+        const newHandlerArr = actionNameToHandler.current.get(actionName)!.filter((curCallback) => curCallback !== callback);
+        actionNameToHandler.current.set(actionName, newHandlerArr);
     }
 
-    function trigger(type: string, msgData: ServerMsg) {
-        typeToHandler.current.get(type)?.forEach(callback => callback(msgData));
+    function trigger(actionName: string, msgData: ServerMsg) {
+        actionNameToHandler.current.get(actionName)?.forEach(callback => callback(msgData));
     }
 
     return (

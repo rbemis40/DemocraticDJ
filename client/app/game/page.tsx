@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
 import GameClient from "./_components/game_client";
-import SpotifySearch from "./_components/spotify_search";
 import ServerMsgProvider from "./_components/server_msg_provider";
 
 // This page must be a server component that reads the cookies in order to establish a connection to the game server (responsibility of GameClient)

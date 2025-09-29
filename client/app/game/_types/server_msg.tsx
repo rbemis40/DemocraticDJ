@@ -1,29 +1,31 @@
 import { SpotifySearchResult } from "./spotify_types";
 
-export type ServerMsg = 
-    WelcomeMsg
-    | ModeChangeMsg
-    | UserListMsg
-    | VoteCountMsg
-    | BeginCountdownMsg
-    | EndCountdownMsg
-    | SpotifyResultsMsg
+export type ServerMsg = {
+    game_mode: string,
+    action: {
+        name: string,
+        data: WelcomeData | UserListData | NewPlayerData
+    }
+};
 
-export interface WelcomeMsg {
-    type: 'welcome';
-    game_mode: string;
+export interface WelcomeData {
     role: string;
 };
+
+export interface UserListData {
+    user_list: string[];
+};
+
+export interface NewPlayerData {
+    username: string;
+};
+
+/* Begin deprecated types */
 
 export interface ModeChangeMsg {
     type: 'mode_change';
     game_mode: string;
 };  
-
-export interface UserListMsg {
-    type: 'user_list';
-    user_names: string[];
-};
 
 export interface VoteCountMsg {
     type: 'vote_count';

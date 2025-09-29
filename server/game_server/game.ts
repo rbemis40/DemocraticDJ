@@ -11,6 +11,7 @@ export class Game {
     constructor(id: GameId) {
         this.id = id;
         this.players = new Set();
+        this.mode = 'lobby';
     }
 
     addPlayer(player: User) {
@@ -23,5 +24,12 @@ export class Game {
 
     setMode(mode: Mode) {
         this.mode = mode;
+    }
+
+    getUserList(): string[] {
+        return Array.from(this.players).reduce((userList: string[], user) => {
+            if(user.username !== undefined) {userList.push(user.username);}
+            return userList;
+        }, [])
     }
 }

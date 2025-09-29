@@ -2,18 +2,23 @@ import { useState } from "react";
 import useServerMsg from "../../_hooks/server_msg_hook";
 import { UIProps } from "../../types";
 import useSendModeChanged from "../../_hooks/send_joined_mode";
-import { ServerMsg } from "../../_types/server_msg";
+import { NewPlayerData, ServerMsg, UserListData } from "../../_types/server_msg";
 
 export default function PlayerLobby(props: UIProps) {
     const [userList, setUserList] = useState<string[]>([]);
 
     useServerMsg((serverMsg: ServerMsg) => {
-        switch(serverMsg.type) {
+        switch(serverMsg.action.name) {
             case 'user_list':
-                setUserList(serverMsg.user_names);
+                const userListData = serverMsg.action.data as UserListData
+                setUserList(userListData.user_list);
+                break;
+            case 'new_player':
+                const newPlayerData = serverMsg.action.data as NewPlayerData;
+                setUserList(userList.concat([newPlayerData.username]));
                 break;
         }
-    }, ['user_list']);
+    }, ['user_list', 'new_player']);
 
     useSendModeChanged('lobby', props.sendMsg);
 

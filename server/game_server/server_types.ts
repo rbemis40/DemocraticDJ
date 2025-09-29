@@ -39,3 +39,29 @@ export type LeaveData = {};
 export const leaveDataSchema: JSONSchemaType<LeaveData> = {
     type: 'object'
 };
+
+
+export type UserListData = {
+    user_list: string[];
+};
+export const userListDataSchema: JSONSchemaType<UserListData> = {
+    type: 'object',
+    properties: {
+        user_list: {
+            type: 'array',
+            items: {type: 'string'}
+        }
+    },
+    required: ['user_list']
+}
+
+export type NewPlayerData = {
+    username: string;
+};
+export const newPlayerDataSchema: JSONSchemaType<NewPlayerData> = {
+    type: 'object',
+    properties: {
+        username: {type: 'string'}
+    },
+    required: ['username']
+};

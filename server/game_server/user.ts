@@ -7,6 +7,14 @@ export type InGameInfo = {
     isHost: boolean;
 };
 
+export type OutboundMsg<T extends object> = {
+    game_mode: string,
+    action: {
+        name: string,
+        data: T
+    }
+};
+
 export class User {
     username: string | undefined;
     isHost: boolean;
@@ -21,7 +29,7 @@ export class User {
         this.isHost = info.isHost;
     }
 
-    sendMsg(msg: object) {
+    sendMsg<T extends object>(msg: OutboundMsg<T>) {
         this.ws.send(JSON.stringify(msg));
     }
 }

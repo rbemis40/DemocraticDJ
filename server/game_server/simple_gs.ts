@@ -3,8 +3,9 @@ import { MessageHandler, Msg } from "../handlers/message_handler";
 import { TokenData, TokenHandler } from "../handlers/token_handler";
 import { GameId } from "../shared_types";
 import { Game } from "./game";
-import { GameServer, JoinData, joinDataSchema, LeaveData, leaveDataSchema } from "./server_types";
-import { InGameInfo, User } from "./user";
+import { GameServer, JoinData, joinDataSchema, LeaveData, leaveDataSchema, NewPlayerData } from "./server_types";
+import { InGameInfo, OutboundMsg, User } from "./user";
+import { addLobbyHandlers } from "../modes/lobby_mode";
 
 /*
     - A game server that simply runs on the same system as the HTTP server
@@ -38,6 +39,9 @@ export class SimpleGameServer implements GameServer {
         this.msgHandler.on('any', 'player_join', this.handlerUserJoin);
         this.msgHandler.on('any', 'player_leave', this.handleUserLeave);
 
+        // Add each mode's handlers
+        addLobbyHandlers(this.msgHandler);
+
         return true;
     }
 
@@ -49,7 +53,12 @@ export class SimpleGameServer implements GameServer {
         this.wss.on('connection', (ws, req) => {
             const user = new User(ws); // We have gotten a new connection, so create the new user
             ws.on('message', (data: RawData) => {
-                this.msgHandler.handle(data.toString(), user);
+                try {
+                    this.msgHandler.handle(data.toString(), user);
+                }
+                catch (e) {
+                    console.error(e);
+                }
             });
 
             ws.on('close', () => {
@@ -63,8 +72,44 @@ export class SimpleGameServer implements GameServer {
         try {
             const tokenData: TokenData = TokenHandler.exchangeToken(joinData.token);
             user.setInGameInfo(tokenData as InGameInfo);
-            game.addPlayer(user); // Add the player to the game
+            
+            if (user.isHost) {
+                console.log('Added host!');
+            }
+            else {
+                console.log(`Added player '${user.username}'`);
+            }
+            
+            // Send a welcome message to the new user, informing them of the current game mode
+            const welcomeMsg = {
+                game_mode: game.mode,
+                action: {
+                    name: 'welcome',
+                    data: {
+                        role: user.isHost ? 'host' : 'player'
+                    }
+                }
+            };
 
+            user.sendMsg(welcomeMsg);
+
+            if (!tokenData.isHost) { // Inform all other users that a new player has joined, unless it's the host
+                const newPlayerMsg: OutboundMsg<NewPlayerData> = {
+                    game_mode: game.mode,
+                    action: {
+                        name: 'new_player',
+                        data: {
+                            username: tokenData.username
+                        }
+                    }
+                }
+
+                game.players.forEach(player => {
+                    player.sendMsg(newPlayerMsg);
+                });
+            }
+            
+            game.addPlayer(user); // Add the player to the game
         } catch (e) {
             console.error(e);
         }

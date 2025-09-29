@@ -69,6 +69,10 @@ export class MessageHandler {
      * @param schema - The schema that will be used to validate action data before calling handlers
      */
     defineAction<T>(mode: string, actionName: string, schema: JSONSchemaType<T>) {
+        if (this.actionHandlers[mode] === undefined) {
+            this.actionHandlers[mode] = {};
+        }
+
         this.actionHandlers[mode][actionName] = {
             validator: ajv.compile(schema),
             handlers: []
@@ -104,11 +108,11 @@ export class MessageHandler {
     handle(msgStr: string, user: User) {
         const msgObj = JSON.parse(msgStr);
         if (!validateMsg(msgObj)) {
-            throw new SyntaxError('Parsed msgStr is not a valid msg');
+            throw new SyntaxError(`Parsed msgStr is not a valid msg: ${msgStr}`);
         }
 
-        // Ensure the client is synchronized with the current game mode before passing it to handlers
-        if(msgObj.game_mode !== this.game.mode) {
+        // Ensure the client is synchronized with the current game mode before passing it to handlers, or it has an unknown type
+        if(msgObj.game_mode !== 'unknown' && msgObj.game_mode !== this.game.mode) {
             throw new Error(`Client msg contained game mode ${msgObj.game_mode}, but game is in mode ${this.game.mode}`);
         }
 
@@ -123,12 +127,14 @@ export class MessageHandler {
             handlerGroups.push(this.actionHandlers['any'][msgObj.action.name]);
         }
 
-        // Check if there are handlers for that specific mode
-        if (msgObj.game_mode in this.actionHandlers && msgObj.action.name in this.actionHandlers[msgObj.game_mode]) {
-            handlerGroups.push(this.actionHandlers[msgObj.game_mode][msgObj.action.name]);
+        // Check if there are handlers for that specific mode - only possible if the client did not specify unknown
+        if (msgObj.game_mode !== 'unknown') {
+            if (msgObj.game_mode in this.actionHandlers && msgObj.action.name in this.actionHandlers[msgObj.game_mode]) {
+                handlerGroups.push(this.actionHandlers[msgObj.game_mode][msgObj.action.name]);
+            }
         }
 
-        // If there are no handlers, log that because it means the client sent an unknown message, and return
+        // If there are no handlers, log that because it means the client sent an action, then return
         if (handlerGroups.length === 0) {
             console.log(`No handlers registered to handle clinet msg ${msgStr}`);
             return;

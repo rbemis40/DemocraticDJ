@@ -19,7 +19,7 @@ export type TokenData = HostTokenData | UserTokenData;
  * @static
  */
 export class TokenHandler { 
-    private static unclaimedTokens:  Map<UserToken, TokenData>;
+    private static unclaimedTokens: Map<UserToken, TokenData> = new Map();
     static tokenLen: number = 36;
 
     /**
