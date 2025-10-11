@@ -1,8 +1,8 @@
-import { JSONSchemaType } from "ajv";
 import { GameMode, GameModeAction } from "../game_mode";
 import * as LobbyActions from "./lobby_actions";
 import { User } from "../../game_server/user";
 import { Action } from "../../game_server/action";
+import { PlayerList } from "../../game_server/player_list";
 
 export class LobbyMode extends GameMode {
     constructor() {
@@ -15,12 +15,21 @@ export class LobbyMode extends GameMode {
         ]
     }
 
-    override handleAction(action: Action<object>, sendingPlayer: User, allPlayers: Set<User>): GameMode {
+    override handleAction(action: Action<object>, sendingPlayer: User, allPlayers: PlayerList): GameMode {
         switch (action.name) {
             case 'request_start':
                 return this;
             default:
                 return this;
+        }
+    }
+
+    override getNewJoinAction(newPlayer: User, allPlayers: PlayerList): Action<object> {
+        return {
+            name: 'user_list',
+            data: {
+                user_list: allPlayers.getUsernames()
+            }
         }
     }
 }

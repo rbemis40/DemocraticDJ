@@ -101,9 +101,7 @@ export class SimpleGameServer implements GameServer {
                     }
                 }
 
-                this.game.players.forEach(player => {
-                    player.sendMsg(newPlayerMsg);
-                });
+                this.game.getPlayerList().broadcast(newPlayerMsg);
             }
             
             this.game.addPlayer(user); // Add the player to the game

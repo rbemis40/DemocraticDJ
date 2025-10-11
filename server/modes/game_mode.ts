@@ -1,6 +1,7 @@
 import { JSONSchemaType, SchemaObject } from "ajv";
 import { User } from "../game_server/user";
 import { Action } from "../game_server/action";
+import { PlayerList } from "../game_server/player_list";
 
 export type GameModeAction<T extends object> = {
     name: string,
@@ -31,5 +32,13 @@ export abstract class GameMode {
      * @param allPlayers - The current players in the game
      * @returns The new game mode the game should transition to, or the same game mode otherwise
      */
-    abstract handleAction(action: Action<object>, sendingPlayer: User, allPlayers: Set<User>): GameMode;
+    abstract handleAction(action: Action<object>, sendingPlayer: User, allPlayers: PlayerList): GameMode;
+
+    /**
+     * Called when a user first joins this mode, this returns an action to initialize client state
+     * @param newPlayer - The player who has just joined the mode
+     * @param allPlayers - The player list of current players
+     * @returns Action that a user will use to synchronize their state
+     */
+    abstract getNewJoinAction(newPlayer: User, allPlayers: PlayerList): Action<object>;
 }
