@@ -2,7 +2,8 @@
   "scripts": {
     "start": "node --env-file=.env build/server",
     "build": "tsc",
-    "restart": "npm run build && npm run start"
+    "restart": "npm run build && npm run start",
+    "clean": "rm -r build/"
   },
   "dependencies": {
     "@types/express": "^5.0.3",

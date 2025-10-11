@@ -5,7 +5,6 @@ import { GameId } from "../shared_types";
 import { Game } from "./game";
 import { GameServer, JoinData, joinDataSchema, LeaveData, leaveDataSchema, NewPlayerData } from "./server_types";
 import { InGameInfo, OutboundMsg, User } from "./user";
-import { addLobbyHandlers } from "../modes/lobby_mode";
 
 /*
     - A game server that simply runs on the same system as the HTTP server
@@ -30,17 +29,15 @@ export class SimpleGameServer implements GameServer {
             return false;
         }
 
-        this.game = new Game(id);
-        this.msgHandler = new MessageHandler(this.game);
+        this.msgHandler = new MessageHandler();
+        this.game = new Game(id, this.msgHandler);
 
-        this.msgHandler.defineAction('any', 'player_join', joinDataSchema);
-        this.msgHandler.defineAction('any', 'player_leave', leaveDataSchema);
+        this.msgHandler.defineAction('player_join', joinDataSchema);
+        this.msgHandler.defineAction('player_leave', leaveDataSchema);
 
-        this.msgHandler.on('any', 'player_join', this.handlerUserJoin);
-        this.msgHandler.on('any', 'player_leave', this.handleUserLeave);
-
-        // Add each mode's handlers
-        addLobbyHandlers(this.msgHandler);
+        // The arrow functions are necessary to preserve "this" binding
+        this.msgHandler.on('player_join', (joinMsg: Msg<JoinData>, user) => this.handleUserJoin(joinMsg, user));
+        this.msgHandler.on('player_leave', (joinMsg: Msg<LeaveData>, user) => this.handleUserLeave(joinMsg, user));
 
         return true;
     }
@@ -67,7 +64,7 @@ export class SimpleGameServer implements GameServer {
         });
     }
 
-    private handlerUserJoin(joinMsg: Msg<JoinData>, user: User, game: Game) {
+    private handleUserJoin(joinMsg: Msg<JoinData>, user: User) {
         const joinData = joinMsg.action.data;
         try {
             const tokenData: TokenData = TokenHandler.exchangeToken(joinData.token);
@@ -82,7 +79,7 @@ export class SimpleGameServer implements GameServer {
             
             // Send a welcome message to the new user, informing them of the current game mode
             const welcomeMsg = {
-                game_mode: game.mode,
+                game_mode: this.game.mode.getName(),
                 action: {
                     name: 'welcome',
                     data: {
@@ -95,7 +92,7 @@ export class SimpleGameServer implements GameServer {
 
             if (!tokenData.isHost) { // Inform all other users that a new player has joined, unless it's the host
                 const newPlayerMsg: OutboundMsg<NewPlayerData> = {
-                    game_mode: game.mode,
+                    game_mode: this.game.mode.getName(),
                     action: {
                         name: 'new_player',
                         data: {
@@ -104,18 +101,18 @@ export class SimpleGameServer implements GameServer {
                     }
                 }
 
-                game.players.forEach(player => {
+                this.game.players.forEach(player => {
                     player.sendMsg(newPlayerMsg);
                 });
             }
             
-            game.addPlayer(user); // Add the player to the game
+            this.game.addPlayer(user); // Add the player to the game
         } catch (e) {
             console.error(e);
         }
     }
 
-    private handleUserLeave(leaveMsg: Msg<LeaveData>, user: User, game: Game) {
-        game.removePlayer(user);
+    private handleUserLeave(leaveMsg: Msg<LeaveData>, user: User) {
+        this.game.removePlayer(user);
     }
 }

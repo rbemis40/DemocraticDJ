@@ -1,21 +1,7 @@
 import Ajv, { JSONSchemaType, ValidateFunction } from 'ajv';
 import { User } from '../game_server/user';
+import { Action, actionSchema } from '../game_server/action';
 const ajv = new Ajv();
-
-type Action<T extends object> = {
-    name: string,
-    data: T
-};
-
-const actionSchema: JSONSchemaType<Action<object>> = {
-    type: 'object',
-    properties: {
-        name: {type: 'string'},
-        data: {type: 'object'}
-    },
-    required: ['name', 'data'],
-    additionalProperties: false
-};
 
 export type Msg<T extends object> = {
     game_mode: string, // The mode the game must be in for this action
@@ -87,16 +73,12 @@ export class MessageHandler {
      * @param actionName - The action to trigger on
      * @param handler - The handler to be run when all of the conditions are met
      */
-    on<T extends object>(mode: string, actionName: string, handler: Handler<T>) {
-        if (!(mode in this.actionHandlers)) {
-            throw new Error(`Invalid attempt to add message handler to unknown server mode': ${mode}`);
-        }
-
-        if (!(actionName in this.actionHandlers[mode])) {
+    on<T extends object>(actionName: string, handler: Handler<T>) {
+        if (!(actionName in this.actionHandlers)) {
             throw new Error(`Invalid attempt to add message handler to unknown action: ${actionName}`);
         }
 
-        this.actionHandlers[mode][actionName].handlers.push(handler);
+        this.actionHandlers[actionName].handlers.push(handler);
     }
     
     /**
@@ -113,8 +95,12 @@ export class MessageHandler {
             throw new SyntaxError(`Parsed msgStr is not a valid msg: ${msgStr}`);
         }
 
+        if (this.actionHandlers[msgObj.action.name] === undefined) {
+            throw new SyntaxError(`Invalid action name "${msgObj.action.name}"`);
+        }
+
         const actionHandlerInfo = this.actionHandlers[msgObj.action.name];
-        
+
         // Make sure the action data is valid according to the specified action schema
         if (!actionHandlerInfo.validator(msgObj.action.data)) {
             throw new SyntaxError(`Invalid action data for mode '${msgObj.game_mode}' and action ${msgObj.action}`);
