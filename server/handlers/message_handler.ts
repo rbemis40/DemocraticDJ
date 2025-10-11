@@ -1,6 +1,5 @@
 import Ajv, { JSONSchemaType, ValidateFunction } from 'ajv';
 import { User } from '../game_server/user';
-import { Game } from '../game_server/game';
 const ajv = new Ajv();
 
 type Action<T extends object> = {
@@ -32,7 +31,7 @@ const msgSchema: JSONSchemaType<Msg<object>> = {
     required: ['game_mode', 'action']
 };
 
-const validateMsg = ajv.compile(msgSchema);
+const validateMsg = ajv.compile(msgSchema); // Used to validate Msgs
 
 type HandlerInfo<T extends Object> = {
     validator: ValidateFunction
@@ -40,43 +39,46 @@ type HandlerInfo<T extends Object> = {
 }
 
 type ActionHandlers<T extends object> = {
-    [server_mode: string]: {
-        [actionName: string]: HandlerInfo<T>
-    }
+    [actionName: string]: HandlerInfo<T>
 };
 
-type Handler<T extends object> = (msg: Msg<T>, user: User, game: Game) => void;
+type Handler<T extends object> = (msg: Msg<T>, user: User) => void;
 
 /**
  * Provides an interface to process incoming client messages, validate their structure, and pass to appropriate handlers
  * @static
  */
 export class MessageHandler {
-    private actionHandlers: ActionHandlers<object> = {
-        any: {} // A default target that can be used to catch any message regardless of game mode
-    };
-    private game: Game;
+    private actionHandlers: ActionHandlers<object>;
 
-    constructor(game: Game) {
-        this.game = game;
+    constructor() {
+        this.actionHandlers = {}
     }
 
     /**
-     * Create a new mode/action pair that handlers can be registered on. Each action that matches these
-     * must also have a valid action data according to the provided schema
-     * @param mode - The server mode that handlers expect
+     * Define a new action and schema
      * @param actionName - The action name that handlers expect
      * @param schema - The schema that will be used to validate action data before calling handlers
      */
-    defineAction<T>(mode: string, actionName: string, schema: JSONSchemaType<T>) {
-        if (this.actionHandlers[mode] === undefined) {
-            this.actionHandlers[mode] = {};
-        }
-
-        this.actionHandlers[mode][actionName] = {
+    defineAction<T>(actionName: string, schema: JSONSchemaType<T>) {
+        this.actionHandlers[actionName] = {
             validator: ajv.compile(schema),
             handlers: []
         };
+    }
+
+    /**
+     * Deletes an action and the corresponding handlers
+     * @param actionName - The name of the action to delete
+     * @returns - True if the action existed, false otherwise
+     */
+    deleteAction(actionName: string): boolean {
+        if (this.actionHandlers[actionName] === undefined) {
+            return false;
+        }
+
+        delete this.actionHandlers[actionName];
+        return true;
     }
 
     /**
@@ -102,54 +104,29 @@ export class MessageHandler {
      * pass it to each of the registered handlers for that server mode/action
      * @param msgStr The message text sent by the client
      * @param user The associated user who sent the message
+     * @returns True if there was a handler for the action, false if there was no handler
      * @throws (SyntaxError) If msgStr is not a valid message object, or if the action data schema is invalid for the given action
-     * @throws (Error) If the msg game mode does not match the current mode
      */
-    handle(msgStr: string, user: User) {
+    handle(msgStr: string, user: User): boolean {
         const msgObj = JSON.parse(msgStr);
         if (!validateMsg(msgObj)) {
             throw new SyntaxError(`Parsed msgStr is not a valid msg: ${msgStr}`);
         }
 
-        // Ensure the client is synchronized with the current game mode before passing it to handlers, or it has an unknown type
-        if(msgObj.game_mode !== 'unknown' && msgObj.game_mode !== this.game.mode) {
-            throw new Error(`Client msg contained game mode ${msgObj.game_mode}, but game is in mode ${this.game.mode}`);
-        }
-
-        // Find any handlers that can handle this message
-        // This is either handlers that exactly match mode/action name,
-        // but also handlers that are part of any/action name
-
-        const handlerGroups: HandlerInfo<object>[] = [];
+        const actionHandlerInfo = this.actionHandlers[msgObj.action.name];
         
-        // Check 'any' first
-        if (msgObj.action.name in this.actionHandlers['any']) {
-            handlerGroups.push(this.actionHandlers['any'][msgObj.action.name]);
+        // Make sure the action data is valid according to the specified action schema
+        if (!actionHandlerInfo.validator(msgObj.action.data)) {
+            throw new SyntaxError(`Invalid action data for mode '${msgObj.game_mode}' and action ${msgObj.action}`);
         }
 
-        // Check if there are handlers for that specific mode - only possible if the client did not specify unknown
-        if (msgObj.game_mode !== 'unknown') {
-            if (msgObj.game_mode in this.actionHandlers && msgObj.action.name in this.actionHandlers[msgObj.game_mode]) {
-                handlerGroups.push(this.actionHandlers[msgObj.game_mode][msgObj.action.name]);
-            }
+        if (actionHandlerInfo.handlers.length === 0) {
+            return false;
         }
 
-        // If there are no handlers, log that because it means the client sent an action, then return
-        if (handlerGroups.length === 0) {
-            console.log(`No handlers registered to handle clinet msg ${msgStr}`);
-            return;
-        }
-
-        // Now validate and run the handlers for each group of handlers
-        handlerGroups.forEach(actionHandlerInfo => {
-            // Make sure the action data is valid according to the specified action schema
-            if (!actionHandlerInfo.validator(msgObj.action.data)) {
-                throw new SyntaxError(`Invalid action data for mode '${msgObj.game_mode}' and action ${msgObj.action}`);
-            }
-
-            // If it is all valid, pass it to the appropriate handlers
-            actionHandlerInfo.handlers.forEach(handler => handler(msgObj, user, this.game));
-        });
+        // If it is valid, pass it to the appropriate handlers
+        actionHandlerInfo.handlers.forEach(handler => handler(msgObj, user));
+        return true;
     }
 }
 
