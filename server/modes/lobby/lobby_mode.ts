@@ -15,21 +15,21 @@ export class LobbyMode extends GameMode {
         ]
     }
 
-    override handleAction(action: Action<object>, sendingPlayer: User, allPlayers: PlayerList): GameMode {
-        switch (action.name) {
-            case 'request_start':
-                return this;
-            default:
-                return this;
-        }
-    }
-
     override getNewJoinAction(newPlayer: User, allPlayers: PlayerList): Action<object> {
         return {
             name: 'user_list',
             data: {
                 user_list: allPlayers.getUsernames()
             }
+        }
+    }
+
+    override handleAction(action: Action<object>, sendingPlayer: User, allPlayers: PlayerList): GameMode {
+        switch (action.name) {
+            case 'request_start':
+                return this;
+            default:
+                return this;
         }
     }
 }

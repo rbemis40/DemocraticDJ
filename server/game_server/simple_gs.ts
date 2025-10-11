@@ -2,7 +2,7 @@ import { RawData, WebSocketServer } from "ws";
 import { MessageHandler, Msg } from "../handlers/message_handler";
 import { TokenData, TokenHandler } from "../handlers/token_handler";
 import { GameId } from "../shared_types";
-import { Game } from "./game";
+import { Game } from "./game/game";
 import { GameServer, JoinData, joinDataSchema, LeaveData, leaveDataSchema, NewPlayerData } from "./server_types";
 import { InGameInfo, OutboundMsg, User } from "./user";
 
