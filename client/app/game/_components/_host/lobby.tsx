@@ -29,8 +29,13 @@ export default function HostLobby(props: HostLobbyProps) {
 
     function removeUser(name: string) {
         props.sendMsg(JSON.stringify({
-            type: 'remove_user',
-            user_name: name
+            game_mode: 'lobby',
+            action: {
+                name: 'remove_player',
+                data: {
+                    username: name
+                }
+            }
         }));
     }
 

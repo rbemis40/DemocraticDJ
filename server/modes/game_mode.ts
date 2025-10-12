@@ -1,9 +1,9 @@
-import { JSONSchemaType, SchemaObject } from "ajv";
+import { JSONSchemaType, Schema, SchemaObject } from "ajv";
 import { User } from "../game_server/user";
 import { Action } from "../game_server/action";
 import { PlayerList } from "../game_server/player_list";
 
-export type GameModeAction<T extends object> = {
+export type GameModeAction<T> = {
     name: string,
     schema: JSONSchemaType<T>
 };
