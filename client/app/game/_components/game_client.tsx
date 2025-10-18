@@ -74,12 +74,9 @@ export default function GameClient(props: GameInfoProps) {
             console.log(`Websocket connection established to game server ${props.server_url}`);
             // Send the token to authenticate with the server
             ws.send(JSON.stringify({
-                game_mode: 'unknown',
-                action: {
-                    name: 'player_join',
-                    data: {
-                        token: props.user_token 
-                    }
+                action: 'player_join',
+                data: {
+                    token: props.user_token 
                 }
             }));
         });

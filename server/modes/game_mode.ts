@@ -1,8 +1,7 @@
-import Ajv, { JSONSchemaType } from "ajv";
 import { User } from "../game_server/user";
 import { Action } from "../game_server/action";
 import { PlayerList } from "../game_server/player_list";
-import { Validator, ValidatorPair } from "../handlers/validator";
+import { Validator } from "../handlers/validator";
 
 export type PlayerData = {
     sender: User,

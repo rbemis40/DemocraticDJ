@@ -33,6 +33,8 @@ export class Game {
     }
 
     handleAction(action: Action<object>, sender: User) {
+        console.log("Handling action:");
+        console.log(action);
         this.mode.handleAction(action, sender, this.getPlayerList());
     }
 }

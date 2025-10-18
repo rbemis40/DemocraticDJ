@@ -15,6 +15,7 @@ export class Validator<ReturnType, ContextType> {
     private pairs: CompiledPair<unknown, ContextType, ReturnType>[];
     constructor() {
         this.ajv = new Ajv();
+        this.pairs = []
     }
 
     addPair<SchemaType>(pair: ValidatorPair<SchemaType, ContextType, ReturnType>) {

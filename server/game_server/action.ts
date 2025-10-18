@@ -1,7 +1,7 @@
 import { JSONSchemaType } from "ajv";
 
 export type Action<T extends object> = {
-    name: string,
+    action: string,
     data: T
 };
 
@@ -9,19 +9,19 @@ export function buildActionSchema<T extends object>(name: string, dataSchema: JS
     return {
         type: "object",
         properties: {
-            name: {type: "string"},
+            action: {type: "string"},
             data: dataSchema
         },
-        required: ["name", "data"],
+        required: ["action", "data"],
     } as JSONSchemaType<Action<T>>;
 }
 
 export const actionSchema: JSONSchemaType<Action<object>> = {
     type: 'object',
     properties: {
-        name: {type: 'string'},
+        action: {type: 'string'},
         data: {type: 'object'}
     },
-    required: ['name', 'data'],
+    required: ['action', 'data'],
     additionalProperties: false
 };

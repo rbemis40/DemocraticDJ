@@ -3,6 +3,7 @@ import schemas, { JoinedModeData, RemoveUserData } from "./lobby_schemas";
 import { User } from "../../game_server/user";
 import { Action } from "../../game_server/action";
 import { PlayerList } from "../../game_server/player_list";
+import { typeSafeBind } from "../../utils";
 
 export class LobbyMode extends GameMode {
     constructor() {
@@ -11,18 +12,18 @@ export class LobbyMode extends GameMode {
         // Add all actions that the lobby can handle
         this.validator.addPair({
             schema: schemas.joined_mode,
-            handler: this.handlerJoinedMode
+            handler: typeSafeBind(this.handlerJoinedMode, this)
         });
 
         this.validator.addPair({
             schema: schemas.remove_user,
-            handler: this.handleRemoveUser
+            handler: typeSafeBind(this.handleRemoveUser, this)
         });
     }
 
     getNewJoinAction(newPlayer: User, allPlayers: PlayerList): Action<object> {
         return {
-            name: 'user_list',
+            action: 'user_list',
             data: {
                 user_list: allPlayers.getUsernames()
             }

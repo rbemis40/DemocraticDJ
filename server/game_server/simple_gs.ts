@@ -6,6 +6,7 @@ import { GameServer, JoinData, joinDataSchema, LeaveData, leaveDataSchema, NewPl
 import { InGameInfo, OutboundMsg, User } from "./user";
 import { Validator } from "../handlers/validator";
 import { Action, actionSchema, buildActionSchema } from "./action";
+import { typeSafeBind } from "../utils";
 
 /*
     - A game server that simply runs on the same system as the HTTP server
@@ -36,18 +37,18 @@ export class SimpleGameServer implements GameServer {
         this.validator = new Validator<void, User>();
         this.validator.addPair({
             schema: buildActionSchema("player_join", joinDataSchema),
-            handler: this.handleUserJoin
+            handler: typeSafeBind(this.handleUserJoin, this)
         });
 
         this.validator.addPair({
             schema: buildActionSchema("player_left", leaveDataSchema),
-            handler: this.handleUserLeave
+            handler: typeSafeBind(this.handleUserLeave, this)
         });
 
         // If the user sent an Action, pass it to the game to handle
         this.validator.addPair({
             schema: actionSchema,
-            handler: this.game.handleAction
+            handler: typeSafeBind(this.game.handleAction, this.game)
         });
 
         return true;
@@ -62,7 +63,9 @@ export class SimpleGameServer implements GameServer {
             const user = new User(ws); // We have gotten a new connection, so create the new user
             ws.on('message', (data: RawData) => {
                 try {
-                    const msgObj = JSON.parse(data.toString())
+                    const msgObj = JSON.parse(data.toString());
+
+                    console.log(msgObj);
 
                     // Pass the message to any game server handlers
                     this.validator.validateAndHandle(msgObj, user);
