@@ -1,23 +1,26 @@
-import { GameMode, GameModeAction } from "../game_mode";
-import * as LobbyActions from "./lobby_actions";
+import { GameMode, PlayerData } from "../game_mode";
+import schemas, { JoinedModeData, RemoveUserData } from "./lobby_schemas";
 import { User } from "../../game_server/user";
 import { Action } from "../../game_server/action";
 import { PlayerList } from "../../game_server/player_list";
-import Ajv from "ajv";
 
 export class LobbyMode extends GameMode {
     constructor() {
         super('lobby');
+
+        // Add all actions that the lobby can handle
+        this.validator.addPair({
+            schema: schemas.joined_mode,
+            handler: this.handlerJoinedMode
+        });
+
+        this.validator.addPair({
+            schema: schemas.remove_user,
+            handler: this.handleRemoveUser
+        });
     }
 
-    override getActions<T>(): GameModeAction<T>[] {
-        return [
-            LobbyActions.requestStartAction,
-            LobbyActions.removePlayerAction
-        ]
-    }
-
-    override getNewJoinAction(newPlayer: User, allPlayers: PlayerList): Action<object> {
+    getNewJoinAction(newPlayer: User, allPlayers: PlayerList): Action<object> {
         return {
             name: 'user_list',
             data: {
@@ -26,12 +29,13 @@ export class LobbyMode extends GameMode {
         }
     }
 
-    override handleAction(action: Action<object>, sendingPlayer: User, allPlayers: PlayerList): GameMode {
-        switch (action.name) {
-            case 'request_start':
-                return this;
-            default:
-                return this;
-        }
+    private handlerJoinedMode(data: JoinedModeData, context: PlayerData): GameMode {
+        console.log("Lobby joined mode!!");
+        return this;
+    }
+
+    private handleRemoveUser(data: RemoveUserData, context: PlayerData): GameMode {
+        console.log("Lobby remove user!!");
+        return this;
     }
 }

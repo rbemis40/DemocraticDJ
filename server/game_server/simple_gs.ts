@@ -1,10 +1,11 @@
 import { RawData, WebSocketServer } from "ws";
-import { MessageHandler, Msg } from "../handlers/message_handler";
 import { TokenData, TokenHandler } from "../handlers/token_handler";
 import { GameId } from "../shared_types";
 import { Game } from "./game/game";
 import { GameServer, JoinData, joinDataSchema, LeaveData, leaveDataSchema, NewPlayerData } from "./server_types";
 import { InGameInfo, OutboundMsg, User } from "./user";
+import { Validator } from "../handlers/validator";
+import { Action, actionSchema, buildActionSchema } from "./action";
 
 /*
     - A game server that simply runs on the same system as the HTTP server
@@ -14,7 +15,7 @@ export class SimpleGameServer implements GameServer {
     private wss: WebSocketServer;
     private url: URL;
     private game: Game;
-    private msgHandler: MessageHandler;
+    private validator: Validator<void, User>;
 
     constructor(port=8081) {
         this.wss = new WebSocketServer({port: port}, () => console.log(`Game serving running on port ${port}`));
@@ -29,15 +30,25 @@ export class SimpleGameServer implements GameServer {
             return false;
         }
 
-        this.msgHandler = new MessageHandler();
-        this.game = new Game(id, this.msgHandler);
+        this.game = new Game(id);
 
-        this.msgHandler.defineAction('player_join', joinDataSchema);
-        this.msgHandler.defineAction('player_leave', leaveDataSchema);
+        // Setup the actions that the game server itself handles
+        this.validator = new Validator<void, User>();
+        this.validator.addPair({
+            schema: buildActionSchema("player_join", joinDataSchema),
+            handler: this.handleUserJoin
+        });
 
-        // The arrow functions are necessary to preserve "this" binding
-        this.msgHandler.on('player_join', (joinMsg: Msg<JoinData>, user) => this.handleUserJoin(joinMsg, user));
-        this.msgHandler.on('player_leave', (joinMsg: Msg<LeaveData>, user) => this.handleUserLeave(joinMsg, user));
+        this.validator.addPair({
+            schema: buildActionSchema("player_left", leaveDataSchema),
+            handler: this.handleUserLeave
+        });
+
+        // If the user sent an Action, pass it to the game to handle
+        this.validator.addPair({
+            schema: actionSchema,
+            handler: this.game.handleAction
+        });
 
         return true;
     }
@@ -51,7 +62,10 @@ export class SimpleGameServer implements GameServer {
             const user = new User(ws); // We have gotten a new connection, so create the new user
             ws.on('message', (data: RawData) => {
                 try {
-                    this.msgHandler.handle(data.toString(), user);
+                    const msgObj = JSON.parse(data.toString())
+
+                    // Pass the message to any game server handlers
+                    this.validator.validateAndHandle(msgObj, user);
                 }
                 catch (e) {
                     console.error(e);
@@ -64,8 +78,8 @@ export class SimpleGameServer implements GameServer {
         });
     }
 
-    private handleUserJoin(joinMsg: Msg<JoinData>, user: User) {
-        const joinData = joinMsg.action.data;
+    private handleUserJoin(joinAction: Action<JoinData>, user: User) {
+        const joinData: JoinData = joinAction.data;
         try {
             const tokenData: TokenData = TokenHandler.exchangeToken(joinData.token);
             user.setInGameInfo(tokenData as InGameInfo);
@@ -110,7 +124,7 @@ export class SimpleGameServer implements GameServer {
         }
     }
 
-    private handleUserLeave(leaveMsg: Msg<LeaveData>, user: User) {
+    private handleUserLeave(leaveAction: Action<LeaveData>, user: User) {
         this.game.removePlayer(user);
     }
 }

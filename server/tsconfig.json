@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
         "outDir": "./build/",
-        "strictNullChecks": true
+        "strictNullChecks": true,
+        "noImplicitAny": true
     },
 }
