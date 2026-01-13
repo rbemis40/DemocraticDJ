@@ -19,7 +19,7 @@ export class SimpleGameServer implements GameServer {
     private validator: Validator<void, User>;
 
     constructor(port=8081) {
-        this.wss = new WebSocketServer({port: port}, () => console.log(`Game serving running on port ${port}`));
+        this.wss = new WebSocketServer({port: port}, () => console.log(`Game server running on port ${port}`));
         this.url = new URL(`ws://${process.env.HOST_NAME}:8081`);        
 
         this.setupServerHandler();
