@@ -105,29 +105,27 @@ export class SimpleGameServer implements GameServer {
                 }
             };
 
+            this.game.addPlayer(user); // Add the player to the game
             user.sendMsg(welcomeMsg);
 
-            if (!tokenData.isHost) { // Inform all other users that a new player has joined, unless it's the host
-                const newPlayerMsg: OutboundMsg<NewPlayerData> = {
-                    game_mode: this.game.mode.getName(),
-                    action: {
-                        name: 'new_player',
-                        data: {
-                            username: tokenData.username
-                        }
-                    }
-                }
-
-                this.game.getPlayerList().broadcast(newPlayerMsg);
-            }
-            
-            this.game.addPlayer(user); // Add the player to the game
+            // if (!tokenData.isHost) { // Inform all other users that a new player has joined, unless it's the host
+            //     const newPlayerMsg: OutboundMsg<NewPlayerData> = {
+            //         game_mode: this.game.mode.getName(),
+            //         action: {
+            //             name: 'new_player',
+            //             data: {
+            //                 username: tokenData.username
+            //             }
+            //         }
+            //     }
+            // }
         } catch (e) {
             console.error(e);
         }
     }
 
     private handleUserLeave(leaveAction: Action<LeaveData>, user: User) {
+        console.log(`SimpleGameServer.handleUserLeave: Removing player ${user.username}`);
         this.game.removePlayer(user);
     }
 }

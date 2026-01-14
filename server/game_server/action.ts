@@ -9,7 +9,10 @@ export function buildActionSchema<T extends object>(name: string, dataSchema: JS
     return {
         type: "object",
         properties: {
-            action: {type: "string"},
+            action: {
+                type: "string",
+                const: name
+            },
             data: dataSchema
         },
         required: ["action", "data"],

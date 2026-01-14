@@ -12,7 +12,7 @@ export class LobbyMode extends GameMode {
         // Add all actions that the lobby can handle
         this.validator.addPair({
             schema: schemas.joined_mode,
-            handler: typeSafeBind(this.handlerJoinedMode, this)
+            handler: typeSafeBind(this.handleJoinedMode, this)
         });
 
         this.validator.addPair({
@@ -30,8 +30,10 @@ export class LobbyMode extends GameMode {
         }
     }
 
-    private handlerJoinedMode(data: JoinedModeData, context: PlayerData): GameMode {
+    private handleJoinedMode(data: JoinedModeData, context: PlayerData): GameMode {
+        /* A user joined the lobby, so send them the list of active players */
         console.log("Lobby joined mode!!");
+        console.log(context.all.getUsernames());
         return this;
     }
 
