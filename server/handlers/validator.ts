@@ -26,6 +26,8 @@ export class Validator<ReturnType, ContextType> {
     }
 
     validateAndHandle(data: unknown, context: ContextType): ReturnType | null {
+        //console.log(`Validator.validateAndHandle: `);
+        //console.log(data);
         this.pairs.forEach(pair => { 
             if(pair.validate(data)) {
                 return pair.handler(data, context);

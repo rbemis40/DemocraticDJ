@@ -3,11 +3,8 @@ import { SendFn } from "../types";
 
 export default function useSendJoinedMode(mode: string, sendMsg: SendFn) {
     const modeChangedMsg = {
-        game_mode: mode,
-        action: {
-            name: 'joined_mode',
-            data: {}
-        }
+        action: 'joined_mode',
+        data: {}
     };
 
     useEffect(() => {

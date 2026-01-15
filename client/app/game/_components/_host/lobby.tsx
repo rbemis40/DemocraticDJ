@@ -12,15 +12,15 @@ export default function HostLobby(props: HostLobbyProps) {
     const [userList, setUserList] = useState<string[]>([]);
 
     useServerMsg((serverMsg: ServerMsg) => {
-        switch (serverMsg.action.name) {
+        switch (serverMsg.action) {
             case 'user_list':
-                const userListData = serverMsg.action.data as UserListData;
+                console.log("TEST");
+                const userListData = serverMsg.data as UserListData;
                 setUserList(userListData.user_list);
                 break;
             case 'new_player':
-                const newPlayerData = serverMsg.action.data as NewPlayerData;
+                const newPlayerData = serverMsg.data as NewPlayerData;
                 setUserList(userList.concat([newPlayerData.username]));
-                console.log('hello!');
                 break;
         }
     }, ['user_list', 'new_player']);
@@ -29,12 +29,9 @@ export default function HostLobby(props: HostLobbyProps) {
 
     function removeUser(name: string) {
         props.sendMsg(JSON.stringify({
-            game_mode: 'lobby',
-            action: {
-                name: 'remove_player',
-                data: {
-                    username: name
-                }
+            action: 'remove_player',
+            data: {
+                username: name
             }
         }));
     }

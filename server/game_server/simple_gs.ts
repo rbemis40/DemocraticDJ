@@ -65,6 +65,7 @@ export class SimpleGameServer implements GameServer {
                 try {
                     const msgObj = JSON.parse(data.toString());
 
+                    console.log(`SimpleGameServer.setupServerHandler: Received msg: `);
                     console.log(msgObj);
 
                     // Pass the message to any game server handlers
@@ -96,12 +97,10 @@ export class SimpleGameServer implements GameServer {
             
             // Send a welcome message to the new user, informing them of the current game mode
             const welcomeMsg = {
-                game_mode: this.game.mode.getName(),
-                action: {
-                    name: 'welcome',
-                    data: {
-                        role: user.isHost ? 'host' : 'player'
-                    }
+                action: 'welcome',
+                data: {
+                    role: user.isHost ? 'host' : 'player',
+                    gamemode: this.game.mode.getName()
                 }
             };
 

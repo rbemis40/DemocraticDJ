@@ -6,11 +6,8 @@ export type InGameInfo = {
 };
 
 export type OutboundMsg<T extends object> = {
-    game_mode: string,
-    action: {
-        name: string,
-        data: T
-    }
+    action: string,
+    data: T
 };
 
 export class User {

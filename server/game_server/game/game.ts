@@ -21,13 +21,13 @@ export class Game {
     }
 
     addPlayer(player: User) {
-        console.log(`Game.addPlayer: Adding player ${player.username}`);
+        //console.log(`Game.addPlayer: Adding player ${player.username}`);
         this.players.addPlayer(player);
-        console.log(this.players.getUsernames());
+        //console.log(this.players.getUsernames());
     }
 
     removePlayer(player: User) {
-        console.log(`Game.removePlayer: Removing player ${player.username}`);
+        //console.log(`Game.removePlayer: Removing player ${player.username}`);
         this.players.removePlayer(player);
     }
 
@@ -36,13 +36,13 @@ export class Game {
     }
 
     handleAction(action: Action<object>, sender: User) {
-        console.log("Handling action:");
-        console.log(action);
-        console.log(`Game.handleAction: ${this.getPlayerList().getUsernames()}`);
-        console.log(`Game.handleAction: this.players =`);
-        console.log(this.players);
-        console.log(`Game.handleAction: this.getPlayerList() = `);
-        console.log(this.getPlayerList());
+        //console.log("Handling action:");
+        //console.log(action);
+        //console.log(`Game.handleAction: ${this.getPlayerList().getUsernames()}`);
+        //console.log(`Game.handleAction: this.players =`);
+        //console.log(this.players);
+        //console.log(`Game.handleAction: this.getPlayerList() = `);
+        //console.log(this.getPlayerList());
         this.mode.handleAction(action, sender, this.getPlayerList());
     }
 }

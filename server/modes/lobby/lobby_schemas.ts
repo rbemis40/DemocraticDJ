@@ -6,21 +6,21 @@ import { Action } from "../../game_server/action";
 // Define the Action data that lobby will handle
 export interface JoinedModeData {}
 
-export interface RemoveUserData {
+export interface RemovePlayerData {
     username: string;
 }
 
 // Define the schemas for each of the Action datas
 interface Schemas {
     joined_mode: JSONSchemaType<JoinedModeData>;
-    remove_user: JSONSchemaType<RemoveUserData>;
+    remove_player: JSONSchemaType<RemovePlayerData>;
 }
 
 const schemas: Schemas = {
     joined_mode: {
         type: "object"
     },
-    remove_user: {
+    remove_player: {
         type: "object",
         properties: {
             username: {type: "string"}

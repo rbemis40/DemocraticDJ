@@ -1,7 +1,7 @@
 import { GameMode, PlayerData } from "../game_mode";
-import schemas, { JoinedModeData, RemoveUserData } from "./lobby_schemas";
+import schemas, { JoinedModeData, RemovePlayerData } from "./lobby_schemas";
 import { User } from "../../game_server/user";
-import { Action } from "../../game_server/action";
+import { Action, buildActionSchema } from "../../game_server/action";
 import { PlayerList } from "../../game_server/player_list";
 import { typeSafeBind } from "../../utils";
 
@@ -11,12 +11,12 @@ export class LobbyMode extends GameMode {
 
         // Add all actions that the lobby can handle
         this.validator.addPair({
-            schema: schemas.joined_mode,
+            schema: buildActionSchema("joined_mode", schemas.joined_mode),
             handler: typeSafeBind(this.handleJoinedMode, this)
         });
 
         this.validator.addPair({
-            schema: schemas.remove_user,
+            schema: buildActionSchema("remove_player", schemas.remove_player),
             handler: typeSafeBind(this.handleRemoveUser, this)
         });
     }
@@ -30,14 +30,19 @@ export class LobbyMode extends GameMode {
         }
     }
 
-    private handleJoinedMode(data: JoinedModeData, context: PlayerData): GameMode {
+    private handleJoinedMode(data: Action<JoinedModeData>, context: PlayerData): GameMode {
         /* A user joined the lobby, so send them the list of active players */
-        console.log("Lobby joined mode!!");
-        console.log(context.all.getUsernames());
+        console.log("LobbyMode.handleJoinedMode: Lobby joined mode!!");
+        context.all.broadcast({
+            action: "user_list",
+            data: {
+                user_list: context.all.getUsernames()
+            }
+        })
         return this;
     }
 
-    private handleRemoveUser(data: RemoveUserData, context: PlayerData): GameMode {
+    private handleRemoveUser(data: Action<RemovePlayerData>, context: PlayerData): GameMode {
         console.log("Lobby remove user!!");
         return this;
     }

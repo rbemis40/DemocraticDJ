@@ -1,15 +1,17 @@
 import { SpotifySearchResult } from "./spotify_types";
 
 export type ServerMsg = {
-    game_mode: string,
-    action: {
-        name: string,
-        data: WelcomeData | UserListData | NewPlayerData
-    }
+    action: string,
+    data: WelcomeData | UserListData | NewPlayerData
 };
 
 export interface WelcomeData {
     role: string;
+    gamemode: string;
+};
+
+export interface ModeChangeData {
+    gamemode: string;
 };
 
 export interface UserListData {

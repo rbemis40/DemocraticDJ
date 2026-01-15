@@ -8,7 +8,7 @@ import HostVoting from "./_host/voting";
 import PlayerVoting from "./_player/voting";
 import { ServerMsgContext } from "./server_msg_provider";
 import useServerMsg from "../_hooks/server_msg_hook";
-import { ServerMsg, WelcomeData } from "../_types/server_msg";
+import { ModeChangeData, ServerMsg, WelcomeData } from "../_types/server_msg";
 import SpotifySearch from "./spotify_search";
 
 interface GameInfoProps {
@@ -84,7 +84,7 @@ export default function GameClient(props: GameInfoProps) {
         ws.addEventListener('message', (e) => {
             const serverMsg: ServerMsg = JSON.parse(e.data);
             console.log(serverMsg);
-            smTrigger(serverMsg.action.name, serverMsg);
+            smTrigger(serverMsg.action, serverMsg);
         });
 
         ws.addEventListener('close', () => {
@@ -96,14 +96,15 @@ export default function GameClient(props: GameInfoProps) {
 
     useServerMsg((serverMsg: ServerMsg) => {
         console.log(serverMsg);
-        switch (serverMsg.action.name) {
+        switch (serverMsg.action) {
             case 'welcome':
-                const welcomeData = serverMsg.action.data as WelcomeData;
-                setGameMode(serverMsg.game_mode);
+                const welcomeData = serverMsg.data as WelcomeData;
+                setGameMode(welcomeData.gamemode);
                 setIsHost(welcomeData.role === 'host');
                 break;
             case 'mode_change':
-                setGameMode(serverMsg.game_mode);
+                const modeChangeData = serverMsg.data as ModeChangeData;
+                setGameMode(modeChangeData.gamemode);
                 break;
         }
     }, ['welcome', 'mode_change']);
