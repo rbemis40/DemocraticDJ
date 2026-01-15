@@ -1,17 +1,17 @@
 import { OutboundMsg, User } from "./user";
 
 export class PlayerList {
-    private players: Set<User>;
+    private players: Map<string | undefined, User>;
     constructor() {
-        this.players = new Set<User>();
+        this.players = new Map<string | undefined, User>();
     }
 
     addPlayer(player: User) {
-        this.players.add(player);
+        this.players.set(player.username, player);
     }
 
     removePlayer(player: User) {
-        this.players.delete(player);
+        this.players.delete(player.username);
     }
 
     broadcast(msg: OutboundMsg<object>) {
@@ -19,11 +19,17 @@ export class PlayerList {
     }
 
     getUsernames(): string[] {
-        const usernameList: string[] = [];
+        const usernameArray: string[] = [];
         this.players.forEach(player => {
-            if (player.username) usernameList.push(player.username);
-        });
+            if (player.username !== undefined) {
+                usernameArray.push(player.username)
+            }
+        })
 
-        return usernameList;
+        return usernameArray
+    }
+
+    getUserByUsername(username: string): User | undefined {
+        return this.players.get(username);
     }
 }

@@ -7,6 +7,7 @@ import { InGameInfo, OutboundMsg, User } from "./user";
 import { Validator } from "../handlers/validator";
 import { Action, actionSchema, buildActionSchema } from "./action";
 import { typeSafeBind } from "../utils";
+import { EventProvider } from "./event_provider";
 
 /*
     - A game server that simply runs on the same system as the HTTP server
@@ -17,10 +18,12 @@ export class SimpleGameServer implements GameServer {
     private url: URL;
     private game: Game;
     private validator: Validator<void, User>;
+    private eventProvider: EventProvider; // Used for internal dispatching of events from game modes
 
     constructor(port=8081) {
         this.wss = new WebSocketServer({port: port}, () => console.log(`Game server running on port ${port}`));
-        this.url = new URL(`ws://${process.env.HOST_NAME}:8081`);        
+        this.url = new URL(`ws://${process.env.HOST_NAME}:8081`);
+        this.eventProvider = new EventProvider();        
 
         this.setupServerHandler();
     }
@@ -107,17 +110,6 @@ export class SimpleGameServer implements GameServer {
             this.game.addPlayer(user); // Add the player to the game
             user.sendMsg(welcomeMsg);
 
-            // if (!tokenData.isHost) { // Inform all other users that a new player has joined, unless it's the host
-            //     const newPlayerMsg: OutboundMsg<NewPlayerData> = {
-            //         game_mode: this.game.mode.getName(),
-            //         action: {
-            //             name: 'new_player',
-            //             data: {
-            //                 username: tokenData.username
-            //             }
-            //         }
-            //     }
-            // }
         } catch (e) {
             console.error(e);
         }

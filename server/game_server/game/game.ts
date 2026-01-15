@@ -21,13 +21,10 @@ export class Game {
     }
 
     addPlayer(player: User) {
-        //console.log(`Game.addPlayer: Adding player ${player.username}`);
         this.players.addPlayer(player);
-        //console.log(this.players.getUsernames());
     }
 
     removePlayer(player: User) {
-        //console.log(`Game.removePlayer: Removing player ${player.username}`);
         this.players.removePlayer(player);
     }
 
