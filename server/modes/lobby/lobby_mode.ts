@@ -1,5 +1,5 @@
 import { GameMode, ServerContext } from "../game_mode";
-import schemas, { JoinedModeData, RemovePlayerData } from "./lobby_schemas";
+import schemas, { JoinedModeData, RemovePlayerData, StartGameData } from "./lobby_schemas";
 import { User } from "../../game_server/user";
 import { Action, buildActionSchema } from "../../game_server/action";
 import { PlayerList } from "../../game_server/player_list";
@@ -18,6 +18,11 @@ export class LobbyMode extends GameMode {
         this.validator.addPair({
             schema: buildActionSchema("remove_player", schemas.remove_player),
             handler: typeSafeBind(this.handleRemoveUser, this)
+        });
+
+        this.validator.addPair({
+            schema: buildActionSchema("start_game", schemas.start_game),
+            handler: typeSafeBind(this.handleStartGame, this)
         });
     }
 
@@ -58,6 +63,11 @@ export class LobbyMode extends GameMode {
             }
         });
 
+        return this;
+    }
+
+    private handleStartGame(action: Action<StartGameData>, context: ServerContext) : GameMode {
+        console.log("Start game!!");
         return this;
     }
 }

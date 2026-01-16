@@ -30,7 +30,7 @@ export class Validator<ReturnType, ContextType> {
         //console.log(data);
         this.pairs.forEach(pair => { 
             if(pair.validate(data)) {
-                return pair.handler(data, context);
+                pair.handler(data, context);
             }
         });
 

@@ -39,7 +39,8 @@ export default function HostLobby(props: HostLobbyProps) {
     function startGame() {
         // TODO
         props.sendMsg(JSON.stringify({
-            type: 'start_game'
+            action: "start_game",
+            data: {}
         }));
     }
 
