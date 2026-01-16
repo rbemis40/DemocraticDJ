@@ -27,5 +27,9 @@ export class User {
     sendMsg<T extends object>(msg: OutboundMsg<T>) {
         this.ws.send(JSON.stringify(msg));
     }
+
+    disconnect() {
+        this.ws.close();
+    }
 }
     

@@ -2,7 +2,7 @@ import { RawData, WebSocketServer } from "ws";
 import { TokenData, TokenHandler } from "../handlers/token_handler";
 import { GameId } from "../shared_types";
 import { Game } from "./game/game";
-import { GameServer, JoinData, joinDataSchema, LeaveData, leaveDataSchema, NewPlayerData } from "./server_types";
+import { EventContext, GameServer, InternalDisconnectData, JoinData, joinDataSchema, NewPlayerData } from "./server_types";
 import { InGameInfo, OutboundMsg, User } from "./user";
 import { Validator } from "../handlers/validator";
 import { Action, actionSchema, buildActionSchema } from "./action";
@@ -17,13 +17,20 @@ export class SimpleGameServer implements GameServer {
     private wss: WebSocketServer;
     private url: URL;
     private game: Game;
-    private validator: Validator<void, User>;
+    private validator: Validator<void, EventContext>;
     private eventProvider: EventProvider; // Used for internal dispatching of events from game modes
 
     constructor(port=8081) {
         this.wss = new WebSocketServer({port: port}, () => console.log(`Game server running on port ${port}`));
         this.url = new URL(`ws://${process.env.HOST_NAME}:8081`);
-        this.eventProvider = new EventProvider();        
+        this.eventProvider = new EventProvider();
+
+        this.eventProvider.onAction((action) => { // Handle internally dispatched events
+            this.validator.validateAndHandle(action, {
+                user: null,
+                eventProvider: this.eventProvider
+            });
+        });
 
         this.setupServerHandler();
     }
@@ -37,18 +44,18 @@ export class SimpleGameServer implements GameServer {
         this.game = new Game(id);
 
         // Setup the actions that the game server itself handles
-        this.validator = new Validator<void, User>();
+        this.validator = new Validator<void, EventContext>();
         this.validator.addPair({
             schema: buildActionSchema("player_join", joinDataSchema),
             handler: typeSafeBind(this.handleUserJoin, this)
         });
 
         this.validator.addPair({
-            schema: buildActionSchema("player_left", leaveDataSchema),
-            handler: typeSafeBind(this.handleUserLeave, this)
+            schema: buildActionSchema("internal_disconnect", {type: "object"}),
+            handler: typeSafeBind(this.handleInternalDisconnect, this)
         });
 
-        // If the user sent an Action, pass it to the game to handle
+        // All Actions are passed to the game to handle
         this.validator.addPair({
             schema: actionSchema,
             handler: typeSafeBind(this.game.handleAction, this.game)
@@ -63,7 +70,7 @@ export class SimpleGameServer implements GameServer {
 
     private setupServerHandler() {
         this.wss.on('connection', (ws, req) => {
-            const user = new User(ws); // We have gotten a new connection, so create the new user
+            const user = new User(ws); // We have a new connection, so create the new user
             ws.on('message', (data: RawData) => {
                 try {
                     const msgObj = JSON.parse(data.toString());
@@ -72,7 +79,10 @@ export class SimpleGameServer implements GameServer {
                     console.log(msgObj);
 
                     // Pass the message to any game server handlers
-                    this.validator.validateAndHandle(msgObj, user);
+                    this.validator.validateAndHandle(msgObj, {
+                        user: user,
+                        eventProvider: this.eventProvider
+                    });
                 }
                 catch (e) {
                     console.error(e);
@@ -85,8 +95,13 @@ export class SimpleGameServer implements GameServer {
         });
     }
 
-    private handleUserJoin(joinAction: Action<JoinData>, user: User) {
+    private handleUserJoin(joinAction: Action<JoinData>, eventContext: EventContext) {
+        if (eventContext.user === null) {
+            return; // Only handle external events
+        }
+
         const joinData: JoinData = joinAction.data;
+        const user = eventContext.user;
         try {
             const tokenData: TokenData = TokenHandler.exchangeToken(joinData.token);
             user.setInGameInfo(tokenData as InGameInfo);
@@ -115,8 +130,12 @@ export class SimpleGameServer implements GameServer {
         }
     }
 
-    private handleUserLeave(leaveAction: Action<LeaveData>, user: User) {
-        console.log(`SimpleGameServer.handleUserLeave: Removing player ${user.username}`);
+    private handleInternalDisconnect(internDiscAction: Action<InternalDisconnectData>, eventContext: EventContext) {
+        console.log("HandleInternalDisconnect!");
+        let user = internDiscAction.data.user as User;
+        console.log(`Disconnecting user ${user.username}`);
+        user.disconnect();
+
         this.game.removePlayer(user);
     }
 }

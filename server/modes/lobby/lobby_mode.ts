@@ -1,4 +1,4 @@
-import { GameMode, PlayerData } from "../game_mode";
+import { GameMode, ServerContext } from "../game_mode";
 import schemas, { JoinedModeData, RemovePlayerData } from "./lobby_schemas";
 import { User } from "../../game_server/user";
 import { Action, buildActionSchema } from "../../game_server/action";
@@ -30,7 +30,7 @@ export class LobbyMode extends GameMode {
         }
     }
 
-    private handleJoinedMode(data: Action<JoinedModeData>, context: PlayerData): GameMode {
+    private handleJoinedMode(action: Action<JoinedModeData>, context: ServerContext): GameMode {
         /* A user joined the lobby, so send them the list of active players */
         console.log("LobbyMode.handleJoinedMode: Lobby joined mode!!");
         context.all.broadcast({
@@ -38,12 +38,26 @@ export class LobbyMode extends GameMode {
             data: {
                 user_list: context.all.getUsernames()
             }
-        })
+        });
         return this;
     }
 
-    private handleRemoveUser(data: Action<RemovePlayerData>, context: PlayerData): GameMode {
-        console.log("Lobby remove user!!");
+    private handleRemoveUser(action: Action<RemovePlayerData>, context: ServerContext): GameMode {
+        context.eventProvider.dispatchAction({
+            action: "internal_disconnect",
+            data: {
+                user: context.all.getUserByUsername(action.data.username)
+            }
+        });
+
+        // Send the updated user list after disconnecting the user
+        context.all.broadcast({
+            action: "user_list",
+            data: {
+                user_list: context.all.getUsernames()
+            }
+        });
+
         return this;
     }
 }

@@ -1,7 +1,7 @@
 import { Action } from "./action";
 
 /**
- * An internal source of events for the gameserver, allowing game modes to dispatch events to the game server, such as disconnecting a user
+ * An internal source of events for the gameserver, such as disconnecting a user
  */
 export class EventProvider {
     private callbacks: ((action: Action<object>) => void)[];

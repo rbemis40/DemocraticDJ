@@ -1,5 +1,7 @@
 import { JSONSchemaType } from "ajv";
 import { GameId, UserToken } from "../shared_types";
+import { User } from "./user";
+import { EventProvider } from "./event_provider";
 
 /*
     1. User starts on democraticdj.com
@@ -21,6 +23,18 @@ export interface GameServer {
     getServerURL(): Promise<URL>;
 }
 
+export interface ExternalEventContext {
+    user: User;
+    eventProvider: EventProvider;
+};
+
+export interface InternalEventContext {
+    user: null;
+    eventProvider: EventProvider;
+};
+
+export type EventContext = ExternalEventContext | InternalEventContext;
+
 /* Schema / msg types */
 export type JoinData = {
     token: UserToken;
@@ -35,9 +49,16 @@ export const joinDataSchema: JSONSchemaType<JoinData> = {
     required: ['token']
 };
 
-export type LeaveData = {};
-export const leaveDataSchema: JSONSchemaType<LeaveData> = {
-    type: 'object'
+export type InternalDisconnectData = {
+    user: object; // Should be User, but for now object until User has a defined schema
+};
+export const disconnectData: JSONSchemaType<InternalDisconnectData> = {
+    type: 'object',
+    properties: {
+        user: {type: "object"}
+    },
+
+    required: ['user']
 };
 
 

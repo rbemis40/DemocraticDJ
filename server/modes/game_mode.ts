@@ -2,10 +2,12 @@ import { User } from "../game_server/user";
 import { Action } from "../game_server/action";
 import { PlayerList } from "../game_server/player_list";
 import { Validator } from "../handlers/validator";
+import { EventProvider } from "../game_server/event_provider";
 
-export type PlayerData = {
-    sender: User,
-    all: PlayerList
+export type ServerContext = {
+    sender: User | null,
+    all: PlayerList,
+    eventProvider: EventProvider,
 }
 
 /**
@@ -15,7 +17,7 @@ export type PlayerData = {
  */
 export abstract class GameMode {
     protected name: string;
-    protected validator: Validator<GameMode, PlayerData>;
+    protected validator: Validator<GameMode, ServerContext>;
 
     constructor(name: string) {
         this.name = name;
@@ -34,10 +36,11 @@ export abstract class GameMode {
      * @param allPlayers - All of the players currently in the game
      * @returns GameMode - The GameMode that should be transitioned to
      */
-    handleAction(action: Action<object>, sender: User, allPlayers: PlayerList): GameMode {
+    handleAction(action: Action<object>, sender: User | null, allPlayers: PlayerList, eventProvider: EventProvider): GameMode {
         const nextMode = this.validator.validateAndHandle(action, {
             sender: sender,
-            all: allPlayers
+            all: allPlayers,
+            eventProvider: eventProvider
         });
         if (nextMode !== null) {
             return nextMode;
