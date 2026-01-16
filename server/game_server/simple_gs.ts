@@ -2,12 +2,13 @@ import { RawData, WebSocketServer } from "ws";
 import { TokenData, TokenHandler } from "../handlers/token_handler";
 import { GameId } from "../shared_types";
 import { Game } from "./game/game";
-import { EventContext, GameServer, InternalDisconnectData, JoinData, joinDataSchema, NewPlayerData } from "./server_types";
+import { EventContext, GameServer, InternalDisconnectData, JoinData, joinDataSchema, NewPlayerData, spoitfySearchDataSchema, SpotifySearchData } from "./server_types";
 import { InGameInfo, OutboundMsg, User } from "./user";
 import { Validator } from "../handlers/validator";
 import { Action, actionSchema, buildActionSchema } from "./action";
 import { typeSafeBind } from "../utils";
 import { EventProvider } from "./event_provider";
+import { SpotifyManager } from "../spotify/spotify_manager";
 
 /*
     - A game server that simply runs on the same system as the HTTP server
@@ -17,8 +18,9 @@ export class SimpleGameServer implements GameServer {
     private wss: WebSocketServer;
     private url: URL;
     private game: Game;
-    private validator: Validator<void, EventContext>;
+    private validator: Validator<EventContext>;
     private eventProvider: EventProvider; // Used for internal dispatching of events from game modes
+    private spotifyManager: SpotifyManager;
 
     constructor(port=8081) {
         this.wss = new WebSocketServer({port: port}, () => console.log(`Game server running on port ${port}`));
@@ -41,10 +43,16 @@ export class SimpleGameServer implements GameServer {
             return false;
         }
 
-        this.game = new Game(id);
+        this.game = new Game(id, this.eventProvider);
+        this.spotifyManager = new SpotifyManager();
+        if (process.env.SPOTIFY_REDIRECT_URI === undefined) {
+            throw new Error("Missing environment variable 'SPOTIFY_REDIRECT_URI'!");
+        }
+
+        await this.spotifyManager.connect(spotifyCode, process.env.SPOTIFY_REDIRECT_URI);
 
         // Setup the actions that the game server itself handles
-        this.validator = new Validator<void, EventContext>();
+        this.validator = new Validator<EventContext>();
         this.validator.addPair({
             schema: buildActionSchema("player_join", joinDataSchema),
             handler: typeSafeBind(this.handleUserJoin, this)
@@ -53,6 +61,12 @@ export class SimpleGameServer implements GameServer {
         this.validator.addPair({
             schema: buildActionSchema("internal_disconnect", {type: "object"}),
             handler: typeSafeBind(this.handleInternalDisconnect, this)
+        });
+
+        // Spotify Searching
+        this.validator.addPair({
+            schema: buildActionSchema("spotify_search", spoitfySearchDataSchema),
+            handler: typeSafeBind(this.handleSearchQuery, this)
         });
 
         // All Actions are passed to the game to handle
@@ -137,5 +151,9 @@ export class SimpleGameServer implements GameServer {
         user.disconnect();
 
         this.game.removePlayer(user);
+    }
+
+    private handleSearchQuery(searchAction: Action<SpotifySearchData>, eventContext: EventContext) {
+        console.log("search");
     }
 }

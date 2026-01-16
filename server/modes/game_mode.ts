@@ -17,7 +17,7 @@ export type ServerContext = {
  */
 export abstract class GameMode {
     protected name: string;
-    protected validator: Validator<GameMode, ServerContext>;
+    protected validator: Validator<ServerContext>;
 
     constructor(name: string) {
         this.name = name;
@@ -36,17 +36,12 @@ export abstract class GameMode {
      * @param allPlayers - All of the players currently in the game
      * @returns GameMode - The GameMode that should be transitioned to
      */
-    handleAction(action: Action<object>, sender: User | null, allPlayers: PlayerList, eventProvider: EventProvider): GameMode {
+    handleAction(action: Action<object>, sender: User | null, allPlayers: PlayerList, eventProvider: EventProvider) {
         const nextMode = this.validator.validateAndHandle(action, {
             sender: sender,
             all: allPlayers,
             eventProvider: eventProvider
         });
-        if (nextMode !== null) {
-            return nextMode;
-        }
-        
-        return this;
     }  
 
     /**

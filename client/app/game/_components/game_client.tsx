@@ -102,12 +102,12 @@ export default function GameClient(props: GameInfoProps) {
                 setGameMode(welcomeData.gamemode);
                 setIsHost(welcomeData.role === 'host');
                 break;
-            case 'mode_change':
+            case 'change_mode':
                 const modeChangeData = serverMsg.data as ModeChangeData;
                 setGameMode(modeChangeData.gamemode);
                 break;
         }
-    }, ['welcome', 'mode_change']);
+    }, ['welcome', 'change_mode']);
 
     return <>
         <SpotifySearch sendMsg={sendMsg}/> {/* TODO: This should only be shown to a player who is the active voter!!! */}

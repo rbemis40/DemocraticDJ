@@ -35,7 +35,7 @@ export class LobbyMode extends GameMode {
         }
     }
 
-    private handleJoinedMode(action: Action<JoinedModeData>, context: ServerContext): GameMode {
+    private handleJoinedMode(action: Action<JoinedModeData>, context: ServerContext) {
         /* A user joined the lobby, so send them the list of active players */
         console.log("LobbyMode.handleJoinedMode: Lobby joined mode!!");
         context.all.broadcast({
@@ -44,10 +44,9 @@ export class LobbyMode extends GameMode {
                 user_list: context.all.getUsernames()
             }
         });
-        return this;
     }
 
-    private handleRemoveUser(action: Action<RemovePlayerData>, context: ServerContext): GameMode {
+    private handleRemoveUser(action: Action<RemovePlayerData>, context: ServerContext) {
         context.eventProvider.dispatchAction({
             action: "internal_disconnect",
             data: {
@@ -62,12 +61,14 @@ export class LobbyMode extends GameMode {
                 user_list: context.all.getUsernames()
             }
         });
-
-        return this;
     }
 
-    private handleStartGame(action: Action<StartGameData>, context: ServerContext) : GameMode {
-        console.log("Start game!!");
-        return this;
+    private handleStartGame(action: Action<StartGameData>, context: ServerContext) {
+        console.log("LobbyMode.handleStartGame: ")
+        console.log(action);
+        context.eventProvider.dispatchAction({
+            action: "next_game_mode",
+            data: {}
+        });
     }
 }

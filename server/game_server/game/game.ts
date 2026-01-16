@@ -1,5 +1,7 @@
+import { Validator } from "../../handlers/validator";
 import { GameMode } from "../../modes/game_mode";
 import { LobbyMode } from "../../modes/lobby/lobby_mode";
+import { VotingMode } from "../../modes/voting/voting_mode";
 import { GameId } from "../../shared_types";
 import { Action } from "../action";
 import { EventProvider } from "../event_provider";
@@ -8,18 +10,21 @@ import { EventContext } from "../server_types";
 import { OutboundMsg, User } from "../user";
 import * as GameActions from "./game_actions";
 
-type AllowedModes = LobbyMode;
+type AllowedModes = LobbyMode | VotingMode;
 
 export class Game {
     id: GameId;
     mode: AllowedModes;
     private players: PlayerList;
 
-    constructor(id: GameId) {
+    constructor(id: GameId, eventProvider: EventProvider) {
         this.id = id;
         this.players = new PlayerList();
 
         this.mode = new LobbyMode();
+        eventProvider.onAction((action: Action<object>) => {
+            this.handleInternalAction(action);
+        });
     }
 
     addPlayer(player: User) {
@@ -45,5 +50,24 @@ export class Game {
         const sender = eventContext.user;
         const eventProvider = eventContext.eventProvider;
         this.mode.handleAction(action, sender, this.getPlayerList(), eventProvider);
+    }
+
+    handleInternalAction(action: Action<object>) {
+        console.log("Game.handleInternalAction:");
+        console.log(action);
+        switch(action.action) {
+            case "next_game_mode": {
+                this.mode = new VotingMode();
+                this.getPlayerList().broadcast({
+                    action: "change_mode",
+                    data: {
+                        gamemode: this.mode.getName()
+                    }
+                });
+                break;
+            }
+        }
+
+        
     }
 }

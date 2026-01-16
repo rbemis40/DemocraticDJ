@@ -86,3 +86,14 @@ export const newPlayerDataSchema: JSONSchemaType<NewPlayerData> = {
     },
     required: ['username']
 };
+
+export interface SpotifySearchData {
+    query: string;
+}
+export const spoitfySearchDataSchema: JSONSchemaType<SpotifySearchData> = {
+    type: "object",
+    properties: {
+        query: {type: "string"}
+    },
+    required: ["query"]
+};

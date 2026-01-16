@@ -14,8 +14,10 @@ export default function SpotifySearch(props: SpotifySearchUI) {
         e.preventDefault();
 
         props.sendMsg(JSON.stringify({
-            type: 'spotify_search',
-            query: queryRef.current
+            action: 'spotify_search',
+            data: {
+                query: queryRef.current
+            }
         }));
     }
 
@@ -27,9 +29,10 @@ export default function SpotifySearch(props: SpotifySearchUI) {
     }
 
     useServerMsg((msg) => {
-        switch (msg.type) {
+        switch (msg.action) {
             case 'spotify_results': {
-                setResults(msg.tracks);
+                console.log("GOT SPOTIFY RESULTS");
+                console.log(msg.data);
                 break;
             }
         }
