@@ -5,6 +5,9 @@ import { SpotifySearchResult } from "../_types/spotify_types";
 import Image from "next/image";
 
 interface SpotifySearchUI extends UIProps {};
+interface SpotifyResultsData {
+    results: SpotifySearchResult[]
+};
 
 export default function SpotifySearch(props: SpotifySearchUI) {
     const queryRef = useRef<string>('');
@@ -31,8 +34,8 @@ export default function SpotifySearch(props: SpotifySearchUI) {
     useServerMsg((msg) => {
         switch (msg.action) {
             case 'spotify_results': {
-                console.log("GOT SPOTIFY RESULTS");
-                console.log(msg.data);
+                const resultData = msg.data as SpotifyResultsData;
+                setResults(resultData.results);
                 break;
             }
         }

@@ -8,7 +8,7 @@ import { Validator } from "../handlers/validator";
 import { Action, actionSchema, buildActionSchema } from "./action";
 import { typeSafeBind } from "../utils";
 import { EventProvider } from "./event_provider";
-import { SpotifyManager } from "../spotify/spotify_manager";
+import { SpotifyManager, TrackInfo } from "../spotify/spotify_manager";
 
 /*
     - A game server that simply runs on the same system as the HTTP server
@@ -153,7 +153,13 @@ export class SimpleGameServer implements GameServer {
         this.game.removePlayer(user);
     }
 
-    private handleSearchQuery(searchAction: Action<SpotifySearchData>, eventContext: EventContext) {
-        console.log("search");
+    private async handleSearchQuery(searchAction: Action<SpotifySearchData>, eventContext: EventContext) {
+        const searchResults: TrackInfo[] = await this.spotifyManager.search(searchAction.data.query);
+        eventContext.user?.sendMsg({
+            action: "spotify_results",
+            data: {
+                results: searchResults
+            }
+        });
     }
 }

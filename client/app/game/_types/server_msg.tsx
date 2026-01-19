@@ -2,7 +2,7 @@ import { SpotifySearchResult } from "./spotify_types";
 
 export type ServerMsg = {
     action: string,
-    data: WelcomeData | UserListData | NewPlayerData
+    data: object
 };
 
 export interface WelcomeData {

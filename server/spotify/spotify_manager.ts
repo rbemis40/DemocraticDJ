@@ -23,7 +23,7 @@ interface TrackImg {
     height: number;
 };
 
-interface TrackInfo {
+export interface TrackInfo {
     name: string;
     artists: string[];
     image: TrackImg;
