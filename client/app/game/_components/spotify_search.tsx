@@ -3,6 +3,7 @@ import { UIProps } from "../types";
 import useServerMsg from "../_hooks/server_msg_hook";
 import { SpotifySearchResult } from "../_types/spotify_types";
 import Image from "next/image";
+import SongCard from "./song_card/song_card";
 
 interface SpotifySearchUI extends UIProps {};
 interface SpotifyResultsData {
@@ -48,12 +49,13 @@ export default function SpotifySearch(props: SpotifySearchUI) {
                 <button type='submit'>Submit</button>
             </form>
             {results?.map(result => 
-                <div key={result.track_uri}>
-                    <h2>Name: {result.name}</h2>
-                    <h2>Artist(s): {result.artists.join(', ')}</h2>
-                    <img src={result.image.url} width={200} height={200} alt={result.image.url}></img>
-                    <button onClick={() => queueSong(result.track_uri)}>Add to Queue!</button>
-                </div>
+                <SongCard key={result.track_uri} info={result}/>
+                // <div key={result.track_uri}>
+                //     <h2>Name: {result.name}</h2>
+                //     <h2>Artist(s): {result.artists.join(', ')}</h2>
+                //     <img src={result.image.url} width={200} height={200} alt={result.image.url}></img>
+                //     <button onClick={() => queueSong(result.track_uri)}>Add to Queue!</button>
+                // </div>
             )}
         </>
     );
