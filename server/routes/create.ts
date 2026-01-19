@@ -22,6 +22,7 @@ export function getCreateRouter(gm: GameManager): Router {
         const gameServer: GameServer = await gm.getServerByGameId(gameId);
         const hostToken: UserToken = await TokenHandler.generateToken({
             isHost: true,
+            isActiveVoter: false
         });
         const serverURL: URL = await gameServer.getServerURL();
 

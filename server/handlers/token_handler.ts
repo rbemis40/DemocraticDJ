@@ -2,12 +2,14 @@ import { UserToken } from "../shared_types";
 import { randomBytes } from "crypto";
 
 type HostTokenData = {
-    isHost: true;
+    isHost: true,
+    isActiveVoter: false
 };
 
 type UserTokenData = {
     isHost: false,
-    username: string;
+    username: string,
+    isActiveVoter: boolean
 };
 
 export type TokenData = HostTokenData | UserTokenData;

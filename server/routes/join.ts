@@ -40,7 +40,8 @@ export function getJoinRouter(gm: GameManager): Router {
         
         const newUserToken = TokenHandler.generateToken({
             isHost: false,
-            username: name
+            username: name,
+            isActiveVoter: false,
         });
         const serverURLStr = (await gameServer.getServerURL()).toString();
 

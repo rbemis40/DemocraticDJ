@@ -118,7 +118,7 @@ export class SimpleGameServer implements GameServer {
         const user = eventContext.user;
         try {
             const tokenData: TokenData = TokenHandler.exchangeToken(joinData.token);
-            user.setInGameInfo(tokenData as InGameInfo);
+            user.setInGameInfo(tokenData satisfies InGameInfo);
             
             if (user.isHost) {
                 console.log('Added host!');

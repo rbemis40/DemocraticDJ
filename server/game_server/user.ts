@@ -3,6 +3,7 @@ import { WebSocket } from "ws";
 export type InGameInfo = {
     username?: string;
     isHost: boolean;
+    isActiveVoter: boolean;
 };
 
 export type OutboundMsg<T extends object> = {
@@ -13,6 +14,7 @@ export type OutboundMsg<T extends object> = {
 export class User {
     username: string | undefined;
     isHost: boolean;
+    isActiveVoter: boolean;
     private ws: WebSocket;
 
     constructor(ws: WebSocket) {
