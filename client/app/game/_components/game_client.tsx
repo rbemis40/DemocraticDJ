@@ -10,6 +10,8 @@ import { ServerMsgContext } from "./server_msg_provider";
 import useServerMsg from "../_hooks/server_msg_hook";
 import { ModeChangeData, ServerMsg, WelcomeData } from "../_types/server_msg";
 import SpotifySearch from "./spotify_search";
+import SongQueue from "./song_queue";
+import { SpotifySearchResult } from "../_types/spotify_types";
 
 interface GameInfoProps {
     game_id: number;
@@ -21,6 +23,7 @@ export default function GameClient(props: GameInfoProps) {
     const [isHost, setIsHost] = useState<boolean>(false);
     const [ws, setWs] = useState<WebSocket | undefined>();
     const [gameMode, setGameMode] = useState<string>('join');
+    const [queuedSongs, setQueuedSongs] = useState<SpotifySearchResult[]>([]); // TODO: Separate host and normal player into two separate components / routes
     const router = useRouter();
     const [smTrigger] = useContext(ServerMsgContext);
 
@@ -109,8 +112,11 @@ export default function GameClient(props: GameInfoProps) {
         }
     }, ['welcome', 'change_mode']);
 
-    return <>
+    return (
+    <>
         <SpotifySearch sendMsg={sendMsg}/> {/* TODO: This should only be shown to a player who is the active voter!!! */}
+        {isHost && <SongQueue queuedSongs={queuedSongs}/>}
         {getUIPage()}
     </>
+    )
 }
