@@ -2,6 +2,7 @@ import { JSONSchemaType } from "ajv";
 import { GameId, UserToken } from "../shared_types";
 import { User } from "./user";
 import { EventProvider } from "./event_provider";
+import { SpotifyManager } from "../spotify/spotify_manager";
 
 /*
     1. User starts on democraticdj.com
@@ -26,11 +27,13 @@ export interface GameServer {
 export interface ExternalEventContext {
     user: User;
     eventProvider: EventProvider;
+    songManager: SpotifyManager;
 };
 
 export interface InternalEventContext {
     user: null;
     eventProvider: EventProvider;
+    songManager: SpotifyManager;
 };
 
 export type EventContext = ExternalEventContext | InternalEventContext;

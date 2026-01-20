@@ -30,7 +30,8 @@ export class SimpleGameServer implements GameServer {
         this.eventProvider.onAction((action) => { // Handle internally dispatched events
             this.validator.validateAndHandle(action, {
                 user: null,
-                eventProvider: this.eventProvider
+                eventProvider: this.eventProvider,
+                songManager: this.spotifyManager
             });
         });
 
@@ -95,7 +96,8 @@ export class SimpleGameServer implements GameServer {
                     // Pass the message to any game server handlers
                     this.validator.validateAndHandle(msgObj, {
                         user: user,
-                        eventProvider: this.eventProvider
+                        eventProvider: this.eventProvider,
+                        songManager: this.spotifyManager
                     });
                 }
                 catch (e) {

@@ -1,8 +1,10 @@
-import { Action } from "../../game_server/action";
+import { Action, buildActionSchema } from "../../game_server/action";
 import { PlayerList } from "../../game_server/player_list";
 import { SpotifySearchData } from "../../game_server/server_types";
 import { User } from "../../game_server/user";
+import { typeSafeBind } from "../../utils";
 import { GameMode, ServerContext } from "../game_mode";
+import { songSelectedSchema, VoterSongSelectedData } from "./select_voters_schemas";
 
 export class SelectVotersMode extends GameMode {
     private timeRem: number; // Tracks the amount of time left on the timer
@@ -16,6 +18,11 @@ export class SelectVotersMode extends GameMode {
             this.voters.set(user, undefined);
         });
         this.timeRem = 30;
+
+        this.validator.addPair({
+            schema: buildActionSchema("song_selected", songSelectedSchema),
+            handler: typeSafeBind(this.handleSongSelected, this)
+        })
     }
 
     protected handleJoinMode(data: Action<object>, context: ServerContext) {
@@ -26,7 +33,7 @@ export class SelectVotersMode extends GameMode {
                 choice: choice
             });
         });
-        
+
         context.sender!.sendMsg({
             action: "voter_mode_state",
             data: {
@@ -57,5 +64,9 @@ export class SelectVotersMode extends GameMode {
         }
         
         return voters;
+    }
+
+    private handleSongSelected(action: Action<VoterSongSelectedData>, context: ServerContext) {
+        const songId = action.data.song_id;
     }
 }

@@ -4,6 +4,7 @@ import { LobbyMode } from "../../modes/lobby/lobby_mode";
 import { SelectVotersMode } from "../../modes/select_voters/select_voters_mode";
 import { VotingMode } from "../../modes/voting/voting_mode";
 import { GameId } from "../../shared_types";
+import { SpotifyManager } from "../../spotify/spotify_manager";
 import { Action } from "../action";
 import { EventProvider } from "../event_provider";
 import { PlayerList } from "../player_list";
@@ -50,7 +51,7 @@ export class Game {
         //console.log(this.getPlayerList());
         const sender = eventContext.user;
         const eventProvider = eventContext.eventProvider;
-        this.mode.handleAction(action, sender, this.getPlayerList(), eventProvider);
+        this.mode.handleAction(action, sender, this.getPlayerList(), eventProvider, eventContext.songManager);
     }
 
     handleInternalAction(action: Action<object>) {
