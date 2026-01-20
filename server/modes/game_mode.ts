@@ -1,8 +1,9 @@
 import { User } from "../game_server/user";
-import { Action } from "../game_server/action";
+import { Action, buildActionSchema } from "../game_server/action";
 import { PlayerList } from "../game_server/player_list";
 import { Validator } from "../handlers/validator";
 import { EventProvider } from "../game_server/event_provider";
+import { typeSafeBind } from "../utils";
 
 export type ServerContext = {
     sender: User | null,
@@ -22,6 +23,13 @@ export abstract class GameMode {
     constructor(name: string) {
         this.name = name;
         this.validator = new Validator();
+
+        this.validator.addPair({
+            schema: buildActionSchema("joined_mode", {
+                type: "object"
+            }),
+            handler: typeSafeBind(this.handleJoinMode, this)
+        })
     }
 
     getName(): string {
@@ -37,18 +45,18 @@ export abstract class GameMode {
      * @returns GameMode - The GameMode that should be transitioned to
      */
     handleAction(action: Action<object>, sender: User | null, allPlayers: PlayerList, eventProvider: EventProvider) {
-        const nextMode = this.validator.validateAndHandle(action, {
+        this.validator.validateAndHandle(action, {
             sender: sender,
             all: allPlayers,
             eventProvider: eventProvider
-        });
-    }  
+        } satisfies ServerContext);
+    }
 
     /**
-     * Called when a user first joins this mode, this returns an action to initialize client state
-     * @param newPlayer - The player who has just joined the mode
-     * @param allPlayers - The player list of current players
-     * @returns Action that a user will use to synchronize their state
+     * Called when a user first joins the mode. Should send the user the appropriate state necessary to synchronize, and inform
+     * other players if necessary.
+     * @param data - The join mode action
+     * @param context - Includes information such as who has just joined the mode and all of the other players
      */
-    abstract getNewJoinAction(newPlayer: User, allPlayers: PlayerList): Action<object>;    
+    protected abstract handleJoinMode(data: Action<object>, context: ServerContext): void;
 }

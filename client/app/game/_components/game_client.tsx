@@ -12,6 +12,8 @@ import { ModeChangeData, ServerMsg, WelcomeData } from "../_types/server_msg";
 import SpotifySearch from "./spotify_search";
 import SongQueue from "./song_queue";
 import { SpotifySearchResult } from "../_types/spotify_types";
+import HostSelectVoters from "./_host/select_voters";
+import PlayerSelectVoters from "./_player/select_voters";
 
 interface GameInfoProps {
     game_id: number;
@@ -44,6 +46,8 @@ export default function GameClient(props: GameInfoProps) {
                     return <HostLobby sendMsg={sendMsg} gameId={props.game_id}/>
                 case 'voting':
                     return <HostVoting sendMsg={sendMsg}/>
+                case 'select_voters':
+                    return <HostSelectVoters sendMsg={sendMsg}/>
             }
         }
         else {
@@ -52,6 +56,8 @@ export default function GameClient(props: GameInfoProps) {
                     return <PlayerLobby sendMsg={sendMsg}/>
                 case 'voting':
                     return <PlayerVoting sendMsg={sendMsg}/>
+                case 'select_voters':
+                    return <PlayerSelectVoters sendMsg={sendMsg}/>
             }
         }
     }

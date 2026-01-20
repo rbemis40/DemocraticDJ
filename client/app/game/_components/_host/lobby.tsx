@@ -14,7 +14,6 @@ export default function HostLobby(props: HostLobbyProps) {
     useServerMsg((serverMsg: ServerMsg) => {
         switch (serverMsg.action) {
             case 'user_list':
-                console.log("TEST");
                 const userListData = serverMsg.data as UserListData;
                 setUserList(userListData.user_list);
                 break;

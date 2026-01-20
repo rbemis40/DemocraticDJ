@@ -8,7 +8,6 @@ export default function PlayerLobby(props: UIProps) {
     const [userList, setUserList] = useState<string[]>([]);
 
     useServerMsg((serverMsg: ServerMsg) => {
-        console.log("HELLO");
         switch(serverMsg.action) {
             case 'user_list':
                 const userListData = serverMsg.data as UserListData

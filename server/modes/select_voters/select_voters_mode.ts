@@ -2,7 +2,7 @@ import { Action } from "../../game_server/action";
 import { PlayerList } from "../../game_server/player_list";
 import { SpotifySearchData } from "../../game_server/server_types";
 import { User } from "../../game_server/user";
-import { GameMode } from "../game_mode";
+import { GameMode, ServerContext } from "../game_mode";
 
 export class SelectVotersMode extends GameMode {
     private timeRem: number; // Tracks the amount of time left on the timer
@@ -18,17 +18,22 @@ export class SelectVotersMode extends GameMode {
         this.timeRem = 30;
     }
 
-    getNewJoinAction(newPlayer: User, allPlayers: PlayerList): Action<object> {
-        return {
+    protected handleJoinMode(data: Action<object>, context: ServerContext) {
+        const voterData: { username: string | undefined; choice: string | undefined; }[] = [];
+        this.voters.forEach((choice, user) => {
+            voterData.push({
+                username: user.username,
+                choice: choice
+            });
+        });
+        
+        context.sender!.sendMsg({
             action: "voter_mode_state",
             data: {
-                voters: this.voters.forEach((choice, user) => ({
-                    username: user.username,
-                    choice: choice
-                })),
+                voters: voterData,
                 timeRem: this.timeRem
             }
-        };
+        });
     }
 
     private chooseVoters(playerList: PlayerList, maxK: number): User[] {

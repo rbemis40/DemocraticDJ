@@ -9,11 +9,11 @@ export class LobbyMode extends GameMode {
     constructor() {
         super('lobby');
 
-        // Add all actions that the lobby can handle
-        this.validator.addPair({
-            schema: buildActionSchema("joined_mode", schemas.joined_mode),
-            handler: typeSafeBind(this.handleJoinedMode, this)
-        });
+        // // Add all actions that the lobby can handle
+        // this.validator.addPair({
+        //     schema: buildActionSchema("joined_mode", schemas.joined_mode),
+        //     handler: typeSafeBind(this.handleJoinedMode, this)
+        // });
 
         this.validator.addPair({
             schema: buildActionSchema("remove_player", schemas.remove_player),
@@ -26,16 +26,7 @@ export class LobbyMode extends GameMode {
         });
     }
 
-    getNewJoinAction(newPlayer: User, allPlayers: PlayerList): Action<object> {
-        return {
-            action: 'user_list',
-            data: {
-                user_list: allPlayers.getUsernames()
-            }
-        }
-    }
-
-    private handleJoinedMode(action: Action<JoinedModeData>, context: ServerContext) {
+    protected handleJoinMode(action: Action<JoinedModeData>, context: ServerContext) {
         /* A user joined the lobby, so send them the list of active players */
         console.log("LobbyMode.handleJoinedMode: Lobby joined mode!!");
         context.all.broadcast({

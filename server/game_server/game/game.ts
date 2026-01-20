@@ -11,7 +11,7 @@ import { EventContext } from "../server_types";
 import { OutboundMsg, User } from "../user";
 import * as GameActions from "./game_actions";
 
-type AllowedModes = LobbyMode | VotingMode;
+type AllowedModes = LobbyMode | VotingMode | SelectVotersMode;
 
 export class Game {
     id: GameId;
