@@ -32,4 +32,8 @@ export class PlayerList {
     getUserByUsername(username: string): User | undefined {
         return this.players.get(username);
     }
+
+    get numPlayers() {
+        return this.players.size;
+    }
 }

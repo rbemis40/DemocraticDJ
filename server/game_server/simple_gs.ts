@@ -127,11 +127,14 @@ export class SimpleGameServer implements GameServer {
                 console.log(`Added player '${user.username}'`);
             }
             
+            user.isVoter = this.game.getPlayerList().numPlayers === 1; // If the only other player is the host, make the new player the active voter (for now)
+
             // Send a welcome message to the new user, informing them of the current game mode
             const welcomeMsg = {
                 action: 'welcome',
                 data: {
                     role: user.isHost ? 'host' : 'player',
+                    isVoter: user.isVoter,
                     gamemode: this.game.mode.getName()
                 }
             };
@@ -154,6 +157,10 @@ export class SimpleGameServer implements GameServer {
     }
 
     private async handleSearchQuery(searchAction: Action<SpotifySearchData>, eventContext: EventContext) {
+        if (!eventContext.user || !eventContext.user.isVoter) {
+            console.log(`Attempt to search by non-active user`);
+            return; // Only allow the active voter to search for songs
+        }
         const searchResults: TrackInfo[] = await this.spotifyManager.search(searchAction.data.query);
         eventContext.user?.sendMsg({
             action: "spotify_results",

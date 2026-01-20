@@ -7,6 +7,7 @@ export type ServerMsg = {
 
 export interface WelcomeData {
     role: string;
+    isVoter: boolean;
     gamemode: string;
 };
 

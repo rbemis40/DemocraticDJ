@@ -9,32 +9,9 @@ export default function PlayerVoting(props: UIProps) {
     const [timeRem, setTimeRem] = useState<number | undefined>();
 
     useServerMsg((serverMsg: ServerMsg) => {
-        switch(serverMsg.type) {
-            case 'vote_count':
-                setVoteCount(serverMsg.count);
-                break;
-            case 'begin_countdown':
-                console.log('Beginning countdown!');
-                setTimeRem(serverMsg.seconds);
-                const intId = setInterval(() => {
-                    setTimeRem((curTime) => {
-                            const newTime = curTime! -= 1;
-                            if (newTime === 0) {
-                                clearInterval(intId);
-                            }
-
-                            return newTime;
-                        }
-                    );
-
-                }, 1000);
-                break;
-            case 'end_countdown':
-                console.log('End of countdown!');
-                setTimeRem(0);
-                break;
+        switch(serverMsg.action) {
         }
-    }, ['vote_count', 'begin_countdown', 'end_countdown']);
+    }, []);
 
     useSendModeChanged('voting', props.sendMsg);
 

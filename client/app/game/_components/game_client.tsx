@@ -21,6 +21,7 @@ interface GameInfoProps {
 
 export default function GameClient(props: GameInfoProps) {
     const [isHost, setIsHost] = useState<boolean>(false);
+    const [isVoter, setIsVoter] = useState<boolean>(false);
     const [ws, setWs] = useState<WebSocket | undefined>();
     const [gameMode, setGameMode] = useState<string>('join');
     const [queuedSongs, setQueuedSongs] = useState<SpotifySearchResult[]>([]); // TODO: Separate host and normal player into two separate components / routes
@@ -104,6 +105,7 @@ export default function GameClient(props: GameInfoProps) {
                 const welcomeData = serverMsg.data as WelcomeData;
                 setGameMode(welcomeData.gamemode);
                 setIsHost(welcomeData.role === 'host');
+                setIsVoter(welcomeData.isVoter);
                 break;
             case 'change_mode':
                 const modeChangeData = serverMsg.data as ModeChangeData;
@@ -114,7 +116,9 @@ export default function GameClient(props: GameInfoProps) {
 
     return (
     <>
-        <SpotifySearch sendMsg={sendMsg}/> {/* TODO: This should only be shown to a player who is the active voter!!! */}
+        {
+            isVoter && <SpotifySearch sendMsg={sendMsg}/>
+        }
         {isHost && <SongQueue queuedSongs={queuedSongs}/>}
         {getUIPage()}
     </>

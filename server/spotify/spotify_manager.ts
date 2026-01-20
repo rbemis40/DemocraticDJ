@@ -2,6 +2,7 @@ interface SpotifySearchResult {
     tracks: {
         items: {
             name: string;
+            id: string;
             artists: {
                 name: string;
             }[];
@@ -25,6 +26,7 @@ interface TrackImg {
 
 export interface TrackInfo {
     name: string;
+    id: string;
     artists: string[];
     image: TrackImg;
     track_uri: string;
@@ -87,6 +89,7 @@ export class SpotifyManager {
         return results.tracks.items.map(item => {
             const info: TrackInfo = {
                 name: item.name,
+                id: item.id,
                 artists: item.artists.map(artist => artist.name),
                 image: item.album.images[0],
                 track_uri: item.uri

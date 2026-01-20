@@ -1,6 +1,7 @@
 import { Validator } from "../../handlers/validator";
 import { GameMode } from "../../modes/game_mode";
 import { LobbyMode } from "../../modes/lobby/lobby_mode";
+import { SelectVotersMode } from "../../modes/select_voters/select_voters_mode";
 import { VotingMode } from "../../modes/voting/voting_mode";
 import { GameId } from "../../shared_types";
 import { Action } from "../action";
@@ -57,7 +58,7 @@ export class Game {
         console.log(action);
         switch(action.action) {
             case "next_game_mode": {
-                this.mode = new VotingMode();
+                this.mode = new SelectVotersMode(this.getPlayerList());
                 this.getPlayerList().broadcast({
                     action: "change_mode",
                     data: {

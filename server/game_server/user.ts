@@ -14,7 +14,7 @@ export type OutboundMsg<T extends object> = {
 export class User {
     username: string | undefined;
     isHost: boolean;
-    isActiveVoter: boolean;
+    isVoter: boolean;
     private ws: WebSocket;
 
     constructor(ws: WebSocket) {

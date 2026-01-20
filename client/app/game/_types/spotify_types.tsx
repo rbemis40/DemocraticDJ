@@ -1,5 +1,6 @@
 export interface SpotifySearchResult {
     name: string;
+    id: string;
     artists: string[];
     image: {
         url: string;
