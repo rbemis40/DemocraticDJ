@@ -2,9 +2,10 @@ import { Action, buildActionSchema } from "../../game_server/action";
 import { PlayerList } from "../../game_server/player_list";
 import { SpotifySearchData } from "../../game_server/server_types";
 import { User } from "../../game_server/user";
+import { TrackInfo } from "../../spotify/spotify_manager";
 import { typeSafeBind } from "../../utils";
 import { GameMode, ServerContext } from "../game_mode";
-import { songSelectedSchema, VoterSongSelectedData } from "./select_voters_schemas";
+import { chooseSongSchema, ChooseSongData } from "./select_voters_schemas";
 
 export class SelectVotersMode extends GameMode {
     private timeRem: number; // Tracks the amount of time left on the timer
@@ -16,21 +17,22 @@ export class SelectVotersMode extends GameMode {
         this.voters = new Map<string, string | undefined>(); // Username -> song id (choice)
         this.chooseVoters(playerList, 2).forEach(user => {
             this.voters.set(user.username!, undefined);
+            user.isVoter = true;
         });
         this.timeRem = 30;
 
         this.validator.addPair({
-            schema: buildActionSchema("song_selected", songSelectedSchema),
-            handler: typeSafeBind(this.handleSongSelected, this)
+            schema: buildActionSchema("choose_song", chooseSongSchema),
+            handler: typeSafeBind(this.handleChooseSong, this)
         })
     }
 
     protected handleJoinMode(data: Action<object>, context: ServerContext) {
-        const voterData: { username: string | undefined; choice: string | undefined; }[] = [];
-        this.voters.forEach((choice, username) => {
+        const voterData: { username: string | undefined; choice: TrackInfo | undefined; }[] = [];
+        this.voters.forEach(async (choice, username) => {
             voterData.push({
                 username: username,
-                choice: choice
+                choice: choice !== undefined ? await context.songManager.getSongById(choice) : undefined // TODO: Need to implement Spotify API caching so such requests don't require another trip delay
             });
         });
 
@@ -61,7 +63,7 @@ export class SelectVotersMode extends GameMode {
         // Fisher-Yates shuffle
         for (let i = usernames.length - 1; i > 0; i--) {
             // Choose random index to swap with
-            const swapI = Math.floor(Math.random() * (i - 1))
+            const swapI = Math.floor(Math.random() * i)
             const tmp = usernames[swapI];
             usernames[swapI] = usernames[i];
             usernames[i] = tmp;
@@ -76,7 +78,7 @@ export class SelectVotersMode extends GameMode {
         return voters;
     }
 
-    private async handleSongSelected(action: Action<VoterSongSelectedData>, context: ServerContext) {
+    private async handleChooseSong(action: Action<ChooseSongData>, context: ServerContext) {
         if (!context.sender!.isVoter) {
             console.log(`SelectVotersMode.handleSongSelected: Non-voter ${context.sender?.username} attempted to select song`);
             return;

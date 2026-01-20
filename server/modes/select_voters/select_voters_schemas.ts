@@ -1,9 +1,9 @@
 import { JSONSchemaType } from "ajv";
 
-export interface VoterSongSelectedData {
+export interface ChooseSongData {
     song_id: string;
 };
-export const songSelectedSchema: JSONSchemaType<VoterSongSelectedData> = {
+export const chooseSongSchema: JSONSchemaType<ChooseSongData> = {
     type: "object",
     properties: {
         song_id: {type: "string"}

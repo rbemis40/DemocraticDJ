@@ -29,9 +29,9 @@ export default function SpotifySearch(props: SpotifySearchUI) {
         setResults(undefined);
     }
 
-    function queueSong(id: string) {
+    function chooseSong(id: string) {
         props.sendMsg(JSON.stringify({
-            action: 'song_queue',
+            action: 'choose_song',
             data: {
                 song_id: id
             }
@@ -60,7 +60,7 @@ export default function SpotifySearch(props: SpotifySearchUI) {
                     {results?.map(result =>
                         <div key={result.id}>
                             <SongCard info={result}/>
-                            <button onClick={() => queueSong(result.id)}>Add to Queue</button>
+                            <button onClick={() => chooseSong(result.id)}>Choose Song</button>
                         </div>
                     )}
                     <button onClick={closeSearch}>Close</button>
