@@ -7,7 +7,6 @@ export type ServerMsg = {
 
 export interface WelcomeData {
     role: string;
-    isVoter: boolean;
     gamemode: string;
 };
 
@@ -22,6 +21,10 @@ export interface UserListData {
 export interface NewPlayerData {
     username: string;
 };
+
+export interface ChangeVoterStateData {
+    isVoter: boolean;
+}
 
 /* Begin deprecated types */
 

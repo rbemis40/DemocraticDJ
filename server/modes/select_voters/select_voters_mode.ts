@@ -8,14 +8,14 @@ import { songSelectedSchema, VoterSongSelectedData } from "./select_voters_schem
 
 export class SelectVotersMode extends GameMode {
     private timeRem: number; // Tracks the amount of time left on the timer
-    private voters: Map<User, string | undefined>; // Maps each voter to the song id for their selection
+    private voters: Map<string, string | undefined>; // Maps each voter to the song id for their selection
     
     constructor(playerList: PlayerList) {
         super("select_voters");
 
-        this.voters = new Map<User, string | undefined>();
+        this.voters = new Map<string, string | undefined>(); // Username -> song id (choice)
         this.chooseVoters(playerList, 2).forEach(user => {
-            this.voters.set(user, undefined);
+            this.voters.set(user.username!, undefined);
         });
         this.timeRem = 30;
 
@@ -27,18 +27,28 @@ export class SelectVotersMode extends GameMode {
 
     protected handleJoinMode(data: Action<object>, context: ServerContext) {
         const voterData: { username: string | undefined; choice: string | undefined; }[] = [];
-        this.voters.forEach((choice, user) => {
+        this.voters.forEach((choice, username) => {
             voterData.push({
-                username: user.username,
+                username: username,
                 choice: choice
             });
         });
+
+        // If the user has been selected to vote, inform them
+        if (context.sender!.username !== undefined && this.voters.has(context.sender!.username)) {
+            context.sender!.sendMsg({
+                action: "change_voter_state",
+                data: {
+                    isVoter: true
+                }
+            });
+        }
 
         context.sender!.sendMsg({
             action: "voter_mode_state",
             data: {
                 voters: voterData,
-                timeRem: this.timeRem
+                timeRem: this.timeRem,
             }
         });
     }
@@ -66,7 +76,20 @@ export class SelectVotersMode extends GameMode {
         return voters;
     }
 
-    private handleSongSelected(action: Action<VoterSongSelectedData>, context: ServerContext) {
+    private async handleSongSelected(action: Action<VoterSongSelectedData>, context: ServerContext) {
+        if (!context.sender!.isVoter) {
+            console.log(`SelectVotersMode.handleSongSelected: Non-voter ${context.sender?.username} attempted to select song`);
+            return;
+        }
+        
         const songId = action.data.song_id;
+        const songInfo = await context.songManager.getSongById(songId);
+        context.all.broadcast({
+            action: "song_selected",
+            data: {
+                username: context.sender!.username,
+                song_data: songInfo
+            }
+        });
     }
 }

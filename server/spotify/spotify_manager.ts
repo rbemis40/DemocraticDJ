@@ -1,20 +1,22 @@
+interface SpotifyTrackResult {
+    name: string;
+    id: string;
+    artists: {
+        name: string;
+    }[];
+    album: {
+        images: {
+            url: string;
+            width: number;
+            height: number;
+        }[];
+    };
+    uri: string;
+};
+
 interface SpotifySearchResult {
     tracks: {
-        items: {
-            name: string;
-            id: string;
-            artists: {
-                name: string;
-            }[];
-            album: {
-                images: {
-                    url: string;
-                    width: number;
-                    height: number;
-                }[];
-            };
-            uri: string;
-        }[]
+        items: SpotifyTrackResult[]
     }
 };
 
@@ -81,8 +83,8 @@ export class SpotifyManager {
             }
         });
 
-        if (res.status !== 200) {
-            throw new Error('Failed to search using Spotify API');
+        if (!res.ok) {
+            throw new Error(`Failed to search using Spotify API, code: ${res.status}`);
         }
 
         const results = await res.json() as SpotifySearchResult;
@@ -96,6 +98,32 @@ export class SpotifyManager {
             };
             return info;
         });
+    }
+
+    async getSongById(id: string): Promise<TrackInfo> {
+        if(!this.isReady()) {
+            throw new Error("Attempt to get song by id using Spotify API without valid connection");
+        }
+
+        const url = "https://api.spotify.com/v1/tracks/" + id;
+        const res = await fetch(url, {
+            headers: {
+                "Authorization": "Bearer " + this.access_token
+            }
+        });
+
+        if (!res.ok) {
+            throw new Error(`Failed to get track using Spotify API, code: ${res.status}`);
+        }
+
+        const result = await res.json() as SpotifyTrackResult;
+        return {
+            name: result.name,
+            id: result.id,
+            artists: result.artists.map(artist => artist.name),
+            image: result.album.images[0],
+            track_uri: result.uri
+        } satisfies TrackInfo;
     }
 
     async queue(track_uri: string) {

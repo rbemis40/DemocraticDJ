@@ -8,7 +8,7 @@ import HostVoting from "./_host/voting";
 import PlayerVoting from "./_player/voting";
 import { ServerMsgContext } from "./server_msg_provider";
 import useServerMsg from "../_hooks/server_msg_hook";
-import { ModeChangeData, ServerMsg, WelcomeData } from "../_types/server_msg";
+import { ChangeVoterStateData, ModeChangeData, ServerMsg, WelcomeData } from "../_types/server_msg";
 import SpotifySearch from "./spotify_search";
 import SongQueue from "./song_queue";
 import { SpotifySearchResult } from "../_types/spotify_types";
@@ -111,14 +111,17 @@ export default function GameClient(props: GameInfoProps) {
                 const welcomeData = serverMsg.data as WelcomeData;
                 setGameMode(welcomeData.gamemode);
                 setIsHost(welcomeData.role === 'host');
-                setIsVoter(welcomeData.isVoter);
                 break;
             case 'change_mode':
                 const modeChangeData = serverMsg.data as ModeChangeData;
                 setGameMode(modeChangeData.gamemode);
                 break;
+            case 'change_voter_state':
+                const voterChangeData = serverMsg.data as ChangeVoterStateData;
+                setIsVoter(voterChangeData.isVoter);
+                break;
         }
-    }, ['welcome', 'change_mode']);
+    }, ['welcome', 'change_mode', 'change_voter_state']);
 
     return (
     <>

@@ -128,15 +128,12 @@ export class SimpleGameServer implements GameServer {
             else {
                 console.log(`Added player '${user.username}'`);
             }
-            
-            user.isVoter = this.game.getPlayerList().numPlayers === 1; // If the only other player is the host, make the new player the active voter (for now)
 
             // Send a welcome message to the new user, informing them of the current game mode
             const welcomeMsg = {
                 action: 'welcome',
                 data: {
                     role: user.isHost ? 'host' : 'player',
-                    isVoter: user.isVoter,
                     gamemode: this.game.mode.getName()
                 }
             };
