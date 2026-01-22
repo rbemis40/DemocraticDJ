@@ -18,7 +18,7 @@ export default function SpotifySearch(props: SpotifySearchUI) {
         e.preventDefault();
 
         props.sendMsg(JSON.stringify({
-            action: 'spotify_search',
+            action: 'song_search',
             data: {
                 query: queryRef.current
             }

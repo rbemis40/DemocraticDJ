@@ -4,7 +4,7 @@ import { PlayerList } from "../game_server/player_list";
 import { Validator } from "../handlers/validator";
 import { EventProvider } from "../game_server/event_provider";
 import { typeSafeBind } from "../utils";
-import { SpotifyManager } from "../spotify/spotify_manager";
+import { SpotifyAPI } from "../spotify/spotify_api";
 import { Connection } from "../game_server/connection";
 
 export type ContextSender = {
@@ -16,7 +16,7 @@ export type ServerContext = {
     sender?: ContextSender,
     allPlayers: PlayerList,
     eventProvider: EventProvider<ServerContext>,
-    songManager: SpotifyManager,
+    songManager: SpotifyAPI,
     gameModeName: string;
 }
 

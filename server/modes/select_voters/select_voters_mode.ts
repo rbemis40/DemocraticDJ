@@ -1,9 +1,7 @@
 import { Action, buildActionSchema } from "../../game_server/action";
 import { PlayerList } from "../../game_server/player_list";
-import { SpotifySearchData } from "../../game_server/server_types";
 import { Player } from "../../game_server/player";
-import { TrackInfo } from "../../spotify/spotify_manager";
-import { typeSafeBind } from "../../utils";
+import { TrackInfo } from "../../spotify/spotify_api";
 import { GameMode, ServerContext } from "../game_mode";
 import { chooseSongSchema, ChooseSongData } from "./select_voters_schemas";
 import { EventProvider } from "../../game_server/event_provider";

@@ -2,7 +2,7 @@ import { JSONSchemaType } from "ajv";
 import { GameId, UserToken } from "../shared_types";
 import { Player } from "./player";
 import { EventProvider } from "./event_provider";
-import { SpotifyManager } from "../spotify/spotify_manager";
+import { SpotifyAPI } from "../spotify/spotify_api";
 import { ServerContext } from "../modes/game_mode";
 
 /*
@@ -28,13 +28,13 @@ export interface GameServer {
 export interface ExternalEventContext {
     user: Player;
     eventProvider: EventProvider<ServerContext>;
-    songManager: SpotifyManager;
+    songManager: SpotifyAPI;
 };
 
 export interface InternalEventContext {
     user: null;
     eventProvider: EventProvider<ServerContext>;
-    songManager: SpotifyManager;
+    songManager: SpotifyAPI;
 };
 
 export type EventContext = ExternalEventContext | InternalEventContext;
@@ -89,15 +89,4 @@ export const newPlayerDataSchema: JSONSchemaType<NewPlayerData> = {
         username: {type: 'string'}
     },
     required: ['username']
-};
-
-export interface SpotifySearchData {
-    query: string;
-}
-export const spoitfySearchDataSchema: JSONSchemaType<SpotifySearchData> = {
-    type: "object",
-    properties: {
-        query: {type: "string"}
-    },
-    required: ["query"]
 };

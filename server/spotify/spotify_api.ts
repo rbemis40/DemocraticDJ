@@ -34,7 +34,7 @@ export interface TrackInfo {
     track_uri: string;
 };
 
-export class SpotifyManager {
+export class SpotifyAPI {
     access_token: string | undefined;
     connected: boolean;
     constructor() {

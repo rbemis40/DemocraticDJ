@@ -1,17 +1,17 @@
 import { RawData, WebSocketServer } from "ws";
 import { GameId } from "../shared_types";
 import { GameModeSequencer } from "./game/game_mode_sequencer";
-import { GameServer, PlayerLeaveData, playerLeaveDataSchema, spoitfySearchDataSchema, SpotifySearchData } from "./server_types";
+import { GameServer, PlayerLeaveData } from "./server_types";
 import { Player } from "./player";
 import { Validator } from "../handlers/validator";
-import { Action, buildActionSchema } from "./action";
-import { typeSafeBind } from "../utils";
+import { Action } from "./action";
 import { EventProvider } from "./event_provider";
-import { SpotifyManager, TrackInfo } from "../spotify/spotify_manager";
+import { SpotifyAPI } from "../spotify/spotify_api";
 import { ContextSender, ServerContext } from "../modes/game_mode";
 import { ConnectionHandler } from "./connection_handler";
 import { Connection } from "./connection";
 import { PlayerList } from "./player_list";
+import { SongManager } from "../spotify/song_manager";
 
 /*
     - A game server that simply runs on the same system as the HTTP server
@@ -25,7 +25,8 @@ export class SimpleGameServer implements GameServer {
     private gameModeSeq: GameModeSequencer;
     private playerList: PlayerList;
     private eventProvider: EventProvider<ServerContext>; // Used for internal dispatching of events from game modes
-    private spotifyManager: SpotifyManager;
+    private spotifyAPI: SpotifyAPI;
+    private songManager: SongManager;
     private gameId?: GameId;
 
     constructor(port=8081) {
@@ -40,6 +41,10 @@ export class SimpleGameServer implements GameServer {
 
         this.connectionHandler = new ConnectionHandler(this.eventProvider);
         this.playerList = new PlayerList(this.eventProvider);
+
+        this.spotifyAPI = new SpotifyAPI();
+        this.songManager = new SongManager(this.spotifyAPI, this.eventProvider);
+        
         this.gameModeSeq = new GameModeSequencer(this.eventProvider);
 
         this.setupServerHandler();
@@ -52,22 +57,14 @@ export class SimpleGameServer implements GameServer {
         }
 
         this.gameId = id;
-        this.spotifyManager = new SpotifyManager();
         if (process.env.SPOTIFY_REDIRECT_URI === undefined) {
             throw new Error("Missing environment variable 'SPOTIFY_REDIRECT_URI'!");
         }
 
-        await this.spotifyManager.connect(spotifyCode, process.env.SPOTIFY_REDIRECT_URI);
+        await this.spotifyAPI.connect(spotifyCode, process.env.SPOTIFY_REDIRECT_URI);
 
         // Setup the actions that the game server itself handles
         this.validator = new Validator();
-
-        
-        // Spotify Searching
-        this.validator.addPair({
-            schema: buildActionSchema("spotify_search", spoitfySearchDataSchema),
-            handler: typeSafeBind(this.handleSearchQuery, this)
-        });
 
         return true;
     }
@@ -122,22 +119,8 @@ export class SimpleGameServer implements GameServer {
             sender: sender,
             allPlayers: this.playerList,
             eventProvider: this.eventProvider,
-            songManager: this.spotifyManager,
+            songManager: this.spotifyAPI,
             gameModeName: this.gameModeSeq.getCurrentModeName()
         };
-    }
-
-    private async handleSearchQuery(searchAction: Action<SpotifySearchData>, context: ServerContext) {
-        if (!context.sender?.playerData?.isVoter) {
-            console.log(`Attempt to search by non-active user`);
-            return; // Only allow the active voter to search for songs
-        }
-        const searchResults: TrackInfo[] = await this.spotifyManager.search(searchAction.data.query);
-        context.sender.con.sendAction({
-            action: "spotify_results",
-            data: {
-                results: searchResults
-            }
-        });
     }
 }
