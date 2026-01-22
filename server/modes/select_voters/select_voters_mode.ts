@@ -88,6 +88,11 @@ export class SelectVotersMode extends GameMode {
             console.log(`SelectVotersMode.handleSongSelected: Non-voter ${context.sender!.playerData!.username} attempted to select song`);
             return;
         }
+
+        if (Date.now() - this.timerStart >= this.timerLength * 1000) {
+            console.log(`Player '${context.sender!.playerData!.username}' attempted to select song after time expired!`);
+            return;
+        }
         
         const songId = action.data.song_id;
         const songInfo = await context.songManager.getSongById(songId);
