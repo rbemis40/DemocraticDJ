@@ -1,10 +1,27 @@
-import { Action } from "./action";
+import { Validator } from "../handlers/validator";
+import { ServerContext } from "../modes/game_mode";
+import { Action, buildActionSchema } from "./action";
+import { EventProvider } from "./event_provider";
 import { Player } from "./player";
+import { PlayerLeaveData, playerLeaveDataSchema } from "./server_types";
 
 export class PlayerList {
     private players: Map<string | undefined, Player>;
-    constructor() {
+    private eventProvider: EventProvider<ServerContext>;
+    private validator: Validator<ServerContext>;
+
+    constructor(eventProvider: EventProvider<ServerContext>) {
         this.players = new Map<string | undefined, Player>();
+        this.validator = new Validator();
+        this.validator.addPair({
+            schema: buildActionSchema("player_leave", playerLeaveDataSchema),
+            handler: (action, context) => this.onPlayerLeave(action, context)
+        });
+
+        this.eventProvider = eventProvider;
+        this.eventProvider.onAction((action, context) => {{
+            this.validator.validateAndHandle(action, context);
+        }});
     }
 
     addPlayer(player: Player) {
@@ -36,5 +53,10 @@ export class PlayerList {
 
     get numPlayers() {
         return this.players.size;
+    }
+
+    private onPlayerLeave(action: Action<PlayerLeaveData>, context: ServerContext) {
+        const player: Player = action.data.player as Player;
+        this.removePlayer(player);
     }
 }

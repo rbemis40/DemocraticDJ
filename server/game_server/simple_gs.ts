@@ -39,8 +39,8 @@ export class SimpleGameServer implements GameServer {
         });
 
         this.connectionHandler = new ConnectionHandler(this.eventProvider);
+        this.playerList = new PlayerList(this.eventProvider);
         this.gameModeSeq = new GameModeSequencer(this.eventProvider);
-        this.playerList = new PlayerList();
 
         this.setupServerHandler();
     }
@@ -62,11 +62,7 @@ export class SimpleGameServer implements GameServer {
         // Setup the actions that the game server itself handles
         this.validator = new Validator();
 
-        this.validator.addPair({
-            schema: buildActionSchema("player_leave", playerLeaveDataSchema),
-            handler: (action, context) => this.onPlayerLeave(action, context)
-        });
-
+        
         // Spotify Searching
         this.validator.addPair({
             schema: buildActionSchema("spotify_search", spoitfySearchDataSchema),
@@ -129,14 +125,6 @@ export class SimpleGameServer implements GameServer {
             songManager: this.spotifyManager,
             gameModeName: this.gameModeSeq.getCurrentModeName()
         };
-    }
-
-    private onPlayerLeave(action: Action<PlayerLeaveData>, context: ServerContext) {
-        const player: Player = action.data.player as Player;
-        console.log(`SimpleGameServer.onPlayerLeave: Disconnecting player '${player.username}'`);
-        
-        player.getConnection().disconnect();
-        this.playerList.removePlayer(player);
     }
 
     private async handleSearchQuery(searchAction: Action<SpotifySearchData>, context: ServerContext) {

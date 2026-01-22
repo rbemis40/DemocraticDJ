@@ -7,6 +7,7 @@ import { EventProvider } from "./event_provider";
 import { InGameInfo, Player } from "./player";
 import { TokenData, TokenHandler } from "../handlers/token_handler";
 import { Connection } from "./connection";
+import { PlayerLeaveData, playerLeaveDataSchema } from "./server_types";
 
 interface PlayerJoinData {
     token: UserToken;
@@ -39,6 +40,11 @@ export class ConnectionHandler {
             schema: buildActionSchema("player_join", playerJoinSchema),
             handler: (data, context) => this.onPlayerJoin(data, context),
         });
+
+        this.validator.addPair({
+            schema: buildActionSchema("player_leave", playerLeaveDataSchema),
+            handler: (data, context) => this.onPlayerLeave(data, context),
+        })
 
         this.eventProvider.onAction((action: Action<object>, context: ServerContext) => {
             this.validator.validateAndHandle(action, context);
@@ -84,6 +90,11 @@ export class ConnectionHandler {
         } catch (e) {
             fns.reject(e);
         }
+    }
+
+    private onPlayerLeave(action: Action<PlayerLeaveData>, context: ServerContext) {
+        const player: Player = action.data.player as Player;
+        player.getConnection().disconnect();
     }
 
     async completeHandshake(con: Connection): Promise<Player> {
