@@ -1,6 +1,6 @@
 import { RawData, WebSocketServer } from "ws";
 import { GameId } from "../shared_types";
-import { Game } from "./game/game";
+import { GameModeSequencer } from "./game/game_mode_sequencer";
 import { EventContext, GameServer, InternalDisconnectData, JoinData, joinDataSchema, NewPlayerData, spoitfySearchDataSchema, SpotifySearchData } from "./server_types";
 import { Player, PlayerData } from "./player";
 import { Validator } from "../handlers/validator";
@@ -8,7 +8,7 @@ import { Action, actionSchema, buildActionSchema } from "./action";
 import { typeSafeBind } from "../utils";
 import { EventProvider } from "./event_provider";
 import { SpotifyManager, TrackInfo } from "../spotify/spotify_manager";
-import { ServerContext } from "../modes/game_mode";
+import { GameMode, ServerContext } from "../modes/game_mode";
 import { ConnectionHandler } from "./connection_handler";
 import { Connection } from "./connection";
 import { PlayerList } from "./player_list";
@@ -20,18 +20,20 @@ import { PlayerList } from "./player_list";
 export class SimpleGameServer implements GameServer {
     private wss: WebSocketServer;
     private url: URL;
-    private game: Game;
     private validator: Validator<ServerContext>;
     private connectionHandler: ConnectionHandler;
+    private gameModeSeq: GameModeSequencer;
     private playerList: PlayerList;
     private eventProvider: EventProvider<ServerContext>; // Used for internal dispatching of events from game modes
     private spotifyManager: SpotifyManager;
+    private gameId?: GameId;
 
     constructor(port=8081) {
         this.wss = new WebSocketServer({port: port}, () => console.log(`Game server running on port ${port}`));
         this.url = new URL(`ws://${process.env.HOST_NAME}:8081`);
         this.eventProvider = new EventProvider();
         this.connectionHandler = new ConnectionHandler(this.eventProvider);
+        this.gameModeSeq = new GameModeSequencer(this.eventProvider);
         this.playerList = new PlayerList();
 
         this.eventProvider.onAction((action, context) => { // Handle internally dispatched events
@@ -42,12 +44,12 @@ export class SimpleGameServer implements GameServer {
     }
 
     async createGame(id: GameId, spotifyCode: string): Promise<boolean> {
-        if (this.game !== undefined) {
-            console.error(`Server is already running game with id ${this.game.id}`);
+        if (this.gameId !== undefined) {
+            console.error(`Server is already running game with id ${this.gameId}`);
             return false;
         }
 
-        this.game = new Game(id, this.eventProvider);
+        this.gameId = id;
         this.spotifyManager = new SpotifyManager();
         if (process.env.SPOTIFY_REDIRECT_URI === undefined) {
             throw new Error("Missing environment variable 'SPOTIFY_REDIRECT_URI'!");
@@ -67,12 +69,6 @@ export class SimpleGameServer implements GameServer {
         this.validator.addPair({
             schema: buildActionSchema("spotify_search", spoitfySearchDataSchema),
             handler: typeSafeBind(this.handleSearchQuery, this)
-        });
-
-        // All Actions are passed to the game to handle
-        this.validator.addPair({
-            schema: actionSchema,
-            handler: typeSafeBind(this.game.handleAction, this.game)
         });
 
         return true;
@@ -102,7 +98,7 @@ export class SimpleGameServer implements GameServer {
                         allPlayers: this.playerList,
                         eventProvider: this.eventProvider,
                         songManager: this.spotifyManager,
-                        gameModeName: this.game.mode.getName()
+                        gameModeName: this.gameModeSeq.getCurrentModeName()
                     });
                 }
                 catch (e) {
@@ -119,21 +115,11 @@ export class SimpleGameServer implements GameServer {
         });
     }
 
-    private handleUserJoin(joinAction: Action<JoinData>, eventContext: EventContext) {
-        if (eventContext.user === null) {
-            return; // Only handle external events
-        }
-
-        
-    }
-
     private handleInternalDisconnect(internDiscAction: Action<InternalDisconnectData>, eventContext: ServerContext) {
         console.log("HandleInternalDisconnect!");
         let user = internDiscAction.data.user as Player;
         console.log(`Disconnecting user ${user.username}`);
         user.getConnection().disconnect();
-
-        this.game.removePlayer(user);
     }
 
     private async handleSearchQuery(searchAction: Action<SpotifySearchData>, serverContext: ServerContext) {

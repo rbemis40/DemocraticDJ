@@ -2,10 +2,11 @@ import { GameMode, ServerContext } from "../game_mode";
 import schemas, { JoinedModeData, RemovePlayerData, StartGameData } from "./lobby_schemas";
 import { Action, buildActionSchema } from "../../game_server/action";
 import { typeSafeBind } from "../../utils";
+import { EventProvider } from "../../game_server/event_provider";
 
 export class LobbyMode extends GameMode {
-    constructor() {
-        super('lobby');
+    constructor(eventProvider: EventProvider<ServerContext>) {
+        super('lobby', eventProvider);
 
         // // Add all actions that the lobby can handle
         // this.validator.addPair({
@@ -15,16 +16,16 @@ export class LobbyMode extends GameMode {
 
         this.validator.addPair({
             schema: buildActionSchema("remove_player", schemas.remove_player),
-            handler: typeSafeBind(this.handleRemoveUser, this)
+            handler: (data, context) => this.onRemoveUser(data, context)
         });
 
         this.validator.addPair({
             schema: buildActionSchema("start_game", schemas.start_game),
-            handler: typeSafeBind(this.handleStartGame, this)
+            handler: (data, context) => this.onStartGame(data, context)
         });
     }
 
-    protected handleJoinMode(action: Action<JoinedModeData>, context: ServerContext) {
+    protected onJoinMode(action: Action<JoinedModeData>, context: ServerContext) {
         /* A user joined the lobby, so send them the list of active players */
         console.log("LobbyMode.handleJoinedMode: Lobby joined mode!!");
         context.allPlayers.broadcast({
@@ -35,7 +36,7 @@ export class LobbyMode extends GameMode {
         });
     }
 
-    private handleRemoveUser(action: Action<RemovePlayerData>, context: ServerContext) {
+    private onRemoveUser(action: Action<RemovePlayerData>, context: ServerContext) {
         context.eventProvider.dispatchAction({
             action: "internal_disconnect",
             data: {
@@ -52,7 +53,7 @@ export class LobbyMode extends GameMode {
         });
     }
 
-    private handleStartGame(action: Action<StartGameData>, context: ServerContext) {
+    private onStartGame(action: Action<StartGameData>, context: ServerContext) {
         console.log("LobbyMode.handleStartGame: ")
         console.log(action);
         context.eventProvider.dispatchAction({

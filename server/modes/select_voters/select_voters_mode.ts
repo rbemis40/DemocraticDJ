@@ -6,13 +6,14 @@ import { TrackInfo } from "../../spotify/spotify_manager";
 import { typeSafeBind } from "../../utils";
 import { GameMode, ServerContext } from "../game_mode";
 import { chooseSongSchema, ChooseSongData } from "./select_voters_schemas";
+import { EventProvider } from "../../game_server/event_provider";
 
 export class SelectVotersMode extends GameMode {
     private timeRem: number; // Tracks the amount of time left on the timer
     private voters: Map<string, TrackInfo | undefined>; // Maps each voter to the song id for their selection
     
-    constructor(playerList: PlayerList, context: ServerContext) {
-        super("select_voters");
+    constructor(playerList: PlayerList, eventProvider: EventProvider<ServerContext>) {
+        super("select_voters", eventProvider);
 
         this.voters = new Map<string, TrackInfo | undefined>(); // Username -> song id (choice)
         this.chooseVoters(playerList, 2).forEach(user => {
@@ -23,13 +24,13 @@ export class SelectVotersMode extends GameMode {
 
         this.validator.addPair({
             schema: buildActionSchema("choose_song", chooseSongSchema),
-            handler: typeSafeBind(this.handleChooseSong, this)
+            handler: (data, context) => this.onChooseSong(data, context)
         });
 
-        this.startTimer(context);
+        this.startTimer(playerList);
     }
 
-    protected handleJoinMode(data: Action<object>, context: ServerContext) {
+    protected onJoinMode(data: Action<object>, context: ServerContext) {
         const voterData: { username: string; choice: TrackInfo | undefined; }[] = [];
         this.voters.forEach((choice, username) => {
             voterData.push({
@@ -80,7 +81,7 @@ export class SelectVotersMode extends GameMode {
         return voters;
     }
 
-    private async handleChooseSong(action: Action<ChooseSongData>, context: ServerContext) {
+    private async onChooseSong(action: Action<ChooseSongData>, context: ServerContext) {
         if (!context.sender!.playerData!.isVoter) {
             console.log(`SelectVotersMode.handleSongSelected: Non-voter ${context.sender!.playerData!.username} attempted to select song`);
             return;
@@ -100,12 +101,12 @@ export class SelectVotersMode extends GameMode {
         });
     }
 
-    private startTimer(context: ServerContext) {
+    private startTimer(allPlayers: PlayerList) {
         const intId = setInterval(() => {
             this.timeRem -= 1;
             if (this.timeRem <= 0) {
                 clearInterval(intId);
-                context.allPlayers.broadcast({
+                allPlayers.broadcast({
                     action: "song_select_over",
                     data: {}
                 })

@@ -25,34 +25,31 @@ export type ServerContext = {
  */
 export abstract class GameMode {
     protected name: string;
+    protected eventProvider: EventProvider<ServerContext>;
     protected validator: Validator<ServerContext>;
 
-    constructor(name: string) {
+    constructor(name: string, eventProvider: EventProvider<ServerContext>) {
         this.name = name;
-        this.validator = new Validator();
 
+        this.eventProvider = eventProvider;
+
+        // Force each GameMode to handle a player joining the mode, used to send init data for the client
+        this.validator = new Validator();
         this.validator.addPair({
             schema: buildActionSchema("joined_mode", {
                 type: "object"
             }),
-            handler: typeSafeBind(this.handleJoinMode, this)
-        })
+            handler: (data, context) => this.onJoinMode(data, context)
+        });
+
+        // Receive events from the server, and validate them to pass to handlers
+        this.eventProvider.onAction((action, context) => {
+            this.validator.validateAndHandle(action, context);
+        });
     }
 
     getName(): string {
         return this.name;
-    }
-
-    /**
-     * Handles an action by validating it against validator schema, and calling appropriate handler methods for the action.
-     * Returns a new state that should be transitioned to, or the current state for no transition.
-     * @param action - The action to be handled
-     * @param sendingPlayer - The player who sent / initiated this action
-     * @param allPlayers - All of the players currently in the game
-     * @returns GameMode - The GameMode that should be transitioned to
-     */
-    handleAction(action: Action<object>, serverContext: ServerContext) {
-        this.validator.validateAndHandle(action, serverContext);
     }
 
     /**
@@ -61,5 +58,5 @@ export abstract class GameMode {
      * @param data - The join mode action
      * @param context - Includes information such as who has just joined the mode and all of the other players
      */
-    protected abstract handleJoinMode(data: Action<object>, context: ServerContext): void;
+    protected abstract onJoinMode(data: Action<object>, context: ServerContext): void;
 }
