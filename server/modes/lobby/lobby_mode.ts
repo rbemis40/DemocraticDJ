@@ -3,25 +3,25 @@ import schemas, { JoinedModeData, RemovePlayerData, StartGameData } from "./lobb
 import { Action, buildActionSchema } from "../../game_server/action";
 import { typeSafeBind } from "../../utils";
 import { EventProvider } from "../../game_server/event_provider";
+import { PlayerLeaveData, playerLeaveDataSchema } from "../../game_server/server_types";
 
 export class LobbyMode extends GameMode {
     constructor(eventProvider: EventProvider<ServerContext>) {
         super('lobby', eventProvider);
 
-        // // Add all actions that the lobby can handle
-        // this.validator.addPair({
-        //     schema: buildActionSchema("joined_mode", schemas.joined_mode),
-        //     handler: typeSafeBind(this.handleJoinedMode, this)
-        // });
-
         this.validator.addPair({
             schema: buildActionSchema("remove_player", schemas.remove_player),
-            handler: (data, context) => this.onRemoveUser(data, context)
+            handler: (action, context) => this.onRemovePlayer(action, context)
+        });
+
+        this.validator.addPair({
+            schema: buildActionSchema("player_leave", playerLeaveDataSchema),
+            handler: (action, context) => this.onPlayerLeave(action, context)
         });
 
         this.validator.addPair({
             schema: buildActionSchema("start_game", schemas.start_game),
-            handler: (data, context) => this.onStartGame(data, context)
+            handler: (action, context) => this.onStartGame(action, context)
         });
     }
 
@@ -36,15 +36,17 @@ export class LobbyMode extends GameMode {
         });
     }
 
-    private onRemoveUser(action: Action<RemovePlayerData>, context: ServerContext) {
+    private onRemovePlayer(action: Action<RemovePlayerData>, context: ServerContext) {
         context.eventProvider.dispatchAction({
-            action: "internal_disconnect",
+            action: "player_leave",
             data: {
-                user: context.allPlayers.getUserByUsername(action.data.username)
+                player: context.allPlayers.getPlayerByUsername(action.data.username)
             }
         }, context);
+    }
 
-        // Send the updated user list after disconnecting the user
+    private onPlayerLeave(action: Action<PlayerLeaveData>, context: ServerContext) {
+        // Send the updated user list for the remaining players
         context.allPlayers.broadcast({
             action: "user_list",
             data: {

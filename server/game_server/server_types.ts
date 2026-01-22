@@ -53,16 +53,16 @@ export const joinDataSchema: JSONSchemaType<JoinData> = {
     required: ['token']
 };
 
-export type InternalDisconnectData = {
-    user: object; // Should be User, but for now object until User has a defined schema
+export type PlayerLeaveData = {
+    player: object; // Should be User, but for now object until User has a defined schema
 };
-export const disconnectData: JSONSchemaType<InternalDisconnectData> = {
+export const playerLeaveDataSchema: JSONSchemaType<PlayerLeaveData> = {
     type: 'object',
     properties: {
-        user: {type: "object"}
+        player: {type: "object"}
     },
 
-    required: ['user']
+    required: ['player']
 };
 
 

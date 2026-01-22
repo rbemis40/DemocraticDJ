@@ -30,7 +30,7 @@ export class PlayerList {
         return usernameArray
     }
 
-    getUserByUsername(username: string): Player | undefined {
+    getPlayerByUsername(username: string): Player | undefined {
         return this.players.get(username);
     }
 

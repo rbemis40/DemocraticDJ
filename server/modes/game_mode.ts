@@ -7,11 +7,13 @@ import { typeSafeBind } from "../utils";
 import { SpotifyManager } from "../spotify/spotify_manager";
 import { Connection } from "../game_server/connection";
 
+export type ContextSender = {
+    con: Connection,
+    playerData?: PlayerData
+};
+
 export type ServerContext = {
-    sender?: {
-        con: Connection,
-        playerData?: PlayerData
-    },
+    sender?: ContextSender,
     allPlayers: PlayerList,
     eventProvider: EventProvider<ServerContext>,
     songManager: SpotifyManager,

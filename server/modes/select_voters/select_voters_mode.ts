@@ -75,7 +75,7 @@ export class SelectVotersMode extends GameMode {
         // Select k users as the voters
         const voters: Player[] = [];
         for (let i = 0; i < k; i++) {
-            voters.push(playerList.getUserByUsername(usernames[i])!);    
+            voters.push(playerList.getPlayerByUsername(usernames[i])!);    
         }
         
         return voters;
