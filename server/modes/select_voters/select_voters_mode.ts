@@ -6,8 +6,11 @@ import { GameMode, ServerContext } from "../game_mode";
 import { chooseSongSchema, ChooseSongData } from "./select_voters_schemas";
 import { EventProvider } from "../../game_server/event_provider";
 
+interface SongSelectOverData {}
+
 export class SelectVotersMode extends GameMode {
-    private timeRem: number; // Tracks the amount of time left on the timer
+    private timerStart: number; // Tracks the amount of time left on the timer
+    private timerLength: number; // The number of seconds each timer should last
     private voters: Map<string, TrackInfo | undefined>; // Maps each voter to the song id for their selection
     
     constructor(playerList: PlayerList, eventProvider: EventProvider<ServerContext>) {
@@ -18,12 +21,13 @@ export class SelectVotersMode extends GameMode {
             this.voters.set(user.username!, undefined);
             user.isVoter = true;
         });
-        this.timeRem = 30;
 
         this.validator.addPair({
             schema: buildActionSchema("choose_song", chooseSongSchema),
             handler: (data, context) => this.onChooseSong(data, context)
         });
+
+        this.timerLength = 30;
 
         this.startTimer(playerList);
     }
@@ -51,7 +55,7 @@ export class SelectVotersMode extends GameMode {
             action: "voter_mode_state",
             data: {
                 voters: voterData,
-                timeRem: this.timeRem,
+                timeRem: Math.max(0, (this.timerLength * 1000) - (Date.now() - this.timerStart))
             }
         });
     }
@@ -100,15 +104,23 @@ export class SelectVotersMode extends GameMode {
     }
 
     private startTimer(allPlayers: PlayerList) {
-        const intId = setInterval(() => {
-            this.timeRem -= 1;
-            if (this.timeRem <= 0) {
-                clearInterval(intId);
+        this.timerStart = Date.now();
+        let remTime = this.timerLength * 1000;
+        
+        const wait = (remTime: number) => {
+            if (remTime <= 0) {
                 allPlayers.broadcast({
                     action: "song_select_over",
                     data: {}
-                })
+                });
+                return;
             }
-        }, 1000);
+
+            setTimeout(() => {
+                wait((this.timerLength * 1000) - (Date.now() - this.timerStart));
+            }, remTime);
+        };
+
+        wait(remTime);
     }
 }
