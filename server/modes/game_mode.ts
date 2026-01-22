@@ -1,16 +1,21 @@
-import { User } from "../game_server/user";
+import { PlayerData } from "../game_server/player";
 import { Action, buildActionSchema } from "../game_server/action";
 import { PlayerList } from "../game_server/player_list";
 import { Validator } from "../handlers/validator";
 import { EventProvider } from "../game_server/event_provider";
 import { typeSafeBind } from "../utils";
 import { SpotifyManager } from "../spotify/spotify_manager";
+import { Connection } from "../game_server/connection";
 
 export type ServerContext = {
-    sender: User | null,
-    all: PlayerList,
+    sender?: {
+        con: Connection,
+        playerData?: PlayerData
+    },
+    allPlayers: PlayerList,
     eventProvider: EventProvider<ServerContext>,
     songManager: SpotifyManager,
+    gameModeName: string;
 }
 
 /**
@@ -46,13 +51,8 @@ export abstract class GameMode {
      * @param allPlayers - All of the players currently in the game
      * @returns GameMode - The GameMode that should be transitioned to
      */
-    handleAction(action: Action<object>, sender: User | null, allPlayers: PlayerList, eventProvider: EventProvider<ServerContext>, songManager: SpotifyManager) {
-        this.validator.validateAndHandle(action, {
-            sender: sender,
-            all: allPlayers,
-            eventProvider: eventProvider,
-            songManager: songManager
-        } satisfies ServerContext);
+    handleAction(action: Action<object>, serverContext: ServerContext) {
+        this.validator.validateAndHandle(action, serverContext);
     }
 
     /**

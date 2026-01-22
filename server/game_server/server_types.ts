@@ -1,6 +1,6 @@
 import { JSONSchemaType } from "ajv";
 import { GameId, UserToken } from "../shared_types";
-import { User } from "./user";
+import { Player } from "./player";
 import { EventProvider } from "./event_provider";
 import { SpotifyManager } from "../spotify/spotify_manager";
 import { ServerContext } from "../modes/game_mode";
@@ -26,7 +26,7 @@ export interface GameServer {
 }
 
 export interface ExternalEventContext {
-    user: User;
+    user: Player;
     eventProvider: EventProvider<ServerContext>;
     songManager: SpotifyManager;
 };

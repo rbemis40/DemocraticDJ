@@ -1,7 +1,7 @@
 import { Action, buildActionSchema } from "../../game_server/action";
 import { PlayerList } from "../../game_server/player_list";
 import { SpotifySearchData } from "../../game_server/server_types";
-import { User } from "../../game_server/user";
+import { Player } from "../../game_server/player";
 import { TrackInfo } from "../../spotify/spotify_manager";
 import { typeSafeBind } from "../../utils";
 import { GameMode, ServerContext } from "../game_mode";
@@ -39,8 +39,8 @@ export class SelectVotersMode extends GameMode {
         });
 
         // If the user has been selected to vote, inform them
-        if (context.sender!.username !== undefined && this.voters.has(context.sender!.username)) {
-            context.sender!.sendMsg({
+        if (context.sender!.playerData!.username !== undefined && this.voters.has(context.sender!.playerData!.username)) {
+            context.sender!.con.sendAction({
                 action: "change_voter_state",
                 data: {
                     isVoter: true
@@ -48,7 +48,7 @@ export class SelectVotersMode extends GameMode {
             });
         }
 
-        context.sender!.sendMsg({
+        context.sender!.con.sendAction({
             action: "voter_mode_state",
             data: {
                 voters: voterData,
@@ -57,7 +57,7 @@ export class SelectVotersMode extends GameMode {
         });
     }
 
-    private chooseVoters(playerList: PlayerList, maxK: number): User[] {
+    private chooseVoters(playerList: PlayerList, maxK: number): Player[] {
         const usernames = playerList.getUsernames();
 
         const k = Math.min(usernames.length, maxK);
@@ -72,7 +72,7 @@ export class SelectVotersMode extends GameMode {
         }
 
         // Select k users as the voters
-        const voters: User[] = [];
+        const voters: Player[] = [];
         for (let i = 0; i < k; i++) {
             voters.push(playerList.getUserByUsername(usernames[i])!);    
         }
@@ -81,20 +81,20 @@ export class SelectVotersMode extends GameMode {
     }
 
     private async handleChooseSong(action: Action<ChooseSongData>, context: ServerContext) {
-        if (!context.sender!.isVoter) {
-            console.log(`SelectVotersMode.handleSongSelected: Non-voter ${context.sender?.username} attempted to select song`);
+        if (!context.sender!.playerData!.isVoter) {
+            console.log(`SelectVotersMode.handleSongSelected: Non-voter ${context.sender!.playerData!.username} attempted to select song`);
             return;
         }
         
         const songId = action.data.song_id;
         const songInfo = await context.songManager.getSongById(songId);
 
-        this.voters.set(context.sender!.username!, songInfo); // Update the state
+        this.voters.set(context.sender!.playerData!.username!, songInfo); // Update the state
         
-        context.all.broadcast({
+        context.allPlayers.broadcast({
             action: "song_selected",
             data: {
-                username: context.sender!.username,
+                username: context.sender!.playerData!.username,
                 song_data: songInfo
             }
         });
@@ -105,7 +105,7 @@ export class SelectVotersMode extends GameMode {
             this.timeRem -= 1;
             if (this.timeRem <= 0) {
                 clearInterval(intId);
-                context.all.broadcast({
+                context.allPlayers.broadcast({
                     action: "song_select_over",
                     data: {}
                 })

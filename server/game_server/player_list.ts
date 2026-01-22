@@ -1,21 +1,22 @@
-import { OutboundMsg, User } from "./user";
+import { Action } from "./action";
+import { Player } from "./player";
 
 export class PlayerList {
-    private players: Map<string | undefined, User>;
+    private players: Map<string | undefined, Player>;
     constructor() {
-        this.players = new Map<string | undefined, User>();
+        this.players = new Map<string | undefined, Player>();
     }
 
-    addPlayer(player: User) {
+    addPlayer(player: Player) {
         this.players.set(player.username, player);
     }
 
-    removePlayer(player: User) {
+    removePlayer(player: Player) {
         this.players.delete(player.username);
     }
 
-    broadcast(msg: OutboundMsg<object>) {
-        this.players.forEach(player => player.sendMsg(msg))
+    broadcast(action: Action<object>) {
+        this.players.forEach(player => player.getConnection().sendAction(action));
     }
 
     getUsernames(): string[] {
@@ -29,7 +30,7 @@ export class PlayerList {
         return usernameArray
     }
 
-    getUserByUsername(username: string): User | undefined {
+    getUserByUsername(username: string): Player | undefined {
         return this.players.get(username);
     }
 

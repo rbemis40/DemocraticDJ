@@ -1,6 +1,6 @@
 import { Action } from "../../game_server/action";
 import { PlayerList } from "../../game_server/player_list";
-import { User } from "../../game_server/user";
+import { Player } from "../../game_server/player";
 import { GameMode, ServerContext } from "../game_mode";
 
 export class VotingMode extends GameMode {

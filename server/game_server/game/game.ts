@@ -1,16 +1,12 @@
-import { Validator } from "../../handlers/validator";
-import { GameMode, ServerContext } from "../../modes/game_mode";
+import { ServerContext } from "../../modes/game_mode";
 import { LobbyMode } from "../../modes/lobby/lobby_mode";
 import { SelectVotersMode } from "../../modes/select_voters/select_voters_mode";
 import { VotingMode } from "../../modes/voting/voting_mode";
 import { GameId } from "../../shared_types";
-import { SpotifyManager } from "../../spotify/spotify_manager";
 import { Action } from "../action";
 import { EventProvider } from "../event_provider";
 import { PlayerList } from "../player_list";
-import { EventContext } from "../server_types";
-import { OutboundMsg, User } from "../user";
-import * as GameActions from "./game_actions";
+import { Player } from "../player";
 
 type AllowedModes = LobbyMode | VotingMode | SelectVotersMode;
 
@@ -29,11 +25,11 @@ export class Game {
         });
     }
 
-    addPlayer(player: User) {
+    addPlayer(player: Player) {
         this.players.addPlayer(player);
     }
 
-    removePlayer(player: User) {
+    removePlayer(player: Player) {
         this.players.removePlayer(player);
     }
 
@@ -41,7 +37,7 @@ export class Game {
         return this.players;   
     }
 
-    handleAction(action: Action<object>, eventContext: EventContext) {
+    handleAction(action: Action<object>, serverContext: ServerContext) {
         //console.log("Handling action:");
         //console.log(action);
         //console.log(`Game.handleAction: ${this.getPlayerList().getUsernames()}`);
@@ -49,9 +45,9 @@ export class Game {
         //console.log(this.players);
         //console.log(`Game.handleAction: this.getPlayerList() = `);
         //console.log(this.getPlayerList());
-        const sender = eventContext.user;
-        const eventProvider = eventContext.eventProvider;
-        this.mode.handleAction(action, sender, this.getPlayerList(), eventProvider, eventContext.songManager);
+        const sender = serverContext.sender;
+        const eventProvider = serverContext.eventProvider;
+        this.mode.handleAction(action, serverContext);
     }
 
     handleInternalAction(action: Action<object>, context: ServerContext) {
