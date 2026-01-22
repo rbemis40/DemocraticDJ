@@ -1,5 +1,5 @@
 import { Validator } from "../../handlers/validator";
-import { GameMode } from "../../modes/game_mode";
+import { GameMode, ServerContext } from "../../modes/game_mode";
 import { LobbyMode } from "../../modes/lobby/lobby_mode";
 import { SelectVotersMode } from "../../modes/select_voters/select_voters_mode";
 import { VotingMode } from "../../modes/voting/voting_mode";
@@ -19,13 +19,13 @@ export class Game {
     mode: AllowedModes;
     private players: PlayerList;
 
-    constructor(id: GameId, eventProvider: EventProvider) {
+    constructor(id: GameId, eventProvider: EventProvider<ServerContext>) {
         this.id = id;
         this.players = new PlayerList();
 
         this.mode = new LobbyMode();
-        eventProvider.onAction((action: Action<object>) => {
-            this.handleInternalAction(action);
+        eventProvider.onAction((action: Action<object>, context: ServerContext) => {
+            this.handleInternalAction(action, context);
         });
     }
 
@@ -54,12 +54,12 @@ export class Game {
         this.mode.handleAction(action, sender, this.getPlayerList(), eventProvider, eventContext.songManager);
     }
 
-    handleInternalAction(action: Action<object>) {
+    handleInternalAction(action: Action<object>, context: ServerContext) {
         console.log("Game.handleInternalAction:");
         console.log(action);
         switch(action.action) {
             case "next_game_mode": {
-                this.mode = new SelectVotersMode(this.getPlayerList());
+                this.mode = new SelectVotersMode(this.getPlayerList(), context);
                 this.getPlayerList().broadcast({
                     action: "change_mode",
                     data: {

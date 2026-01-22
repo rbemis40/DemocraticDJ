@@ -43,7 +43,7 @@ export class LobbyMode extends GameMode {
             data: {
                 user: context.all.getUserByUsername(action.data.username)
             }
-        });
+        }, context);
 
         // Send the updated user list after disconnecting the user
         context.all.broadcast({
@@ -60,6 +60,6 @@ export class LobbyMode extends GameMode {
         context.eventProvider.dispatchAction({
             action: "next_game_mode",
             data: {}
-        });
+        }, context);
     }
 }

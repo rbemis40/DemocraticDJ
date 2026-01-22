@@ -9,7 +9,7 @@ import { SpotifyManager } from "../spotify/spotify_manager";
 export type ServerContext = {
     sender: User | null,
     all: PlayerList,
-    eventProvider: EventProvider,
+    eventProvider: EventProvider<ServerContext>,
     songManager: SpotifyManager,
 }
 
@@ -46,7 +46,7 @@ export abstract class GameMode {
      * @param allPlayers - All of the players currently in the game
      * @returns GameMode - The GameMode that should be transitioned to
      */
-    handleAction(action: Action<object>, sender: User | null, allPlayers: PlayerList, eventProvider: EventProvider, songManager: SpotifyManager) {
+    handleAction(action: Action<object>, sender: User | null, allPlayers: PlayerList, eventProvider: EventProvider<ServerContext>, songManager: SpotifyManager) {
         this.validator.validateAndHandle(action, {
             sender: sender,
             all: allPlayers,

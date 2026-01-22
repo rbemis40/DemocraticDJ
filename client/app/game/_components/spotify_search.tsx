@@ -35,7 +35,9 @@ export default function SpotifySearch(props: SpotifySearchUI) {
             data: {
                 song_id: id
             }
-        }))
+        }));
+
+        closeSearch();
     }
 
     useServerMsg((msg) => {

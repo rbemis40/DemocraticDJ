@@ -9,6 +9,7 @@ import { Action, actionSchema, buildActionSchema } from "./action";
 import { typeSafeBind } from "../utils";
 import { EventProvider } from "./event_provider";
 import { SpotifyManager, TrackInfo } from "../spotify/spotify_manager";
+import { ServerContext } from "../modes/game_mode";
 
 /*
     - A game server that simply runs on the same system as the HTTP server
@@ -19,7 +20,7 @@ export class SimpleGameServer implements GameServer {
     private url: URL;
     private game: Game;
     private validator: Validator<EventContext>;
-    private eventProvider: EventProvider; // Used for internal dispatching of events from game modes
+    private eventProvider: EventProvider<ServerContext>; // Used for internal dispatching of events from game modes
     private spotifyManager: SpotifyManager;
 
     constructor(port=8081) {
@@ -27,9 +28,9 @@ export class SimpleGameServer implements GameServer {
         this.url = new URL(`ws://${process.env.HOST_NAME}:8081`);
         this.eventProvider = new EventProvider();
 
-        this.eventProvider.onAction((action) => { // Handle internally dispatched events
+        this.eventProvider.onAction((action, context) => { // Handle internally dispatched events
             this.validator.validateAndHandle(action, {
-                user: null,
+                user: context.sender,
                 eventProvider: this.eventProvider,
                 songManager: this.spotifyManager
             });

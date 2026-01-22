@@ -5,6 +5,7 @@ import { ServerMsg, SongSelectedData, VoteInfo, VoterStateData } from "../../_ty
 import { UIProps } from "../../types";
 import { SpotifySearchResult } from "../../_types/spotify_types";
 import SongCard from "../song_card/song_card";
+import useTimer from "../../_hooks/timer_hook";
 
 type UIVoteState = {
     [username: string]: SpotifySearchResult | undefined;
@@ -13,6 +14,7 @@ type UIVoteState = {
 export default function PlayerSelectVoters(props: UIProps) {
     const [voteInfo, setVoteInfo] = useState<UIVoteState>({});
     const [timeRem, setTimeRem] = useState<number | undefined>();
+    const startTimer = useTimer((newTime) => setTimeRem(newTime));
 
     useServerMsg((msg: ServerMsg) => {
         switch(msg.action) {
@@ -22,7 +24,7 @@ export default function PlayerSelectVoters(props: UIProps) {
                     obj[info.username!] = info.choice;
                     return obj;
                 }, {} as UIVoteState));
-                setTimeRem(stateData.timeRem);
+                startTimer(stateData.timeRem, 0);
                 break;
             case "song_selected":
                 const selectData = msg.data as SongSelectedData;
@@ -39,6 +41,7 @@ export default function PlayerSelectVoters(props: UIProps) {
     return (
     <div>
         <h1>Voters:</h1>
+        <h2>Voting ends in {timeRem} seconds...</h2>
         {Object.keys(voteInfo).map(username => 
             <div key={username}>
                 <h2>{username}</h2>
