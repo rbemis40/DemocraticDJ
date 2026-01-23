@@ -12,6 +12,7 @@ import { ConnectionHandler } from "./connection_handler";
 import { Connection } from "./connection";
 import { PlayerList } from "./player_list";
 import { SongManager } from "../spotify/song_manager";
+import { SongQueue } from "./song_queue";
 
 /*
     - A game server that simply runs on the same system as the HTTP server
@@ -27,6 +28,7 @@ export class SimpleGameServer implements GameServer {
     private eventProvider: EventProvider<ServerContext>; // Used for internal dispatching of events from game modes
     private spotifyAPI: SpotifyAPI;
     private songManager: SongManager;
+    private songQueue: SongQueue;
     private gameId?: GameId;
 
     constructor(port=8081) {
@@ -41,6 +43,8 @@ export class SimpleGameServer implements GameServer {
 
         this.connectionHandler = new ConnectionHandler(this.eventProvider);
         this.playerList = new PlayerList(this.eventProvider);
+
+        this.songQueue = new SongQueue(this.eventProvider);
 
         this.spotifyAPI = new SpotifyAPI();
         this.songManager = new SongManager(this.spotifyAPI, this.eventProvider);

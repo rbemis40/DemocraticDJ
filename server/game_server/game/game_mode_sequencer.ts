@@ -42,7 +42,7 @@ export class GameModeSequencer {
         console.log(action);
         switch(action.action) {
             case "next_game_mode": {
-                this.mode = new SelectVotersMode(context.allPlayers, this.eventProvider);
+                this.mode = new SelectVotersMode(context.allPlayers, this.eventProvider, context);
                 context.allPlayers.broadcast({
                     action: "change_mode",
                     data: {

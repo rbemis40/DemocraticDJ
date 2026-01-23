@@ -20,22 +20,33 @@ const voteCastDataSchema: JSONSchemaType<VoteCastData> = {
     required: ["voted_for"]
 };
 
+type CountObj = {
+    username: string,
+    count: number
+}
+
 type State = "select" | "vote" | "results";
+
 
 export class SelectVotersMode extends GameMode {
     private timerStart: number; // Tracks the amount of time left on the timer
     private timerLength: number; // The number of seconds each timer should last
-    private voters: Map<string, TrackInfo | undefined>; // Maps each voter to the song id for their selection
+    private chooser: Map<string, TrackInfo | undefined>; // Maps each voter to the song id for their selection
+    private voteMap: Map<string, string>; // Stores who each player voted for
+    private context: ServerContext; // THIS IS TEMPORARY
     private state: State;
     
-    constructor(playerList: PlayerList, eventProvider: EventProvider<ServerContext>) {
+    constructor(playerList: PlayerList, eventProvider: EventProvider<ServerContext>, context: ServerContext) {
         super("select_voters", eventProvider);
 
         this.state = "select";
+        this.context = context;
 
-        this.voters = new Map<string, TrackInfo | undefined>(); // Username -> song id (choice)
+        this.voteMap = new Map();
+
+        this.chooser = new Map<string, TrackInfo | undefined>(); // Username -> song id (choice)
         this.chooseVoters(playerList, 2).forEach(user => {
-            this.voters.set(user.username!, undefined);
+            this.chooser.set(user.username!, undefined);
             user.isVoter = true;
         });
 
@@ -56,7 +67,7 @@ export class SelectVotersMode extends GameMode {
 
     protected onJoinMode(data: Action<object>, context: ServerContext) {
         const voterData: { username: string; choice: TrackInfo | undefined; }[] = [];
-        this.voters.forEach((choice, username) => {
+        this.chooser.forEach((choice, username) => {
             voterData.push({
                 username: username,
                 choice: choice
@@ -64,7 +75,7 @@ export class SelectVotersMode extends GameMode {
         });
 
         // If the user has been selected to vote, inform them
-        if (context.sender!.playerData!.username !== undefined && this.voters.has(context.sender!.playerData!.username)) {
+        if (context.sender!.playerData!.username !== undefined && this.chooser.has(context.sender!.playerData!.username)) {
             context.sender!.con.sendAction({
                 action: "change_voter_state",
                 data: {
@@ -125,7 +136,7 @@ export class SelectVotersMode extends GameMode {
         const songId = action.data.song_id;
         const songInfo = await context.songManager.getSongById(songId);
 
-        this.voters.set(context.sender!.playerData!.username!, songInfo); // Update the state
+        this.chooser.set(context.sender!.playerData!.username!, songInfo); // Update the state
         
         context.allPlayers.broadcast({
             action: "song_selected",
@@ -187,17 +198,93 @@ export class SelectVotersMode extends GameMode {
         }
 
         console.log(`'${context.sender.playerData.username}' voted for '${action.data.voted_for}'`);
+        if (context.sender.playerData.username === action.data.voted_for) {
+            console.warn(`Player '${context.sender.playerData.username}' attempted to vote for themselves!`);
+            return;
+        }
+
+        if (!this.chooser.has(action.data.voted_for)) {
+            console.warn(`Player '${context.sender.playerData.username}' attempted to vote for non-chooser '${action.data.voted_for}'!`);
+            return;
+        }
+
+        // Mark their vote
+        this.voteMap.set(context.sender.playerData.username, action.data.voted_for);
+        context.allPlayers.broadcast({
+            action: "vote_count",
+            data: {
+                count: this.voteMapToCount()
+            }
+        });
+    }
+
+    private voteMapToCount() : CountObj[] {
+        // Make sure that even if no one voted, the countObj is still initialized
+        const countObj: {[username: string]: number} = {};
+        this.chooser.forEach((value, key) => countObj[key] = 0);
+
+        this.voteMap.forEach((voted_for, username) => {
+            countObj[voted_for] += 1;
+        });
+
+        return Object.entries(countObj).map((value => ({
+            username: value[0],
+            count: value[1]
+        })));
     }
 
     private onVotingEnd(playerList: PlayerList) {
         this.state = "results";
 
+        const finalCount = this.voteMapToCount();
+
+        // Show one last updated count
+        playerList.broadcast({
+            action: "vote_count",
+            data: {
+                count: finalCount
+            }
+        });
+
+        const winner = this.decideWinner(finalCount);
+
         playerList.broadcast({
             action: "voting_over",
             data: {
                 state: "results",
-                winner: "[username_here]"
+                ...winner
             }
         });
+
+        // Add the winning song to the queue
+        this.eventProvider.dispatchAction({
+            action: "add_to_queue",
+            data: {
+                track_info: this.chooser.get(winner.winner)!
+            }
+        }, this.context)
+    }
+
+    private decideWinner(count: CountObj[]): {winner: string, tied: string[]} {
+        const buckets: {[key: number]: string[]} = {};
+        let maxVotes = 0;
+        count.forEach((cur) => {
+            if(buckets[cur.count] === undefined) {
+                buckets[cur.count] = [];
+            }
+            buckets[cur.count].push(cur.username);
+            maxVotes = Math.max(maxVotes, cur.count); // Keep track of the most votes
+        });
+
+        const possibleWinners = buckets[maxVotes];
+        console.log("SelectVotersMode.decideWinner: Possible winners: ");
+        console.log(possibleWinners);
+
+        // Break any ties by choosing randomly
+        const winner = possibleWinners[Math.floor(Math.random() * possibleWinners.length)];
+        return {
+            winner: winner,
+            tied: possibleWinners
+        }
     }
 }

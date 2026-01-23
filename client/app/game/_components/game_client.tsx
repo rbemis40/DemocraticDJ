@@ -26,7 +26,6 @@ export default function GameClient(props: GameInfoProps) {
     const [isVoter, setIsVoter] = useState<boolean>(false);
     const [ws, setWs] = useState<WebSocket | undefined>();
     const [gameMode, setGameMode] = useState<string>('join');
-    const [queuedSongs, setQueuedSongs] = useState<SpotifySearchResult[]>([]); // TODO: Separate host and normal player into two separate components / routes
     const router = useRouter();
     const [smTrigger] = useContext(ServerMsgContext);
 
@@ -128,7 +127,7 @@ export default function GameClient(props: GameInfoProps) {
         {
             isVoter && <SpotifySearch sendMsg={sendMsg}/>
         }
-        {isHost && <SongQueue queuedSongs={queuedSongs}/>}
+        {isHost && <SongQueue/>}
         {getUIPage()}
     </>
     )

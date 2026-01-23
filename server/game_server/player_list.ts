@@ -51,6 +51,10 @@ export class PlayerList {
         return this.players.get(username);
     }
 
+    getHost(): Player | undefined {
+        return this.players.get(undefined);
+    }
+
     get numPlayers() {
         return this.players.size;
     }
