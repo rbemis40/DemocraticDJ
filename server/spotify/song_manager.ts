@@ -2,8 +2,8 @@ import { JSONSchemaType } from "ajv";
 import { Action, buildActionSchema } from "../game_server/action";
 import { EventProvider } from "../game_server/event_provider";
 import { Validator } from "../handlers/validator";
-import { ServerContext } from "../modes/game_mode";
 import { SpotifyAPI, TrackInfo } from "./spotify_api";
+import { GMEventContext } from "../modes/game_mode";
 
 export interface SongSearchData {
     query: string;
@@ -17,12 +17,12 @@ export const songSearchDataSchema: JSONSchemaType<SongSearchData> = {
 };
 
 export class SongManager {
-    private eventProvider: EventProvider<ServerContext>;
-    private validator: Validator<ServerContext>;
+    private eventProvider: EventProvider<GMEventContext>;
+    private validator: Validator<GMEventContext>;
 
     private spotifyAPI: SpotifyAPI;
 
-    constructor(spotifyAPI: SpotifyAPI, eventProvider: EventProvider<ServerContext>) {
+    constructor(spotifyAPI: SpotifyAPI, eventProvider: EventProvider<GMEventContext>) {
         this.eventProvider = eventProvider;
         this.validator = new Validator();
         this.validator.addPair({
@@ -38,14 +38,14 @@ export class SongManager {
     }
 
 
-    private async onSongSearch(action: Action<SongSearchData>, context: ServerContext) {
-        if (!context.sender?.playerData?.isVoter) {
+    private async onSongSearch(action: Action<SongSearchData>, context: GMEventContext) {
+        if (!context.source?.playerData?.isVoter) {
             console.log(`Attempt to search by non-active user`);
             return; // Only allow the active voter to search for songs
         }
 
         const searchResults: TrackInfo[] = await this.spotifyAPI.search(action.data.query);
-        context.sender.con.sendAction({
+        context.source.con.sendAction({
             action: "spotify_results",
             data: {
                 results: searchResults

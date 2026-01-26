@@ -1,10 +1,12 @@
 import { JSONSchemaType } from "ajv";
 import { Validator } from "../../handlers/validator";
-import { GameMode, ServerContext } from "../../modes/game_mode";
+import { GameMode, GMEventContext } from "../../modes/game_mode";
 import { LobbyMode } from "../../modes/lobby/lobby_mode";
 import { SelectVotersMode } from "../../modes/select_voters/select_voters_mode";
 import { Action, buildActionSchema } from "../action";
 import { EventProvider } from "../event_provider";
+import { PlayerList } from "../player_list";
+import { SpotifyAPI } from "../../spotify/spotify_api";
 
 interface NextGameModeData {}
 
@@ -14,11 +16,16 @@ const nextGameModeSchema: JSONSchemaType<NextGameModeData> = {
 
 export class GameModeSequencer {
     private mode: GameMode;
-    private eventProvider: EventProvider<ServerContext>;
-    private validator: Validator<ServerContext>;
+    private eventProvider: EventProvider<GMEventContext>;
+    private playerList: PlayerList;
+    private songManager: SpotifyAPI;
 
-    constructor(eventProvider: EventProvider<ServerContext>) {
+    private validator: Validator<GMEventContext>;
+
+    constructor(eventProvider: EventProvider<GMEventContext>, playerList: PlayerList, songManager: SpotifyAPI) {
         this.eventProvider = eventProvider;
+        this.playerList = playerList;
+        this.songManager = songManager;
 
         this.validator = new Validator();
         this.validator.addPair({
@@ -31,11 +38,11 @@ export class GameModeSequencer {
             handler: (data, context) => this.onNextGameMode(data, context)
         })
 
-        this.eventProvider.onAction((action: Action<object>, context: ServerContext) => {
+        this.eventProvider.onAction((action: Action<object>, context: GMEventContext) => {
             this.validator.validateAndHandle(action, context);
         });
 
-        this.mode = new LobbyMode(this.eventProvider);
+        this.mode = new LobbyMode(this.eventProvider, this.playerList);
         this.mode.makeActive();
     }
 
@@ -49,13 +56,13 @@ export class GameModeSequencer {
         this.mode.makeActive();
     }
 
-    private onNextGameMode(action: Action<NextGameModeData>, context: ServerContext) {
+    private onNextGameMode(action: Action<NextGameModeData>, context: GMEventContext) {
         console.log("Game.handleInternalAction:");
         console.log(action);
         switch(action.action) {
             case "next_game_mode": {
-                this.switchModes(new SelectVotersMode(context.allPlayers, this.eventProvider, context));
-                context.allPlayers.broadcast({
+                this.switchModes(new SelectVotersMode(this.eventProvider, this.playerList, this.songManager));
+                this.playerList.broadcast({
                     action: "change_mode",
                     data: {
                         gamemode: this.mode.getName()
@@ -64,8 +71,8 @@ export class GameModeSequencer {
                 break;
             }
             case "go_back_to_lobby": {
-                this.switchModes(new LobbyMode(this.eventProvider));
-                context.allPlayers.broadcast({
+                this.switchModes(new LobbyMode(this.eventProvider, this.playerList));
+                this.playerList.broadcast({
                     action: "change_mode",
                     data: {
                         gamemode: this.mode.getName()

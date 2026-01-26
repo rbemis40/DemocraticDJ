@@ -1,9 +1,10 @@
 import { JSONSchemaType } from "ajv";
 import { Validator } from "../handlers/validator";
-import { ServerContext } from "../modes/game_mode";
-import { TrackInfo } from "../spotify/spotify_api";
+import { SpotifyAPI, TrackInfo } from "../spotify/spotify_api";
 import { Action, buildActionSchema } from "./action";
 import { EventProvider } from "./event_provider";
+import { GMEventContext } from "../modes/game_mode";
+import { PlayerList } from "./player_list";
 
 interface AddToQueueData {
     track_info: object; // Should be TrackInfo
@@ -18,12 +19,18 @@ const addToQueueDataSchema: JSONSchemaType<AddToQueueData> = {
 };
 
 export class SongQueue {
-    private eventProvider: EventProvider<ServerContext>;
-    private validator: Validator<ServerContext>;
+    private eventProvider: EventProvider<GMEventContext>;
+    private validator: Validator<GMEventContext>;
     private trackQueue: TrackInfo[];
+
+    private playerList: PlayerList;
+    private songManager: SpotifyAPI;
     
-    constructor(eventProvider: EventProvider<ServerContext>) {
+    constructor(eventProvider: EventProvider<GMEventContext>, playerList: PlayerList, songManager: SpotifyAPI) {
         this.trackQueue = [];
+
+        this.playerList = playerList;
+        this.songManager = songManager;
 
         this.eventProvider = eventProvider;
         this.validator = new Validator();
@@ -43,17 +50,17 @@ export class SongQueue {
         return this.trackQueue.shift();
     }
 
-    private onAddToQueue(action: Action<AddToQueueData>, context: ServerContext) {
+    private onAddToQueue(action: Action<AddToQueueData>, context: GMEventContext) {
         const trackInfo = action.data.track_info as TrackInfo;
         this.enqueue(trackInfo);
 
-        context.allPlayers.getHost()!.getConnection().sendAction({
+        this.playerList.getHost()!.getConnection().sendAction({
             action: "song_added",
             data: {
                 track_info: trackInfo
             }
         });
 
-        context.songManager.queue(trackInfo.track_uri);
+        this.songManager.queue(trackInfo.track_uri);
     }
 }

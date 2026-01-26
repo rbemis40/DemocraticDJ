@@ -7,7 +7,7 @@ import { Validator } from "../handlers/validator";
 import { Action } from "./action";
 import { EventProvider } from "./event_provider";
 import { SpotifyAPI } from "../spotify/spotify_api";
-import { ContextSender, ServerContext } from "../modes/game_mode";
+import { GMEventContext } from "../modes/game_mode";
 import { ConnectionHandler } from "./connection_handler";
 import { Connection } from "./connection";
 import { PlayerList } from "./player_list";
@@ -21,11 +21,11 @@ import { SongQueue } from "./song_queue";
 export class SimpleGameServer implements GameServer {
     private wss: WebSocketServer;
     private url: URL;
-    private validator: Validator<ServerContext>;
+    private validator: Validator<GMEventContext>;
     private connectionHandler: ConnectionHandler;
     private gameModeSeq: GameModeSequencer;
     private playerList: PlayerList;
-    private eventProvider: EventProvider<ServerContext>; // Used for internal dispatching of events from game modes
+    private eventProvider: EventProvider<GMEventContext>; // Used for internal dispatching of events from game modes
     private spotifyAPI: SpotifyAPI;
     private songManager: SongManager;
     private songQueue: SongQueue;
@@ -45,12 +45,12 @@ export class SimpleGameServer implements GameServer {
         this.connectionHandler = new ConnectionHandler(this.eventProvider);
         this.playerList = new PlayerList(this.eventProvider);
 
-        this.songQueue = new SongQueue(this.eventProvider);
-
         this.spotifyAPI = new SpotifyAPI();
         this.songManager = new SongManager(this.spotifyAPI, this.eventProvider);
         
-        this.gameModeSeq = new GameModeSequencer(this.eventProvider);
+        this.songQueue = new SongQueue(this.eventProvider, this.playerList, this.spotifyAPI);
+        
+        this.gameModeSeq = new GameModeSequencer(this.eventProvider, this.playerList, this.spotifyAPI);
 
         this.setupServerHandler();
     }
@@ -87,10 +87,13 @@ export class SimpleGameServer implements GameServer {
                     console.log(msgObj);
 
                     // Pass the message to any game server handlers
-                    this.eventProvider.dispatchAction(msgObj, this.buildServerContext({
-                        con: newCon,
-                        playerData: player
-                    }));
+                    this.eventProvider.dispatchAction(msgObj, {
+                        source: {
+                            con: newCon,
+                            playerData: player
+                        },
+                        gameMode: this.gameModeSeq.getCurrentModeName()
+                    });
                 }
                 catch (e) {
                     console.error(e);
@@ -107,22 +110,18 @@ export class SimpleGameServer implements GameServer {
                     data: {
                         player: player
                     }
-                } satisfies Action<PlayerLeaveData>, this.buildServerContext());
+                } satisfies Action<PlayerLeaveData>, {
+                    source: {
+                        con: newCon,
+                        playerData: player
+                    },
+                    gameMode: this.gameModeSeq.getCurrentModeName()
+                });
             });
 
             // Complete the handshake sequence with the new connection
             player = await this.connectionHandler.completeHandshake(newCon); 
             this.playerList.addPlayer(player);
         });
-    }
-
-    private buildServerContext(sender?: ContextSender): ServerContext {
-        return {
-            sender: sender,
-            allPlayers: this.playerList,
-            eventProvider: this.eventProvider,
-            songManager: this.spotifyAPI,
-            gameModeName: this.gameModeSeq.getCurrentModeName()
-        };
     }
 }

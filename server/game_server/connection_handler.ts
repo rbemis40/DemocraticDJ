@@ -1,6 +1,5 @@
 import { JSONSchemaType } from "ajv";
 import { Validator } from "../handlers/validator";
-import { ServerContext } from "../modes/game_mode";
 import { UserToken } from "../shared_types";
 import { Action, buildActionSchema } from "./action";
 import { EventProvider } from "./event_provider";
@@ -8,6 +7,7 @@ import { InGameInfo, Player } from "./player";
 import { TokenData, TokenHandler } from "../handlers/token_handler";
 import { Connection } from "./connection";
 import { PlayerLeaveData, playerLeaveDataSchema } from "./server_types";
+import { GMEventContext } from "../modes/game_mode";
 
 interface PlayerJoinData {
     token: UserToken;
@@ -27,11 +27,11 @@ interface PromiseFns {
 }
 
 export class ConnectionHandler {
-    private eventProvider: EventProvider<ServerContext>;
-    private validator: Validator<ServerContext>;
+    private eventProvider: EventProvider<GMEventContext>;
+    private validator: Validator<GMEventContext>;
     private conPromises: Map<Connection, PromiseFns>;
     
-    constructor(eventProvider: EventProvider<ServerContext>) {
+    constructor(eventProvider: EventProvider<GMEventContext>) {
         this.eventProvider = eventProvider;
         this.conPromises = new Map();
 
@@ -46,18 +46,18 @@ export class ConnectionHandler {
             handler: (data, context) => this.onPlayerLeave(data, context),
         })
 
-        this.eventProvider.onAction((action: Action<object>, context: ServerContext) => {
+        this.eventProvider.onAction((action: Action<object>, context: GMEventContext) => {
             this.validator.validateAndHandle(action, context);
         });
     }
 
-    onPlayerJoin(action: Action<PlayerJoinData>, context: ServerContext) {
-        if (context.sender === undefined) {
+    onPlayerJoin(action: Action<PlayerJoinData>, context: GMEventContext) {
+        if (context.source === undefined) {
             throw new Error("Invalid player_join event context: context.sender is null!");
         }
 
         const joinData: PlayerJoinData = action.data;
-        const con = context.sender.con;
+        const con = context.source.con;
 
         // Finally, resolve the promise for this user
         const fns = this.conPromises.get(con)
@@ -78,7 +78,7 @@ export class ConnectionHandler {
                 action: 'welcome',
                 data: {
                     role: player.isHost ? 'host' : 'player',
-                    gamemode: context.gameModeName
+                    gamemode: context.gameMode
                 }
             };
 
@@ -92,7 +92,7 @@ export class ConnectionHandler {
         }
     }
 
-    private onPlayerLeave(action: Action<PlayerLeaveData>, context: ServerContext) {
+    private onPlayerLeave(action: Action<PlayerLeaveData>, context: GMEventContext) {
         const player: Player = action.data.player as Player;
         player.getConnection().disconnect();
     }

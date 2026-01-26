@@ -1,11 +1,12 @@
 import { Action, buildActionSchema } from "../../game_server/action";
 import { PlayerList } from "../../game_server/player_list";
 import { Player } from "../../game_server/player";
-import { TrackInfo } from "../../spotify/spotify_api";
-import { GameMode, ServerContext } from "../game_mode";
+import { SpotifyAPI, TrackInfo } from "../../spotify/spotify_api";
+import { GameMode, GMEventContext } from "../game_mode";
 import { chooseSongSchema, ChooseSongData } from "./select_voters_schemas";
 import { EventProvider } from "../../game_server/event_provider";
 import { JSONSchemaType } from "ajv";
+import { SongManager } from "../../spotify/song_manager";
 
 interface SongSelectOverData {}
 
@@ -33,14 +34,18 @@ export class SelectVotersMode extends GameMode {
     private timerLength: number; // The number of seconds each timer should last
     private chooser: Map<string, TrackInfo | undefined>; // Maps each voter to the song id for their selection
     private voteMap: Map<string, string>; // Stores who each player voted for
-    private context: ServerContext; // THIS IS TEMPORARY
     private state: State;
+
+    private playerList: PlayerList;
+    private songManager: SpotifyAPI;
     
-    constructor(playerList: PlayerList, eventProvider: EventProvider<ServerContext>, context: ServerContext) {
+    constructor(eventProvider: EventProvider<GMEventContext>, playerList: PlayerList, songManager: SpotifyAPI) {
         super("select_voters", eventProvider);
 
         this.state = "select";
-        this.context = context;
+
+        this.playerList = playerList;
+        this.songManager = songManager;
 
         this.voteMap = new Map();
 
@@ -66,7 +71,7 @@ export class SelectVotersMode extends GameMode {
         this.startTimer(() => this.onSongSelectEnd(playerList));
     }
 
-    protected onJoinMode(data: Action<object>, context: ServerContext) {
+    protected onJoinMode(data: Action<object>, context: GMEventContext) {
         const voterData: { username: string; choice: TrackInfo | undefined; }[] = [];
         this.chooser.forEach((choice, username) => {
             voterData.push({
@@ -76,8 +81,8 @@ export class SelectVotersMode extends GameMode {
         });
 
         // If the user has been selected to vote, inform them
-        if (context.sender!.playerData!.username !== undefined && this.chooser.has(context.sender!.playerData!.username)) {
-            context.sender!.con.sendAction({
+        if (context.source!.playerData!.username !== undefined && this.chooser.has(context.source!.playerData!.username)) {
+            context.source!.con.sendAction({
                 action: "change_voter_state",
                 data: {
                     isVoter: true
@@ -85,7 +90,7 @@ export class SelectVotersMode extends GameMode {
             });
         }
 
-        context.sender!.con.sendAction({
+        context.source!.con.sendAction({
             action: "voter_mode_state",
             data: {
                 voters: voterData,
@@ -124,31 +129,31 @@ export class SelectVotersMode extends GameMode {
         return voters;
     }
 
-    private async onChooseSong(action: Action<ChooseSongData>, context: ServerContext) {
+    private async onChooseSong(action: Action<ChooseSongData>, context: GMEventContext) {
         if (this.state !== "select") {
-            console.warn(`Player '${context.sender?.playerData?.username}' attempted to vote during select state!`);
+            console.warn(`Player '${context.source?.playerData?.username}' attempted to vote during select state!`);
             return;
         }
 
-        if (!context.sender!.playerData!.isVoter) {
-            console.warn(`SelectVotersMode.handleSongSelected: Non-voter ${context.sender!.playerData!.username} attempted to select song`);
+        if (!context.source!.playerData!.isVoter) {
+            console.warn(`SelectVotersMode.handleSongSelected: Non-voter ${context.source!.playerData!.username} attempted to select song`);
             return;
         }
 
         if (Date.now() - this.timerStart >= this.timerLength * 1000) {
-            console.warn(`Player '${context.sender!.playerData!.username}' attempted to select song after time expired!`);
+            console.warn(`Player '${context.source!.playerData!.username}' attempted to select song after time expired!`);
             return;
         }
         
         const songId = action.data.song_id;
-        const songInfo = await context.songManager.getSongById(songId);
+        const songInfo = await this.songManager.getSongById(songId);
 
-        this.chooser.set(context.sender!.playerData!.username!, songInfo); // Update the state
+        this.chooser.set(context.source!.playerData!.username!, songInfo); // Update the state
         
-        context.allPlayers.broadcast({
+        this.playerList.broadcast({
             action: "song_selected",
             data: {
-                username: context.sender!.playerData!.username,
+                username: context.source!.playerData!.username,
                 song_data: songInfo
             }
         });
@@ -188,36 +193,36 @@ export class SelectVotersMode extends GameMode {
         this.startTimer(() => this.onVotingEnd(playerList));
     }
 
-    private onVoteCast(action: Action<VoteCastData>, context: ServerContext) {
-        if (context.sender === undefined || context.sender.playerData === undefined || context.sender.playerData.username === undefined) {
+    private onVoteCast(action: Action<VoteCastData>, context: GMEventContext) {
+        if (context.source === undefined || context.source.playerData === undefined || context.source.playerData.username === undefined) {
             console.warn(`Invalid sender attempted to vote!`);
             return;
         }
 
         if (this.state !== "vote") {
-            console.warn(`Player '${context.sender.playerData.username}' attempted to vote during select state!`);
+            console.warn(`Player '${context.source.playerData.username}' attempted to vote during select state!`);
             return;
         }
 
         if (Date.now() - this.timerStart >= this.timerLength * 1000) {
-            console.warn(`Player '${context.sender.playerData.username}' attempted to vote after timer expired!`);
+            console.warn(`Player '${context.source.playerData.username}' attempted to vote after timer expired!`);
             return;
         }
 
-        console.log(`'${context.sender.playerData.username}' voted for '${action.data.voted_for}'`);
-        if (context.sender.playerData.username === action.data.voted_for) {
-            console.warn(`Player '${context.sender.playerData.username}' attempted to vote for themselves!`);
+        console.log(`'${context.source.playerData.username}' voted for '${action.data.voted_for}'`);
+        if (context.source.playerData.username === action.data.voted_for) {
+            console.warn(`Player '${context.source.playerData.username}' attempted to vote for themselves!`);
             return;
         }
 
         if (!this.chooser.has(action.data.voted_for)) {
-            console.warn(`Player '${context.sender.playerData.username}' attempted to vote for non-chooser '${action.data.voted_for}'!`);
+            console.warn(`Player '${context.source.playerData.username}' attempted to vote for non-chooser '${action.data.voted_for}'!`);
             return;
         }
 
         // Mark their vote
-        this.voteMap.set(context.sender.playerData.username, action.data.voted_for);
-        context.allPlayers.broadcast({
+        this.voteMap.set(context.source.playerData.username, action.data.voted_for);
+        this.playerList.broadcast({
             action: "vote_count",
             data: {
                 count: this.voteMapToCount()
@@ -269,13 +274,18 @@ export class SelectVotersMode extends GameMode {
             data: {
                 track_info: this.chooser.get(winner.winner)!
             }
-        }, this.context);
+        }, {
+            gameMode: this.getName() // TODO: This assumes that this class is the active game mode. This is not guaranteed to be the case. In fact, the class should not start it's timers in the constructor,
+                                     // since it's possible that the class is instantiated before becoming the active mode.
+        } satisfies GMEventContext);
 
         // TEMP
         this.eventProvider.dispatchAction({
             action: "go_back_to_lobby",
             data: {}
-        }, this.context);
+        }, {
+            gameMode: this.getName()
+        } satisfies GMEventContext);
     }
 
     private decideWinner(count: CountObj[]): {winner: string, tied: string[]} {

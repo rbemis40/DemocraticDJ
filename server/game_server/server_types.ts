@@ -3,7 +3,7 @@ import { GameId, UserToken } from "../shared_types";
 import { Player } from "./player";
 import { EventProvider } from "./event_provider";
 import { SpotifyAPI } from "../spotify/spotify_api";
-import { ServerContext } from "../modes/game_mode";
+import { GMEventContext } from "../modes/game_mode";
 
 /*
     1. User starts on democraticdj.com
@@ -27,13 +27,13 @@ export interface GameServer {
 
 export interface ExternalEventContext {
     user: Player;
-    eventProvider: EventProvider<ServerContext>;
+    eventProvider: EventProvider<GMEventContext>;
     songManager: SpotifyAPI;
 };
 
 export interface InternalEventContext {
     user: null;
-    eventProvider: EventProvider<ServerContext>;
+    eventProvider: EventProvider<GMEventContext>;
     songManager: SpotifyAPI;
 };
 

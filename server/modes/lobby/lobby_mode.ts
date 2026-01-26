@@ -1,13 +1,18 @@
-import { GameMode, ServerContext } from "../game_mode";
+import { GameMode, GMEventContext } from "../game_mode";
 import schemas, { JoinedModeData, RemovePlayerData, StartGameData } from "./lobby_schemas";
 import { Action, buildActionSchema } from "../../game_server/action";
 import { typeSafeBind } from "../../utils";
 import { EventProvider } from "../../game_server/event_provider";
 import { PlayerLeaveData, playerLeaveDataSchema } from "../../game_server/server_types";
+import { PlayerList } from "../../game_server/player_list";
 
 export class LobbyMode extends GameMode {
-    constructor(eventProvider: EventProvider<ServerContext>) {
+    private playerList: PlayerList;
+    
+    constructor(eventProvider: EventProvider<GMEventContext>, playerList: PlayerList) {
         super('lobby', eventProvider);
+
+        this.playerList = playerList;
 
         this.validator.addPair({
             schema: buildActionSchema("remove_player", schemas.remove_player),
@@ -25,40 +30,40 @@ export class LobbyMode extends GameMode {
         });
     }
 
-    protected onJoinMode(action: Action<JoinedModeData>, context: ServerContext) {
+    protected onJoinMode(action: Action<JoinedModeData>, context: GMEventContext) {
         /* A user joined the lobby, so send them the list of active players */
         console.log("LobbyMode.handleJoinedMode: Lobby joined mode!!");
-        context.allPlayers.broadcast({
+        this.playerList.broadcast({
             action: "user_list",
             data: {
-                user_list: context.allPlayers.getUsernames()
+                user_list: this.playerList.getUsernames()
             }
         });
     }
 
-    private onRemovePlayer(action: Action<RemovePlayerData>, context: ServerContext) {
-        context.eventProvider.dispatchAction({
+    private onRemovePlayer(action: Action<RemovePlayerData>, context: GMEventContext) {
+        this.eventProvider.dispatchAction({
             action: "player_leave",
             data: {
-                player: context.allPlayers.getPlayerByUsername(action.data.username)
+                player: this.playerList.getPlayerByUsername(action.data.username)
             }
         }, context);
     }
 
-    private onPlayerLeave(action: Action<PlayerLeaveData>, context: ServerContext) {
+    private onPlayerLeave(action: Action<PlayerLeaveData>, context: GMEventContext) {
         // Send the updated user list for the remaining players
-        context.allPlayers.broadcast({
+        this.playerList.broadcast({
             action: "user_list",
             data: {
-                user_list: context.allPlayers.getUsernames()
+                user_list: this.playerList.getUsernames()
             }
         });
     }
 
-    private onStartGame(action: Action<StartGameData>, context: ServerContext) {
+    private onStartGame(action: Action<StartGameData>, context: GMEventContext) {
         console.log("LobbyMode.handleStartGame: ")
         console.log(action);
-        context.eventProvider.dispatchAction({
+        this.eventProvider.dispatchAction({
             action: "next_game_mode",
             data: {}
         }, context);

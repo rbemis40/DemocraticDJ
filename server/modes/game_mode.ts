@@ -1,24 +1,16 @@
 import { PlayerData } from "../game_server/player";
 import { Action, buildActionSchema } from "../game_server/action";
-import { PlayerList } from "../game_server/player_list";
 import { Validator } from "../handlers/validator";
 import { EventProvider } from "../game_server/event_provider";
-import { typeSafeBind } from "../utils";
-import { SpotifyAPI } from "../spotify/spotify_api";
 import { Connection } from "../game_server/connection";
 
-export type ContextSender = {
-    con: Connection,
-    playerData?: PlayerData
+export interface GMEventContext {
+    source?: {
+        con: Connection,
+        playerData?: PlayerData // This is undefined if the user has connected to the server, but not joined the game yet
+    },
+    gameMode: string; // The current game mode name
 };
-
-export type ServerContext = {
-    sender?: ContextSender,
-    allPlayers: PlayerList,
-    eventProvider: EventProvider<ServerContext>,
-    songManager: SpotifyAPI,
-    gameModeName: string;
-}
 
 /**
  * Provides the basic interface for each game mode including the mode's name for server / client messages,
@@ -27,11 +19,11 @@ export type ServerContext = {
  */
 export abstract class GameMode {
     protected name: string;
-    protected eventProvider: EventProvider<ServerContext>;
-    protected validator: Validator<ServerContext>;
+    protected eventProvider: EventProvider<GMEventContext>;
+    protected validator: Validator<GMEventContext>;
     private eventCallbackId: number;
 
-    constructor(name: string, eventProvider: EventProvider<ServerContext>) {
+    constructor(name: string, eventProvider: EventProvider<GMEventContext>) {
         this.name = name;
 
         this.eventProvider = eventProvider;
@@ -77,5 +69,5 @@ export abstract class GameMode {
      * @param data - The join mode action
      * @param context - Includes information such as who has just joined the mode and all of the other players
      */
-    protected abstract onJoinMode(data: Action<object>, context: ServerContext): void;
+    protected abstract onJoinMode(data: Action<object>, context: GMEventContext): void;
 }
