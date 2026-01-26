@@ -53,5 +53,7 @@ export class SongQueue {
                 track_info: trackInfo
             }
         });
+
+        context.songManager.queue(trackInfo.track_uri);
     }
 }

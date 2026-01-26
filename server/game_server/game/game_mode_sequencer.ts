@@ -26,6 +26,11 @@ export class GameModeSequencer {
             handler: (data, context) => this.onNextGameMode(data, context)
         });
 
+        this.validator.addPair({
+            schema: buildActionSchema("go_back_to_lobby", nextGameModeSchema),
+            handler: (data, context) => this.onNextGameMode(data, context)
+        })
+
         this.eventProvider.onAction((action: Action<object>, context: ServerContext) => {
             this.validator.validateAndHandle(action, context);
         });
@@ -46,6 +51,16 @@ export class GameModeSequencer {
                 this.mode.makeInactive();
                 this.mode = new SelectVotersMode(context.allPlayers, this.eventProvider, context);
                 this.mode.makeActive();
+                context.allPlayers.broadcast({
+                    action: "change_mode",
+                    data: {
+                        gamemode: this.mode.getName()
+                    }
+                });
+                break;
+            }
+            case "go_back_to_lobby": {
+                this.mode = new LobbyMode(this.eventProvider);
                 context.allPlayers.broadcast({
                     action: "change_mode",
                     data: {

@@ -262,7 +262,13 @@ export class SelectVotersMode extends GameMode {
             data: {
                 track_info: this.chooser.get(winner.winner)!
             }
-        }, this.context)
+        }, this.context);
+
+        // TEMP
+        this.eventProvider.dispatchAction({
+            action: "go_back_to_lobby",
+            data: {}
+        }, this.context);
     }
 
     private decideWinner(count: CountObj[]): {winner: string, tied: string[]} {

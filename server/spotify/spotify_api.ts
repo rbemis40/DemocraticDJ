@@ -143,7 +143,7 @@ export class SpotifyAPI {
             }
         })
 
-        if (res.status !== 204) {
+        if (!res.ok) {
             //console.error(await res.json());
             throw new Error('Failed to add to queue with response code: ' + res.status);
         }
