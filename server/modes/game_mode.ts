@@ -29,11 +29,13 @@ export abstract class GameMode {
     protected name: string;
     protected eventProvider: EventProvider<ServerContext>;
     protected validator: Validator<ServerContext>;
+    private eventCallbackId: number;
 
     constructor(name: string, eventProvider: EventProvider<ServerContext>) {
         this.name = name;
 
         this.eventProvider = eventProvider;
+        this.eventCallbackId = -1; // Placeholder until the game mode is made active
 
         // Force each GameMode to handle a player joining the mode, used to send init data for the client
         this.validator = new Validator();
@@ -44,14 +46,29 @@ export abstract class GameMode {
             handler: (data, context) => this.onJoinMode(data, context)
         });
 
-        // Receive events from the server, and validate them to pass to handlers
-        this.eventProvider.onAction((action, context) => {
-            this.validator.validateAndHandle(action, context);
-        });
+        
     }
 
     getName(): string {
         return this.name;
+    }
+
+    /**
+     * Makes the game mode respond to events and respond to player messages by listening to events
+     * dispatched by the EventProvider
+     */
+    makeActive() {
+        this.eventCallbackId = this.eventProvider.onAction((action, context) => {
+            this.validator.validateAndHandle(action, context);
+        });
+    }
+
+    /**
+     * Detaches the game mode from the EventProvider, preventing this mode from listening and
+     * responding to user messages. Should be called when switching out of the game mode.
+     */
+    makeInactive() {
+        this.eventProvider.removeCallback(this.eventCallbackId);
     }
 
     /**

@@ -31,6 +31,7 @@ export class GameModeSequencer {
         });
 
         this.mode = new LobbyMode(this.eventProvider);
+        this.mode.makeActive();
     }
 
     getCurrentModeName(): string {
@@ -42,7 +43,9 @@ export class GameModeSequencer {
         console.log(action);
         switch(action.action) {
             case "next_game_mode": {
+                this.mode.makeInactive();
                 this.mode = new SelectVotersMode(context.allPlayers, this.eventProvider, context);
+                this.mode.makeActive();
                 context.allPlayers.broadcast({
                     action: "change_mode",
                     data: {
