@@ -36,6 +36,7 @@ export class SimpleGameServer implements GameServer {
         this.url = new URL(`ws://${process.env.HOST_NAME}:8081`);
         
         // Order matters here. We want the server to be the first to handle events, and GameModes to be last
+        this.validator = new Validator();
         this.eventProvider = new EventProvider();
         this.eventProvider.onAction((action, context) => { // Handle internally dispatched events
             this.validator.validateAndHandle(action, context);
@@ -66,9 +67,6 @@ export class SimpleGameServer implements GameServer {
         }
 
         await this.spotifyAPI.connect(spotifyCode, process.env.SPOTIFY_REDIRECT_URI);
-
-        // Setup the actions that the game server itself handles
-        this.validator = new Validator();
 
         return true;
     }
