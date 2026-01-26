@@ -45,6 +45,7 @@ export class SelectVotersMode extends GameMode {
         this.voteMap = new Map();
 
         this.chooser = new Map<string, TrackInfo | undefined>(); // Username -> song id (choice)
+        this.clearAllVoters(playerList); // Clear every player's voting status so that we can repick completely new voters
         this.chooseVoters(playerList, 2).forEach(user => {
             this.chooser.set(user.username!, undefined);
             user.isVoter = true;
@@ -60,7 +61,7 @@ export class SelectVotersMode extends GameMode {
             handler: (action, context) => this.onVoteCast(action, context)
         })
 
-        this.timerLength = 30;
+        this.timerLength = 10;
 
         this.startTimer(() => this.onSongSelectEnd(playerList));
     }
@@ -92,6 +93,12 @@ export class SelectVotersMode extends GameMode {
                 state: this.state
             }
         });
+    }
+
+    private clearAllVoters(playerList: PlayerList) {
+        playerList.getUsernames().forEach(username => {
+            playerList.getPlayerByUsername(username)!.isVoter = false;
+        })
     }
 
     private chooseVoters(playerList: PlayerList, maxK: number): Player[] {

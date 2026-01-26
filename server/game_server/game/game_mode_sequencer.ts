@@ -43,14 +43,18 @@ export class GameModeSequencer {
         return this.mode.getName();
     }
 
+    private switchModes(newMode: GameMode) {
+        this.mode.makeInactive();
+        this.mode = newMode;
+        this.mode.makeActive();
+    }
+
     private onNextGameMode(action: Action<NextGameModeData>, context: ServerContext) {
         console.log("Game.handleInternalAction:");
         console.log(action);
         switch(action.action) {
             case "next_game_mode": {
-                this.mode.makeInactive();
-                this.mode = new SelectVotersMode(context.allPlayers, this.eventProvider, context);
-                this.mode.makeActive();
+                this.switchModes(new SelectVotersMode(context.allPlayers, this.eventProvider, context));
                 context.allPlayers.broadcast({
                     action: "change_mode",
                     data: {
@@ -60,7 +64,7 @@ export class GameModeSequencer {
                 break;
             }
             case "go_back_to_lobby": {
-                this.mode = new LobbyMode(this.eventProvider);
+                this.switchModes(new LobbyMode(this.eventProvider));
                 context.allPlayers.broadcast({
                     action: "change_mode",
                     data: {
