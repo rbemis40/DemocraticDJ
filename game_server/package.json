@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "start": "node --env-file=.env build/game_server/index",
+    "build": "tsc",
+    "restart": "npm run build && npm run start",
+    "clean": "rm -r build/"
+  },
+  "dependencies": {
+    "@types/ws": "^8.18.1",
+    "@types/node": "^25.0.10",
+    "ajv": "^8.17.1",
+    "typescript": "^52.9.3",
+    "ws": "^8.19.0"
+  }
+}
