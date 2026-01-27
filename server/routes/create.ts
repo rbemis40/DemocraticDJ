@@ -1,9 +1,8 @@
 import { Router } from "express";
 import { GameManager } from "../game_managers/gm_types";
 import { GameId, NewGameInfo, UserToken } from "../shared_types";
-import { GameServer } from "../game_server/server_types";
-import { TokenHandler } from "../handlers/token_handler";
-import { threadCpuUsage } from "process";
+import { GameServer } from "../../shared/shared_types";
+import { TokenHandler } from "../token_handler";
 
 export function getCreateRouter(gm: GameManager): Router {
     const createRouter = Router();
@@ -22,7 +21,6 @@ export function getCreateRouter(gm: GameManager): Router {
         const gameServer: GameServer = await gm.getServerByGameId(gameId);
         const hostToken: UserToken = await TokenHandler.generateToken({
             isHost: true,
-            isActiveVoter: false
         });
         const serverURL: URL = await gameServer.getServerURL();
 

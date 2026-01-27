@@ -1,18 +1,5 @@
-import { UserToken } from "../shared_types";
+import { TokenData, UserToken } from "../shared/shared_types";
 import { randomBytes } from "crypto";
-
-type HostTokenData = {
-    isHost: true,
-    isActiveVoter: false
-};
-
-type UserTokenData = {
-    isHost: false,
-    username: string,
-    isActiveVoter: boolean
-};
-
-export type TokenData = HostTokenData | UserTokenData;
 
 /**
  * Responsible for issuing / managing tokens, and exchanging them for user data.

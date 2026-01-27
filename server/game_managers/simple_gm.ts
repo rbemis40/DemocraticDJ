@@ -1,4 +1,4 @@
-import { GameServer } from '../game_server/server_types';
+import { GameServer } from '../../shared/shared_types';
 import { GameId, NewGameInfo } from '../shared_types';
 import { GameManager } from './gm_types';
 

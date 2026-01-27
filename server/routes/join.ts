@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { GameManager } from "../game_managers/gm_types";
-import { GameServer } from "../game_server/server_types";
-import { TokenHandler } from "../handlers/token_handler";
+import { GameServer } from "../../shared/shared_types";
+import { TokenHandler } from "../token_handler";
 
 export function getJoinRouter(gm: GameManager): Router {
     const joinRouter = Router();
@@ -41,7 +41,6 @@ export function getJoinRouter(gm: GameManager): Router {
         const newUserToken = TokenHandler.generateToken({
             isHost: false,
             username: name,
-            isActiveVoter: false,
         });
         const serverURLStr = (await gameServer.getServerURL()).toString();
 
