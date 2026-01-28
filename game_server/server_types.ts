@@ -17,13 +17,7 @@ import { GMEventContext } from "./modes/game_mode";
     4. The user is returned a game_id, user_token (host token), and connection URL
     5. The user creates a web socket connection to 
 */
-export interface GameServer {
-    /* Initial setup of a new game */
-    createGame(id: GameId, spotifyCode: string): Promise<boolean>;
 
-    /* Methods for connecting new users */
-    getServerURL(): Promise<URL>;
-}
 
 export interface ExternalEventContext {
     user: Player;

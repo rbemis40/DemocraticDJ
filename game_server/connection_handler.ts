@@ -4,7 +4,7 @@ import { UserToken } from "../shared/shared_types";
 import { Action, buildActionSchema } from "./action";
 import { EventProvider } from "./event_provider";
 import { InGameInfo, Player } from "./player";
-import { TokenData, TokenHandler } from "../server/token_handler";
+import { TokenData, TokenHandler } from "../api/token_handler";
 import { Connection } from "./connection";
 import { PlayerLeaveData, playerLeaveDataSchema } from "./server_types";
 import { GMEventContext } from "./modes/game_mode";

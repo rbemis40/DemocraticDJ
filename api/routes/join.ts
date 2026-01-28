@@ -1,9 +1,7 @@
 import { Router } from "express";
-import { GameManager } from "../game_managers/gm_types";
 import { GameServer } from "../../shared/shared_types";
-import { TokenHandler } from "../token_handler";
 
-export function getJoinRouter(gm: GameManager): Router {
+export function getJoinRouter(): Router {
     const joinRouter = Router();
 
     joinRouter.get('/:game_id', async (req, res) => {
