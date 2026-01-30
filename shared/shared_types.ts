@@ -9,7 +9,7 @@ export type NewGameInfo = {
 
 export interface GameServer {
     /* Initial setup of a new game */
-    createGame(id: GameId, spotifyCode: string): Promise<boolean>;
+    connectSpotify(spotifyCode: string): Promise<boolean>;
 
     /* Methods for connecting new users */
     getServerURL(): Promise<URL>;

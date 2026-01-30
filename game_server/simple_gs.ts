@@ -30,11 +30,12 @@ export class SimpleGameServer implements GameServer {
     private spotifyAPI: SpotifyAPI;
     private songManager: SongManager;
     private songQueue: SongQueue;
-    private gameId?: GameId;
+    private gameId: GameId;
 
-    constructor(port=8081) {
+    constructor(gameId: GameId, port=8081) {
         this.wss = new WebSocketServer({port: port}, () => console.log(`Game server running on port ${port}`));
         this.url = new URL(`ws://${process.env.HOST_NAME}:8081`);
+        this.gameId = gameId;
         
         // Order matters here. We want the server to be the first to handle events, and GameModes to be last
         this.validator = new Validator();
@@ -56,13 +57,7 @@ export class SimpleGameServer implements GameServer {
         this.setupServerHandler();
     }
 
-    async createGame(id: GameId, spotifyCode: string): Promise<boolean> {
-        if (this.gameId !== undefined) {
-            console.error(`Server is already running game with id ${this.gameId}`);
-            return false;
-        }
-
-        this.gameId = id;
+    async connectSpotify(spotifyCode: string): Promise<boolean> {
         if (process.env.SPOTIFY_REDIRECT_URI === undefined) {
             throw new Error("Missing environment variable 'SPOTIFY_REDIRECT_URI'!");
         }
