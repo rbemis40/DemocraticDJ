@@ -28,7 +28,7 @@ export type TokenData = HostTokenData | UserTokenData;
 
 export interface ClusterGameInfo {
     gameId: GameId;
-    hostname: string;
+    joinUrl: string;
 }
 
 /**

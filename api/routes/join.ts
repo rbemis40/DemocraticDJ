@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { GameServer } from "../../shared/shared_types";
+import { Cluster } from "../game_managers/cluster_types";
 
-export function getJoinRouter(): Router {
+export function getJoinRouter(cluster: Cluster): Router {
     const joinRouter = Router();
 
     joinRouter.get('/:game_id', async (req, res) => {
@@ -26,23 +26,17 @@ export function getJoinRouter(): Router {
             res.status(400).json({error: `game_id must be a number`});
             return;
         }
-
-        let gameServer: GameServer;
-        try {
-            gameServer = await gm.getServerByGameId(gameIdInt);
-        }
-        catch (err) {
-            res.status(400).json({error: `Unknown game id ${gameIdInt}`});
-            return;
-        }
         
-        const newUserToken = TokenHandler.generateToken({
-            isHost: false,
-            username: name,
+        const gameServerInfo = await cluster.joinGame(gameIdInt, {
+            role: "player",
+            username: name
         });
-        const serverURLStr = (await gameServer.getServerURL()).toString();
 
-        res.status(200).json({game_id: gameIdInt, user_token: newUserToken, server_url: serverURLStr});
+        res.status(200).json({
+            game_id: gameIdInt, 
+            user_token: gameServerInfo.token, 
+            server_url: gameServerInfo.wsUrl
+        });
     });
 
     return joinRouter;

@@ -4,10 +4,10 @@ import { UserToken } from "../shared/shared_types";
 import { Action, buildActionSchema } from "./action";
 import { EventProvider } from "./event_provider";
 import { InGameInfo, Player } from "./player";
-import { TokenData, TokenHandler } from "../api/token_handler";
 import { Connection } from "./connection";
 import { PlayerLeaveData, playerLeaveDataSchema } from "./server_types";
 import { GMEventContext } from "./modes/game_mode";
+import { assert } from "console";
 
 interface PlayerJoinData {
     token: UserToken;
@@ -66,8 +66,8 @@ export class ConnectionHandler {
         }
 
         try {
-            const tokenData: TokenData = TokenHandler.exchangeToken(joinData.token);
-            const player: Player = new Player(tokenData satisfies InGameInfo, con);
+            //const tokenData: TokenData = TokenHandler.exchangeToken(joinData.token);
+            const player: Player = new Player({} as InGameInfo, con);
             
             player.isHost ? 
                 console.log('Added host!') : 

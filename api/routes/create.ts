@@ -16,14 +16,14 @@ export function getCreateRouter(cluster: Cluster): Router {
         }
 
         const clusterInfo: ClusterGameInfo = await cluster.createGame(req.query.code);
-        const hostToken: string = await cluster.joinGame(clusterInfo.gameId, {
+        const gameServerInfo = await cluster.joinGame(clusterInfo.gameId, {
             role: "host"            
         });
 
         const gameInfo: ClientGameInfo = {
-            host_token: hostToken,
+            host_token: gameServerInfo.token,
             game_id: clusterInfo.gameId,
-            server_url: clusterInfo.hostname,
+            server_url: gameServerInfo.wsUrl,
         };
 
         res.status(201).json(gameInfo);

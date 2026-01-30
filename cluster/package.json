@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start": "node --env-file=.env build/index",
+    "start": "node --env-file=.env build/cluster/index",
     "build": "tsc",
     "restart": "npm run build && npm run start",
     "clean": "rm -r build/"
@@ -11,6 +11,10 @@
     "@types/node": "^25.0.10",
     "express": "^5.2.1",
     "express-jwt": "^8.5.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.1"
   }
 }

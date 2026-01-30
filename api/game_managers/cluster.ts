@@ -1,5 +1,6 @@
 import { ClusterGameInfo, GameId, UserInfo } from '../../shared/shared_types';
 import { JWTTokenManager, TokenManager } from '../../shared/tokens/token_manager';
+import { PrivilegeToken } from '../../shared/tokens/token_types';
 import { Cluster } from './cluster_types';
 
 /**
@@ -8,14 +9,15 @@ import { Cluster } from './cluster_types';
  */
 export class SimpleCluster implements Cluster {
     private hostname: string;
-    private tm: TokenManager<unknown>;
+    private tm: TokenManager<PrivilegeToken>;
 
-    constructor(hostname: string, tokenManager: TokenManager<unknown>) {
+    constructor(hostname: string, tokenManager: TokenManager<PrivilegeToken>) {
         this.hostname = hostname;
         this.tm = tokenManager;
     }
 
     async createGame(spotifyCode: string): Promise<ClusterGameInfo> {
+        console.log(this.hostname);
         const url = new URL("/create", this.hostname);
         
         // Generate a token signed by this server, otherwise the cluster will not create the game
@@ -42,8 +44,21 @@ export class SimpleCluster implements Cluster {
      * @param gameId
      * @param userInfo 
      */
-    async joinGame(gameId: GameId, userInfo: UserInfo): Promise<string> {
-        const url = new URL("/join", this.hostname);
+    async joinGame(gameId: GameId, userInfo: UserInfo): Promise<{token: string, wsUrl: string}> {
+        let params;
+        if(userInfo.role === "host") {
+            params = new URLSearchParams([
+                ["role", "host"]
+            ]);
+        }
+        else if (userInfo.role === "player") {
+            params = new URLSearchParams([
+                ["role", "player"],
+                ["username", userInfo.username!]
+            ]);
+        }
+
+        const url = new URL(`/join/${gameId}?${params?.toString()}`, this.hostname);
 
         // Generate a token signed by this server. This allows this API to implement access control in the future, such as API rate limiting, rather than per-cluster
         const token: string = this.tm.generateToken({
@@ -60,8 +75,6 @@ export class SimpleCluster implements Cluster {
             throw new Error(`Cluster /join failed with status code ${res.status}: ${res.statusText}`);
         }
 
-        const resJson = await res.json();
-        const infoToken: string = resJson.token;
-        return infoToken;
+        return await res.json();
     }
 }
