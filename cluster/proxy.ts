@@ -7,7 +7,6 @@ import { IncomingMessage } from "http";
  */
 export class WSReverseProxy {
     private wss: WebSocketServer;
-    
     private gameIdMap: Map<GameId, URL>;
     
     constructor() {
