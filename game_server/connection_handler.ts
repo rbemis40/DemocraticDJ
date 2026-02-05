@@ -1,24 +1,24 @@
 import { JSONSchemaType } from "ajv";
 import { Validator } from "./handlers/validator";
-import { UserToken } from "../shared/shared_types";
 import { Action, buildActionSchema } from "./action";
 import { EventProvider } from "./event_provider";
 import { InGameInfo, Player } from "./player";
 import { Connection } from "./connection";
 import { PlayerLeaveData, playerLeaveDataSchema } from "./server_types";
 import { GMEventContext } from "./modes/game_mode";
-import { assert } from "console";
 
 interface PlayerJoinData {
-    token: UserToken;
+    username?: string;
+    isHost: boolean;
 }
 
 const playerJoinSchema: JSONSchemaType<PlayerJoinData> = {
     type: "object",
     properties: {
-        token: {type: "string"}
+        username: {type: "string", nullable: true},
+        isHost: {type: "boolean"}
     },
-    required: ["token"]
+    required: ["isHost"]
 };
 
 interface PromiseFns {
@@ -67,7 +67,10 @@ export class ConnectionHandler {
 
         try {
             //const tokenData: TokenData = TokenHandler.exchangeToken(joinData.token);
-            const player: Player = new Player({} as InGameInfo, con);
+            const player: Player = new Player({
+                ...joinData,
+                isActiveVoter: false
+            } satisfies InGameInfo, con);
             
             player.isHost ? 
                 console.log('Added host!') : 
