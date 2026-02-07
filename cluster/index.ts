@@ -1,28 +1,36 @@
 import * as express from "express";
 import * as http from "http";
-import createRouter from "./routes/create";
 import { WSReverseProxy } from "./proxy";
 import { WebSocket } from "ws";
 import { DockerService } from "./container/docker_service";
+import makeCreateRouter from "./routes/create";
+import { ContainerService } from "./container/container_service";
+import { GameIdGenerator } from "./gameid_generator";
+import makeJoinRouter from "./routes/join";
 
 const app = express();
 const server = http.createServer(app);
 
-app.use("/create", createRouter);
+const containerService: ContainerService = new DockerService();
+const proxyService = new WSReverseProxy();
+proxyService.listen(8082);
 
-const port = 8082;
+const gameIdGenerator = new GameIdGenerator(100000, 999999);
+
+app.use("/create", makeCreateRouter(
+    containerService,
+    proxyService,
+    gameIdGenerator
+));
+
+app.use("/join", makeJoinRouter(
+    proxyService
+))
+
+const port = 8081;
 server.listen(port, () => {
     console.log(`Running cluster on port ${port}`);
 });
-
-const dockerServ = new DockerService()
-dockerServ.startContainer(123456, "democraticdj-gameserver:latest")
-    .then(port => {
-        console.log("STARTED ON PORT: " + port);
-    })
-    .catch(err => {
-        console.error(err);
-    });
 
 // const proxy = new WSReverseProxy();
 // proxy.forward(123456, new URL("ws://127.0.0.1:8081"));

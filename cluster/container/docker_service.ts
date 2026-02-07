@@ -34,7 +34,8 @@ export class DockerService implements ContainerService {
         const container = await this.docker.createContainer({
             Image: "democraticdj-gameserver:latest",
             Env: [
-                `GAME_ID=${gameId}`
+                `GAME_ID=${gameId}`,
+                `TOKEN_SECRET=HELLOWORLD`,
             ],
             HostConfig: {
                 PortBindings: {

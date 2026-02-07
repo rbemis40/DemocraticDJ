@@ -6,19 +6,23 @@ import { InGameInfo, Player } from "./player";
 import { Connection } from "./connection";
 import { PlayerLeaveData, playerLeaveDataSchema } from "./server_types";
 import { GMEventContext } from "./modes/game_mode";
+import { TokenManager } from "../shared/tokens/token_manager";
 
-interface PlayerJoinData {
+export interface PlayerTokenData {
     username?: string;
     isHost: boolean;
+}
+
+interface PlayerJoinData {
+    token: string;
 }
 
 const playerJoinSchema: JSONSchemaType<PlayerJoinData> = {
     type: "object",
     properties: {
-        username: {type: "string", nullable: true},
-        isHost: {type: "boolean"}
+        token: { type: "string" }
     },
-    required: ["isHost"]
+    required: ["token"]
 };
 
 interface PromiseFns {
@@ -30,9 +34,12 @@ export class ConnectionHandler {
     private eventProvider: EventProvider<GMEventContext>;
     private validator: Validator<GMEventContext>;
     private conPromises: Map<Connection, PromiseFns>;
+    private tokenManager: TokenManager<PlayerTokenData>;
     
-    constructor(eventProvider: EventProvider<GMEventContext>) {
+    constructor(eventProvider: EventProvider<GMEventContext>, tokenManager: TokenManager<PlayerTokenData>) {
         this.eventProvider = eventProvider;
+        this.tokenManager = tokenManager;
+
         this.conPromises = new Map();
 
         this.validator = new Validator();
@@ -60,15 +67,20 @@ export class ConnectionHandler {
         const con = context.source.con;
 
         // Finally, resolve the promise for this user
-        const fns = this.conPromises.get(con)
+        const fns = this.conPromises.get(con);
         if (fns === undefined) {
             throw new Error("Attempting to complete handshake with unknown User object!");
         }
 
+        // Exchange the user's token to determine if they are the host and get their username
+        const userTokenData: PlayerTokenData | undefined = this.tokenManager.exchangeToken(joinData.token);
+        if (userTokenData === undefined) {
+            throw new Error("Invalid user token data!");
+        }
+
         try {
-            //const tokenData: TokenData = TokenHandler.exchangeToken(joinData.token);
             const player: Player = new Player({
-                ...joinData,
+                ...userTokenData,
                 isActiveVoter: false
             } satisfies InGameInfo, con);
             

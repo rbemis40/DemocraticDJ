@@ -9,11 +9,12 @@ import { Action } from "./action";
 import { EventProvider } from "./event_provider";
 import { SpotifyAPI } from "./spotify/spotify_api";
 import { GMEventContext } from "./modes/game_mode";
-import { ConnectionHandler } from "./connection_handler";
+import { ConnectionHandler, PlayerTokenData } from "./connection_handler";
 import { Connection } from "./connection";
 import { PlayerList } from "./player_list";
 import { SongManager } from "./spotify/song_manager";
 import { SongQueue } from "./song_queue";
+import { JWTTokenManager, TokenManager } from "../shared/tokens/token_manager";
 
 /*
     - A game server that simply runs on the same system as the HTTP server
@@ -28,11 +29,12 @@ export class SimpleGameServer implements GameServer {
     private playerList: PlayerList;
     private eventProvider: EventProvider<GMEventContext>; // Used for internal dispatching of events from game modes
     private spotifyAPI: SpotifyAPI;
+    private tokenManager: TokenManager<PlayerTokenData>;
     private songManager: SongManager;
     private songQueue: SongQueue;
     private gameId: GameId;
 
-    constructor(gameId: GameId, port=8081) {
+    constructor(gameId: GameId, tokenSecret: string, port=8081) {
         this.wss = new WebSocketServer({port: port}, () => console.log(`Game server running on port ${port}`));
         this.url = new URL(`ws://${process.env.HOST_NAME}:8081`);
         this.gameId = gameId;
@@ -44,7 +46,8 @@ export class SimpleGameServer implements GameServer {
             this.validator.validateAndHandle(action, context);
         });
 
-        this.connectionHandler = new ConnectionHandler(this.eventProvider);
+        this.tokenManager = new JWTTokenManager(tokenSecret, "HS256");
+        this.connectionHandler = new ConnectionHandler(this.eventProvider, this.tokenManager);
         this.playerList = new PlayerList(this.eventProvider);
 
         this.spotifyAPI = new SpotifyAPI();
