@@ -4,7 +4,7 @@ import { IncomingMessage } from "http";
 
 interface ForwardingData {
     url: URL;
-    sockets: WebSocket[];
+    sockets: Set<WebSocket>;
 }
 
 export interface ProxyService {
@@ -28,6 +28,11 @@ export interface ProxyService {
      * @returns boolean - True if this game id is currently forwarding to a server, false otherwise 
      */
     isForwarding(gameId: GameId): boolean;
+
+    /**
+     * Returns the URL of the proxy service
+     */
+    getUrl(): string;
 }
 
 /**
@@ -36,16 +41,18 @@ export interface ProxyService {
 export class WSReverseProxy implements ProxyService {
     private wss: WebSocketServer;
     private gameIdMap: Map<GameId, ForwardingData>;
+    private port: number;
     
-    constructor() {
+    constructor(port: number) {
         this.gameIdMap = new Map();
+        this.port = port;
     }
 
-    listen(port: number) {
+    listen() {
         this.wss = new WebSocketServer({
-            port: port
+            port: this.port
         }, () => {
-            console.log(`Proxy Server running on port ${port}`);
+            console.log(`Proxy Server running on port ${this.port}`);
         });
 
         this.wss.on("connection", (ws, req) => {
@@ -97,19 +104,27 @@ export class WSReverseProxy implements ProxyService {
         const newWs = new WebSocket(forwardingData.url);
         
         // Add it to the map so they can be closed if the stopForwarding method is called
-        forwardingData.sockets.push(newWs);
-        forwardingData.sockets.push(ws);
+        forwardingData.sockets.add(newWs);
+        forwardingData.sockets.add(ws);
 
+        // When one closes, close the other socket in the pair, and remove both from the ForwardingData
         newWs.on("close", () => {
-            this.stopForwarding(gameId);
+            ws.close();
+            const forwardingData = this.gameIdMap.get(gameId);
+            forwardingData?.sockets.delete(ws);
+            forwardingData?.sockets.delete(newWs);
         });
 
         ws.on("close", () => {
-            this.stopForwarding(gameId);
+            newWs.close();
+            const forwardingData = this.gameIdMap.get(gameId);
+            forwardingData?.sockets.delete(ws);
+            forwardingData?.sockets.delete(newWs);
         });
 
         ws.on("message", (data) => this.forwardClientMsg(data, ws, newWs));
         newWs.on("message", (data) => this.forwardServerMsg(data, ws, newWs));
+
     }
 
     private forwardClientMsg(data: RawData, clientWs: WebSocket, serverWs: WebSocket) {
@@ -128,7 +143,7 @@ export class WSReverseProxy implements ProxyService {
 
         this.gameIdMap.set(gameId, {
             url: url,
-            sockets: []
+            sockets: new Set()
         });
         return true;
     }
@@ -152,5 +167,9 @@ export class WSReverseProxy implements ProxyService {
 
     isForwarding(gameId: GameId): boolean {
         return this.gameIdMap.has(gameId);
+    }
+
+    getUrl(): string {
+        return `ws://127.0.0.1:${this.port}`;
     }
 }
