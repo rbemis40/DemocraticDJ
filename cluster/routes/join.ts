@@ -4,8 +4,9 @@ import { ProxyService } from "../proxy/proxy";
 import { ClusterJoinResponse } from "../../shared/responses";
 import { JWTTokenManager } from "../../shared/tokens/token_manager";
 import { PlayerTokenData } from "../../shared/shared_types";
+import { SecretStore } from "../secret_store";
 
-function makeJoinRouter(proxyService: ProxyService): express.Router {
+function makeJoinRouter(proxyService: ProxyService, secretStore: SecretStore): express.Router {
     const jwtSecret: string | undefined = process.env.JWT_SECRET;
     if (jwtSecret === undefined) {
         throw new Error("JWT_SECRET environment var not set!");
@@ -83,7 +84,14 @@ function makeJoinRouter(proxyService: ProxyService): express.Router {
                 return;
             }
 
-            const playerToken = new JWTTokenManager("HELLOWORLD", "HS256").generateToken<PlayerTokenData>({
+            const tokenSecret = secretStore.getSecret(gameId);
+            if (tokenSecret === undefined) {
+                console.warn(`/join: secretStore did not contain secret for game id "${gameId}"`);
+                res.sendStatus(500);
+                return;
+            }
+
+            const playerToken = new JWTTokenManager(tokenSecret, "HS256").generateToken<PlayerTokenData>({
                 username: name,
                 isHost: false
             });

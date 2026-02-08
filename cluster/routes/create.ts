@@ -6,13 +6,15 @@ import { ContainerService } from "../container/container_service";
 import { ProxyService } from "../proxy/proxy";
 import { GameIdGenerator } from "../gameid_generator";
 import { ClusterCreateResponse } from "../../shared/responses";
+import { randomBytes } from "crypto";
+import { SecretStore } from "../secret_store";
 
 const JOIN_HOSTNAME = process.env.JOIN_HOSTNAME;
 if (JOIN_HOSTNAME === undefined) {
     throw new Error("Environment var JOIN_HOSTNAME not set!");
 }
 
-function makeCreateRouter(containerService: ContainerService, proxyService: ProxyService, gameIdGenerator: GameIdGenerator): express.Router {
+function makeCreateRouter(containerService: ContainerService, proxyService: ProxyService, gameIdGenerator: GameIdGenerator, secretStore: SecretStore): express.Router {
     const jwtSecret: string | undefined = process.env.JWT_SECRET;
     if (jwtSecret === undefined) {
         throw new Error("JWT_SECRET environment var not set");
@@ -44,14 +46,30 @@ function makeCreateRouter(containerService: ContainerService, proxyService: Prox
             }
 
             const gameId: GameId = gameIdGenerator.genNewId();
+            secretStore.generateNewSecret(gameId, 256);
 
-            const tokenSecret = "HELLOWORLD"; // TODO: Generate a unique token secret for the new game server
-            const tokenManager: TokenManager = new JWTTokenManager("HELLOWORLD", "HS256");
+            const tokenSecret = secretStore.getSecret(gameId)!;
+            const tokenManager: TokenManager = new JWTTokenManager(tokenSecret, "HS256");
                        
-            const port = await containerService.startContainer(gameId, req.query.code, "democraticdj-gameserver:latest"); // Starts a containerized game server with the game id in it's environment, returns the port number the server is running on
+            const containerInfo = await containerService.startContainer("democraticdj-gameserver:latest", {
+                GAME_ID: gameId.toString(),
+                TOKEN_SECRET: tokenSecret,
+                SPOTIFY_CODE: req.query.code
+            }); // Starts a containerized game server with the game id in it's environment
+
+            const port = containerInfo.port;
+            console.log(`Container info: ${containerInfo.id}`);
+
             if(!proxyService.forward(gameId, new URL(`ws://127.0.0.1:${port}`))) { // Requests sent to the game with gameId will be forwarded to the server running on the corresponding url (the container)
                 throw new Error(`Failed to forward on proxy using game id "${gameId}"`);
             }
+
+            // Attach a callback to the container exiting, so that the proxy service can stop forwarding and close connections if the container exits
+            containerService.onContainerStop(containerInfo.id)
+                .then((id) => {
+                    console.log(`Container with id "${id}" stopped!`);
+                    proxyService.stopForwarding(gameId);
+                })
 
             // Generate a token that verifies that this user is the host when joining the game server
             const token = tokenManager.generateToken<PlayerTokenData>({

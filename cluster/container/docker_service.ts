@@ -1,5 +1,5 @@
 import { GameId } from "../../shared/shared_types";
-import { ContainerService } from "./container_service";
+import { ContainerInfo, ContainerService } from "./container_service";
 import * as Docker from "dockerode";
 
 const DOCKER_PATH = process.env.DOCKER_SOCK_PATH;
@@ -27,17 +27,17 @@ export class DockerService implements ContainerService {
         return exposedPorts[0];
     }
 
-    async startContainer(gameId: GameId, spotifyCode: string, gameServerImgName: string): Promise<number> {
-        const exposedPortStr = await this.getExposedPortFromImg(gameServerImgName);
-        console.log(exposedPortStr);
+    async startContainer(imgName: string, envVars: Record<string, string>): Promise<ContainerInfo> {
+        const exposedPortStr = await this.getExposedPortFromImg(imgName);
+
+        const envArray: string[] = Object.keys(envVars).reduce((curArray, key) => {
+            curArray.push(`${key}=${envVars[key]}`);
+            return curArray;
+        }, [] as string[]);
 
         const container = await this.docker.createContainer({
-            Image: "democraticdj-gameserver:latest",
-            Env: [
-                `GAME_ID=${gameId}`,
-                `TOKEN_SECRET=HELLOWORLD`,
-                `SPOTIFY_CODE=${spotifyCode}`
-            ],
+            Image: imgName,
+            Env: envArray,
             HostConfig: {
                 PortBindings: {
                     [exposedPortStr]: null
@@ -56,10 +56,28 @@ export class DockerService implements ContainerService {
 
         for (const ipPortPair of portInfo) {
             if (ipPortPair.HostIp === "0.0.0.0") {
-                return Number.parseInt(ipPortPair.HostPort, 10);
+                return {
+                    port: Number.parseInt(ipPortPair.HostPort, 10),
+                    id: info.Id
+                };
             }
         }
 
         throw new Error(`Found no pair entry for 0.0.0.0!`);
+    }
+
+    async onContainerStop(id: string): Promise<string> {
+        return new Promise(async (resolve, reject) => {
+            const container = this.docker.getContainer(id);
+            const res = await container.wait();
+            resolve(id);
+        });
+    }
+
+    deleteContainer(id: string) {
+        const container = this.docker.getContainer(id);
+        container.kill({
+            force: true
+        })
     }
 }

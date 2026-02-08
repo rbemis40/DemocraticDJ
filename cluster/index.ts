@@ -7,6 +7,7 @@ import makeCreateRouter from "./routes/create";
 import { ContainerService } from "./container/container_service";
 import { GameIdGenerator } from "./gameid_generator";
 import makeJoinRouter from "./routes/join";
+import { SecretStore } from "./secret_store";
 
 const app = express();
 const server = http.createServer(app);
@@ -16,15 +17,18 @@ const proxyService = new WSReverseProxy(8082);
 proxyService.listen();
 
 const gameIdGenerator = new GameIdGenerator(100000, 999999);
+const secretStore = new SecretStore();
 
 app.use("/create", makeCreateRouter(
     containerService,
     proxyService,
-    gameIdGenerator
+    gameIdGenerator,
+    secretStore
 ));
 
 app.use("/join", makeJoinRouter(
-    proxyService
+    proxyService,
+    secretStore
 ))
 
 const port = 8081;
