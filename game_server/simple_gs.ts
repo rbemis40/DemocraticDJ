@@ -1,5 +1,5 @@
 import { RawData, WebSocketServer } from "ws";
-import { GameId } from "../shared/shared_types";
+import { GameId, PlayerTokenData } from "../shared/shared_types";
 import { GameModeSequencer } from "./game/game_mode_sequencer";
 import { GameServer } from "../shared/shared_types";
 import { PlayerLeaveData } from "./server_types";
@@ -9,7 +9,7 @@ import { Action } from "./action";
 import { EventProvider } from "./event_provider";
 import { SpotifyAPI } from "./spotify/spotify_api";
 import { GMEventContext } from "./modes/game_mode";
-import { ConnectionHandler, PlayerTokenData } from "./connection_handler";
+import { ConnectionHandler } from "./connection_handler";
 import { Connection } from "./connection";
 import { PlayerList } from "./player_list";
 import { SongManager } from "./spotify/song_manager";
@@ -29,7 +29,7 @@ export class SimpleGameServer implements GameServer {
     private playerList: PlayerList;
     private eventProvider: EventProvider<GMEventContext>; // Used for internal dispatching of events from game modes
     private spotifyAPI: SpotifyAPI;
-    private tokenManager: TokenManager<PlayerTokenData>;
+    private tokenManager: TokenManager;
     private songManager: SongManager;
     private songQueue: SongQueue;
     private gameId: GameId;

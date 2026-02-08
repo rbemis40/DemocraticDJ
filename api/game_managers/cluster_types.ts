@@ -1,6 +1,7 @@
-import { ClusterGameInfo, GameId, UserInfo } from "../../shared/shared_types";
+import { ClusterCreateResponse, ClusterJoinResponse } from "../../shared/responses";
+import { GameId, UserInfo } from "../../shared/shared_types";
 
 export interface Cluster {
-    createGame(spotifyCode: string): Promise<ClusterGameInfo>;
-    joinGame(gameId: GameId, userInfo: UserInfo): Promise<{token: string, wsUrl: string}>;
+    createGame(spotifyCode: string): Promise<ClusterCreateResponse>;
+    joinGame(gameId: GameId, userInfo: UserInfo): Promise<ClusterJoinResponse>;
 }

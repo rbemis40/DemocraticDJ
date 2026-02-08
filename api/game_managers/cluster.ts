@@ -1,6 +1,6 @@
-import { ClusterGameInfo, GameId, UserInfo } from '../../shared/shared_types';
-import { JWTTokenManager, TokenManager } from '../../shared/tokens/token_manager';
-import { PrivilegeToken } from '../../shared/tokens/token_types';
+import { GameId, UserInfo } from '../../shared/shared_types';
+import { TokenManager } from '../../shared/tokens/token_manager';
+import { ClusterCreateResponse, ClusterJoinResponse } from "../../shared/responses";
 import { Cluster } from './cluster_types';
 
 /**
@@ -9,14 +9,14 @@ import { Cluster } from './cluster_types';
  */
 export class SimpleCluster implements Cluster {
     private hostname: string;
-    private tm: TokenManager<PrivilegeToken>;
+    private tm: TokenManager;
 
-    constructor(hostname: string, tokenManager: TokenManager<PrivilegeToken>) {
+    constructor(hostname: string, tokenManager: TokenManager) {
         this.hostname = hostname;
         this.tm = tokenManager;
     }
 
-    async createGame(spotifyCode: string): Promise<ClusterGameInfo> {
+    async createGame(spotifyCode: string): Promise<ClusterCreateResponse> {
         console.log(this.hostname);
         const url = new URL("/create", this.hostname);
         
@@ -35,7 +35,7 @@ export class SimpleCluster implements Cluster {
             throw new Error(`Cluster /create failed with status code ${res.status}: ${res.statusText}`);
         }
 
-        const gameInfo: ClusterGameInfo = await res.json();
+        const gameInfo: ClusterCreateResponse = await res.json();
         return gameInfo;
     }
 
@@ -44,21 +44,12 @@ export class SimpleCluster implements Cluster {
      * @param gameId
      * @param userInfo 
      */
-    async joinGame(gameId: GameId, userInfo: UserInfo): Promise<{token: string, wsUrl: string}> {
-        let params;
-        if(userInfo.role === "host") {
-            params = new URLSearchParams([
-                ["role", "host"]
-            ]);
-        }
-        else if (userInfo.role === "player") {
-            params = new URLSearchParams([
-                ["role", "player"],
-                ["username", userInfo.username!]
-            ]);
-        }
+    async joinGame(gameId: GameId, userInfo: UserInfo): Promise<ClusterJoinResponse> {
+        const url = new URL(`/join/${gameId}`, this.hostname);
 
-        const url = new URL(`/join/${gameId}?${params?.toString()}`, this.hostname);
+        if (userInfo.username !== undefined) {
+            url.searchParams.append("name", userInfo.username);
+        }
 
         // Generate a token signed by this server. This allows this API to implement access control in the future, such as API rate limiting, rather than per-cluster
         const token: string = this.tm.generateToken({
@@ -75,6 +66,6 @@ export class SimpleCluster implements Cluster {
             throw new Error(`Cluster /join failed with status code ${res.status}: ${res.statusText}`);
         }
 
-        return await res.json();
+        return await res.json() as ClusterJoinResponse;
     }
 }

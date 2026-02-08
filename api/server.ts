@@ -20,7 +20,7 @@ if (jwtSecret === undefined) {
     throw new Error("JWT_SECRET environment var not set!");
 }
 
-const tm: TokenManager<PrivilegeToken> = new JWTTokenManager<PrivilegeToken>(jwtSecret, "HS256");
+const tm: TokenManager = new JWTTokenManager(jwtSecret, "HS256");
 
 const clusterHostname = process.env.CLUSTER_HOSTNAME;
 if (clusterHostname === undefined) {

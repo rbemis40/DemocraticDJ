@@ -2,14 +2,14 @@ import * as jwt from "jsonwebtoken";
 
 type Token = string;
 
-export interface TokenManager<RoleData> {
-    generateToken(role: RoleData): Token;
-    exchangeToken(token: Token): RoleData | undefined;
+export interface TokenManager {
+    generateToken<RoleData extends object>(role: RoleData): Token;
+    exchangeToken<RoleData extends object>(token: Token): RoleData | undefined;
 }
 
 type JWTAlg = "HS256";
 
-export class JWTTokenManager<RoleData extends object> implements TokenManager<RoleData> {
+export class JWTTokenManager implements TokenManager {
     private jwtSecret: string;
     private alg: JWTAlg;
 
@@ -18,13 +18,13 @@ export class JWTTokenManager<RoleData extends object> implements TokenManager<Ro
         this.alg = alg;
     }
 
-    generateToken(role: RoleData): Token {
+    generateToken<RoleData extends object>(role: RoleData): Token {
         return jwt.sign(role, this.jwtSecret, {
             algorithm: this.alg
         })
     }
 
-    exchangeToken(token: Token): RoleData | undefined {
+    exchangeToken<RoleData extends object>(token: Token): RoleData | undefined {
         try {
             const data: RoleData = jwt.verify(token, this.jwtSecret, {
                 algorithms: [this.alg]

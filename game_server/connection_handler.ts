@@ -7,11 +7,7 @@ import { Connection } from "./connection";
 import { PlayerLeaveData, playerLeaveDataSchema } from "./server_types";
 import { GMEventContext } from "./modes/game_mode";
 import { TokenManager } from "../shared/tokens/token_manager";
-
-export interface PlayerTokenData {
-    username?: string;
-    isHost: boolean;
-}
+import { PlayerTokenData } from "../shared/shared_types";
 
 interface PlayerJoinData {
     token: string;
@@ -34,9 +30,9 @@ export class ConnectionHandler {
     private eventProvider: EventProvider<GMEventContext>;
     private validator: Validator<GMEventContext>;
     private conPromises: Map<Connection, PromiseFns>;
-    private tokenManager: TokenManager<PlayerTokenData>;
+    private tokenManager: TokenManager;
     
-    constructor(eventProvider: EventProvider<GMEventContext>, tokenManager: TokenManager<PlayerTokenData>) {
+    constructor(eventProvider: EventProvider<GMEventContext>, tokenManager: TokenManager) {
         this.eventProvider = eventProvider;
         this.tokenManager = tokenManager;
 

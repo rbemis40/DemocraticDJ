@@ -26,15 +26,15 @@ type UserTokenData = {
 
 export type TokenData = HostTokenData | UserTokenData;
 
-export interface ClusterGameInfo {
-    gameId: GameId;
-    joinUrl: string;
-}
-
 /**
  * Used when a new user is joining a game on a cluster
  */
 export interface UserInfo {
-    role: "host" | "player";
     username?: string;
+}
+
+
+export interface PlayerTokenData {
+    username?: string;
+    isHost: boolean;
 }

@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { Cluster } from "../game_managers/cluster_types";
+import { ClusterJoinResponse } from "../../shared/responses";
 
 export function getJoinRouter(cluster: Cluster): Router {
     const joinRouter = Router();
@@ -7,14 +8,17 @@ export function getJoinRouter(cluster: Cluster): Router {
     joinRouter.get('/:game_id', async (req, res) => {
         if (!req.params.game_id) {
             res.status(400).json({error: `game_id must be provided`});
+            return;
         }
 
         if (!req.query.name) {
             res.status(400).json({error: `name must be provided in query string`});
+            return;
         }
 
         if (typeof req.query.name !== 'string') {
             res.status(400).json({error: `name must be a string`});
+            return;
         }
         const name: string = req.query.name as string;
 
@@ -27,15 +31,14 @@ export function getJoinRouter(cluster: Cluster): Router {
             return;
         }
         
-        const gameServerInfo = await cluster.joinGame(gameIdInt, {
-            role: "player",
+        const gameInfo: ClusterJoinResponse = await cluster.joinGame(gameIdInt, {
             username: name
         });
 
         res.status(200).json({
-            game_id: gameIdInt, 
-            user_token: gameServerInfo.token, 
-            server_url: gameServerInfo.wsUrl
+            game_id: gameInfo.gameId, 
+            user_token: gameInfo.playerToken, 
+            server_url: gameInfo.serverUrl
         });
     });
 

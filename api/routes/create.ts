@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { ClusterGameInfo, GameId, NewGameInfo as ClientGameInfo, UserToken } from "../../shared/shared_types";
+import { NewGameInfo as ClientGameInfo } from "../../shared/shared_types";
 import { Cluster } from "../game_managers/cluster_types";
+import { ClusterCreateResponse } from "../../shared/responses";
 
 export function getCreateRouter(cluster: Cluster): Router {
     const createRouter = Router();
@@ -15,15 +16,12 @@ export function getCreateRouter(cluster: Cluster): Router {
             return;
         }
 
-        const clusterInfo: ClusterGameInfo = await cluster.createGame(req.query.code);
-        const gameServerInfo = await cluster.joinGame(clusterInfo.gameId, {
-            role: "host"            
-        });
+        const clusterInfo: ClusterCreateResponse = await cluster.createGame(req.query.code);
 
         const gameInfo: ClientGameInfo = {
-            host_token: gameServerInfo.token,
+            host_token: clusterInfo.hostToken,
             game_id: clusterInfo.gameId,
-            server_url: gameServerInfo.wsUrl,
+            server_url: clusterInfo.serverUrl,
         };
 
         res.status(201).json(gameInfo);
