@@ -90,8 +90,8 @@ export default function GameClient(props: GameInfoProps) {
             }));
         });
 
-        ws.addEventListener('message', (e) => {
-            const serverMsg: ServerMsg = JSON.parse(e.data);
+        ws.addEventListener('message', async (e) => {
+            const serverMsg: ServerMsg = JSON.parse(await e.data.text());
             console.log(serverMsg);
             smTrigger(serverMsg.action, serverMsg);
         });

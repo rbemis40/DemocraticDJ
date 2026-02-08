@@ -24,7 +24,7 @@ export function getJoinRouter(cluster: Cluster): Router {
 
         let gameIdInt;
         try {
-            gameIdInt = Number.parseInt(req.params.game_id);
+            gameIdInt = Number.parseInt(req.params.game_id, 10);
         }
         catch (err) {
             res.status(400).json({error: `game_id must be a number`});

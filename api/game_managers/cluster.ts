@@ -19,6 +19,7 @@ export class SimpleCluster implements Cluster {
     async createGame(spotifyCode: string): Promise<ClusterCreateResponse> {
         console.log(this.hostname);
         const url = new URL("/create", this.hostname);
+        url.searchParams.append("code", spotifyCode);
         
         // Generate a token signed by this server, otherwise the cluster will not create the game
         const token: string = this.tm.generateToken({

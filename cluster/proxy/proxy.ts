@@ -1,10 +1,11 @@
 import { RawData, WebSocket, WebSocketServer } from "ws";
-import { GameId } from "../shared/shared_types";
+import { GameId } from "../../shared/shared_types";
 import { IncomingMessage } from "http";
 
 interface ForwardingData {
     url: URL;
     sockets: Set<WebSocket>;
+    clientMsgQueue: RawData[]; // Temporarily queues messages sent from the client until the connection to the server is established
 }
 
 export interface ProxyService {
@@ -60,10 +61,9 @@ export class WSReverseProxy implements ProxyService {
         });
     }
 
-    private handleClientConnect(ws: WebSocket, req: IncomingMessage) {
+    private parseRequestURL(req: IncomingMessage): number | undefined {
         if (req.url === undefined) {
             console.warn("User attempted to connect to proxy with no available URL!");
-            ws.close();
             return;
         }
 
@@ -71,14 +71,12 @@ export class WSReverseProxy implements ProxyService {
         const parsedUrl = URL.parse(req.url, "ws://127.0.0.1");
         if (parsedUrl === null) {
             console.warn(`Invalid URL used when connecting to proxy: "${req.url}"`);
-            ws.close();
             return;
         }
 
         const gameIdStr = parsedUrl.searchParams.get("gameid");
         if (gameIdStr === null) {
             console.warn(`User attempted to connect without providing gameid param: "${req.url}"`);
-            ws.close();
             return;
         }
 
@@ -88,11 +86,20 @@ export class WSReverseProxy implements ProxyService {
         }
         catch {
             console.warn(`GameId must be a number, got: ${gameIdStr}`);
+            return;
+        }
+
+        return gameId;
+    }
+
+    private async handleClientConnect(ws: WebSocket, req: IncomingMessage) {
+        const gameId = this.parseRequestURL(req);
+        if (gameId === undefined) { // Check if it failed to parse
             ws.close();
             return;
         }
 
-        // With the gameId, look up if there is a server that correlates
+        // Look up if there is a server that correlates with this game id
         const forwardingData = this.gameIdMap.get(gameId);
         if (forwardingData === undefined) {
             console.warn(`Unknown gameId: ${gameId}`);
@@ -102,17 +109,13 @@ export class WSReverseProxy implements ProxyService {
 
         // Create a new connection to that server and add to the maps
         const newWs = new WebSocket(forwardingData.url);
-        
-        // Add it to the map so they can be closed if the stopForwarding method is called
-        forwardingData.sockets.add(newWs);
-        forwardingData.sockets.add(ws);
-
-        // When one closes, close the other socket in the pair, and remove both from the ForwardingData
-        newWs.on("close", () => {
-            ws.close();
-            const forwardingData = this.gameIdMap.get(gameId);
-            forwardingData?.sockets.delete(ws);
-            forwardingData?.sockets.delete(newWs);
+        ws.on("message", (data) => {
+            if (newWs.readyState !== WebSocket.OPEN) {
+                forwardingData.clientMsgQueue.push(data); // Add incoming messages to the msg queue
+            }
+            else {
+                this.forwardClientMsg(data, ws, newWs);
+            }
         });
 
         ws.on("close", () => {
@@ -122,16 +125,50 @@ export class WSReverseProxy implements ProxyService {
             forwardingData?.sockets.delete(newWs);
         });
 
-        ws.on("message", (data) => this.forwardClientMsg(data, ws, newWs));
+        newWs.on("open", () => {
+            // Work through the message queue now that the connection is open
+            forwardingData.clientMsgQueue.forEach(data => {
+                this.forwardClientMsg(data, ws, newWs);
+            });
+
+            forwardingData.clientMsgQueue = []; // Clear the queue
+        });
+        
+        newWs.on("close", () => {
+            ws.close();
+            const forwardingData = this.gameIdMap.get(gameId);
+            forwardingData?.sockets.delete(ws);
+            forwardingData?.sockets.delete(newWs);
+        });
+
         newWs.on("message", (data) => this.forwardServerMsg(data, ws, newWs));
 
+        // Add it to the map so they can be closed if the stopForwarding method is called
+        forwardingData.sockets.add(newWs);
+        forwardingData.sockets.add(ws);
     }
 
     private forwardClientMsg(data: RawData, clientWs: WebSocket, serverWs: WebSocket) {
+        if (serverWs.readyState !== WebSocket.OPEN){
+            console.warn("Attempt to forward data to server before socket was ready");
+            return;
+        }
+
+        console.log("Forwarding to server:");
+        console.log(data.toString());
+
         serverWs.send(data);
     }
 
     private forwardServerMsg(data: RawData, clientWs: WebSocket, serverWs: WebSocket) {
+        if (clientWs.readyState !== WebSocket.OPEN) {
+            console.warn("Attempt to forward to client before socket was ready");
+            return;
+        }
+
+        console.log("Forwarding to client:");
+        console.log(data.toString());
+        
         clientWs.send(data);
     }
 
@@ -143,7 +180,8 @@ export class WSReverseProxy implements ProxyService {
 
         this.gameIdMap.set(gameId, {
             url: url,
-            sockets: new Set()
+            sockets: new Set(),
+            clientMsgQueue: []
         });
         return true;
     }

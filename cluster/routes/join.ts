@@ -1,6 +1,6 @@
 import * as express from "express";
 import { expressjwt, Request } from "express-jwt";
-import { ProxyService } from "../proxy";
+import { ProxyService } from "../proxy/proxy";
 import { ClusterJoinResponse } from "../../shared/responses";
 import { JWTTokenManager } from "../../shared/tokens/token_manager";
 import { PlayerTokenData } from "../../shared/shared_types";
@@ -90,7 +90,7 @@ function makeJoinRouter(proxyService: ProxyService): express.Router {
 
             res.status(200).json({
                 gameId: gameId,
-                serverUrl: `ws://${PROXY_HOSTNAME}:${PROXY_PORT}/?gameid=${gameId}`,
+                serverUrl: `${proxyService.getUrl()}/?gameid=${gameId}`,
                 playerToken: playerToken
             } satisfies ClusterJoinResponse );
         }

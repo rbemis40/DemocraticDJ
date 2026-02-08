@@ -10,5 +10,11 @@ if (gameIdStr === undefined) {
     throw new Error("Environment var GAME_ID not set!");
 }
 
+const spotifyCode = process.env.SPOTIFY_CODE;
+if (spotifyCode === undefined) {
+    throw new Error("Environment var SPOTIFY_CODE not set!");
+}
+
 let gameId = Number.parseInt(gameIdStr, 10);
 const gameServer = new SimpleGameServer(gameId, tokenSecret);
+gameServer.connectSpotify(spotifyCode);

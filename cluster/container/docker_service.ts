@@ -27,7 +27,7 @@ export class DockerService implements ContainerService {
         return exposedPorts[0];
     }
 
-    async startContainer(gameId: GameId, gameServerImgName: string): Promise<number> {
+    async startContainer(gameId: GameId, spotifyCode: string, gameServerImgName: string): Promise<number> {
         const exposedPortStr = await this.getExposedPortFromImg(gameServerImgName);
         console.log(exposedPortStr);
 
@@ -36,6 +36,7 @@ export class DockerService implements ContainerService {
             Env: [
                 `GAME_ID=${gameId}`,
                 `TOKEN_SECRET=HELLOWORLD`,
+                `SPOTIFY_CODE=${spotifyCode}`
             ],
             HostConfig: {
                 PortBindings: {

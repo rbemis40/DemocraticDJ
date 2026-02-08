@@ -1,6 +1,6 @@
 import * as express from "express";
 import * as http from "http";
-import { WSReverseProxy } from "./proxy";
+import { WSReverseProxy } from "./proxy/proxy";
 import { WebSocket } from "ws";
 import { DockerService } from "./container/docker_service";
 import makeCreateRouter from "./routes/create";
@@ -12,8 +12,8 @@ const app = express();
 const server = http.createServer(app);
 
 const containerService: ContainerService = new DockerService();
-const proxyService = new WSReverseProxy();
-proxyService.listen(8082);
+const proxyService = new WSReverseProxy(8082);
+proxyService.listen();
 
 const gameIdGenerator = new GameIdGenerator(100000, 999999);
 

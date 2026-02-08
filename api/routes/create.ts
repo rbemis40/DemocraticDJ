@@ -10,7 +10,7 @@ export function getCreateRouter(cluster: Cluster): Router {
         // Get the Spotify API code to request an access token
         if (req.query.code === undefined || typeof req.query.code !== 'string') {
             res.status(400).json({
-                error: 'Expected "code" query paramater in /create request'
+                error: 'Expected "code" query parameter in /create request'
             });
 
             return;
