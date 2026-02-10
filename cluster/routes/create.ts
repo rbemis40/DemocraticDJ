@@ -14,6 +14,11 @@ if (JOIN_HOSTNAME === undefined) {
     throw new Error("Environment var JOIN_HOSTNAME not set!");
 }
 
+const GAME_SERVER_HOST = process.env.GAME_SERVER_HOST;
+if (GAME_SERVER_HOST === undefined) {
+    throw new Error("Environment var GAME_SERVER_HOST not set!");
+}
+
 function makeCreateRouter(containerService: ContainerService, proxyService: ProxyService, gameIdGenerator: GameIdGenerator, secretStore: SecretStore): express.Router {
     const jwtSecret: string | undefined = process.env.JWT_SECRET;
     if (jwtSecret === undefined) {
@@ -60,7 +65,7 @@ function makeCreateRouter(containerService: ContainerService, proxyService: Prox
             const port = containerInfo.port;
             console.log(`Container info: ${containerInfo.id}`);
 
-            if(!proxyService.forward(gameId, new URL(`ws://127.0.0.1:${port}`))) { // Requests sent to the game with gameId will be forwarded to the server running on the corresponding url (the container)
+            if(!proxyService.forward(gameId, new URL(`ws://${GAME_SERVER_HOST}:${port}`))) { // Requests sent to the game with gameId will be forwarded to the server running on the corresponding url (the container)
                 throw new Error(`Failed to forward on proxy using game id "${gameId}"`);
             }
 
