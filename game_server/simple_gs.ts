@@ -89,8 +89,15 @@ export class SimpleGameServer {
             });
 
             ws.on('close', () => {
-                if (player?.username === undefined) {
-                    return; // TODO
+                if (player?.username === undefined) { // The host has left the game
+                    console.log("The host has left!");
+                    
+                    this.playerList.getUsernames().forEach((username => {
+                        this.playerList.getPlayerByUsername(username)?.getConnection()?.disconnect();
+                    }));
+                    
+                    this.wss.close();
+                    return;
                 }
 
                 this.eventProvider.dispatchAction({

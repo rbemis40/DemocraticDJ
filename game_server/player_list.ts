@@ -1,4 +1,4 @@
-import { Validator } from "./handlers/validator.js"
+import { Validator } from "./handlers/validator.js";
 import { GMEventContext } from "./modes/game_mode.js";
 import { Action, buildActionSchema } from "./action.js";
 import { EventProvider } from "./event_provider.js";

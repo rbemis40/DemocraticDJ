@@ -47,7 +47,7 @@ export class ConnectionHandler {
         this.validator.addPair({
             schema: buildActionSchema("player_leave", playerLeaveDataSchema),
             handler: (data, context) => this.onPlayerLeave(data, context),
-        })
+        });
 
         this.eventProvider.onAction((action: Action<object>, context: GMEventContext) => {
             this.validator.validateAndHandle(action, context);
