@@ -1,9 +1,9 @@
-import { GameMode, GMEventContext } from "../game_mode";
-import schemas, { JoinedModeData, RemovePlayerData, StartGameData } from "./lobby_schemas";
-import { Action, buildActionSchema } from "../../action";
-import { EventProvider } from "../../event_provider";
-import { PlayerLeaveData, playerLeaveDataSchema } from "../../server_types";
-import { PlayerList } from "../../player_list";
+import { GameMode, GMEventContext } from "../game_mode.js";
+import schemas, { JoinedModeData, RemovePlayerData, StartGameData } from "./lobby_schemas.js";
+import { Action, buildActionSchema } from "../../action.js";
+import { EventProvider } from "../../event_provider.js";
+import { PlayerLeaveData, playerLeaveDataSchema } from "../../server_types.js";
+import { PlayerList } from "../../player_list.js";
 
 export class LobbyMode extends GameMode {
     private playerList: PlayerList;

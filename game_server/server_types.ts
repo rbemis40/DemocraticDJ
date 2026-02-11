@@ -1,9 +1,8 @@
 import { JSONSchemaType } from "ajv";
-import { GameId, UserToken } from "../shared/shared_types";
-import { Player } from "./player";
-import { EventProvider } from "./event_provider";
-import { SpotifyAPI } from "./spotify/spotify_api";
-import { GMEventContext } from "./modes/game_mode";
+import { UserToken } from "../shared/shared_types.js";
+import { Player } from "./player.js";
+import { EventProvider } from "./event_provider.js";
+import { GMEventContext } from "./modes/game_mode.js";
 
 /*
     1. User starts on democraticdj.com
@@ -22,13 +21,11 @@ import { GMEventContext } from "./modes/game_mode";
 export interface ExternalEventContext {
     user: Player;
     eventProvider: EventProvider<GMEventContext>;
-    songManager: SpotifyAPI;
 };
 
 export interface InternalEventContext {
     user: null;
     eventProvider: EventProvider<GMEventContext>;
-    songManager: SpotifyAPI;
 };
 
 export type EventContext = ExternalEventContext | InternalEventContext;
@@ -41,7 +38,7 @@ export type JoinData = {
 export const joinDataSchema: JSONSchemaType<JoinData> = {
     type: 'object',
     properties: {
-        token: {type: 'string'}
+        token: { type: 'string' }
     },
 
     required: ['token']

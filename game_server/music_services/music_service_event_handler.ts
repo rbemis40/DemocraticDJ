@@ -1,9 +1,9 @@
 import { JSONSchemaType } from "ajv";
-import { Action, buildActionSchema } from "../action";
-import { EventProvider } from "../event_provider";
-import { Validator } from "../handlers/validator";
-import { SpotifyAPI, TrackInfo } from "./spotify_api";
-import { GMEventContext } from "../modes/game_mode";
+import { Action, buildActionSchema } from "../action.js";
+import { EventProvider } from "../event_provider.js";
+import { Validator } from "../handlers/validator.js";
+import { GMEventContext } from "../modes/game_mode.js";
+import { MusicService, TrackInfo } from "./music_service.js";
 
 export interface SongSearchData {
     query: string;
@@ -16,27 +16,21 @@ export const songSearchDataSchema: JSONSchemaType<SongSearchData> = {
     required: ["query"]
 };
 
-export class SongManager {
-    private eventProvider: EventProvider<GMEventContext>;
+export class MusicServiceEventHandler {
     private validator: Validator<GMEventContext>;
+    private musicService: MusicService;
 
-    private spotifyAPI: SpotifyAPI;
-
-    constructor(spotifyAPI: SpotifyAPI, eventProvider: EventProvider<GMEventContext>) {
-        this.eventProvider = eventProvider;
+    constructor(musicService: MusicService, eventProvider: EventProvider<GMEventContext>) {
+        this.musicService = musicService;
         this.validator = new Validator();
+
         this.validator.addPair({
             schema: buildActionSchema("song_search", songSearchDataSchema),
             handler: (action, context) => this.onSongSearch(action, context),
         });
 
-        this.eventProvider.onAction((action, context) => {
-            this.validator.validateAndHandle(action, context);
-        })
-
-        this.spotifyAPI = spotifyAPI;
+        eventProvider.onAction((action, context) => this.validator.validateAndHandle(action, context));
     }
-
 
     private async onSongSearch(action: Action<SongSearchData>, context: GMEventContext) {
         if (!context.source?.playerData?.isVoter) {
@@ -44,7 +38,7 @@ export class SongManager {
             return; // Only allow the active voter to search for songs
         }
 
-        const searchResults: TrackInfo[] = await this.spotifyAPI.search(action.data.query);
+        const searchResults: TrackInfo[] = await this.musicService.search(action.data.query);
         context.source.con.sendAction({
             action: "spotify_results",
             data: {

@@ -1,4 +1,4 @@
-import Ajv, { JSONSchemaType, ValidateFunction } from "ajv";
+import { Ajv, JSONSchemaType, ValidateFunction } from "ajv";
 
 export interface ValidatorPair<SchemaType, ContextType> {
     schema: JSONSchemaType<SchemaType>;

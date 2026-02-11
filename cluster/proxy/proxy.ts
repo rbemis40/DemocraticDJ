@@ -1,6 +1,7 @@
 import { RawData, WebSocket, WebSocketServer } from "ws";
 import { GameId } from "../../shared/shared_types";
 import { IncomingMessage } from "http";
+import { WebSocketConnector } from "./ws_connector";
 
 interface ForwardingData {
     url: URL;
@@ -107,16 +108,20 @@ export class WSReverseProxy implements ProxyService {
             return;
         }
 
+        const addToQueue = (data: RawData) => {
+            forwardingData.clientMsgQueue.push(data);
+        }
+
+        ws.on("message", addToQueue); // Until the other half of the connection is established, add messages to a queue to be processed after
+
         // Create a new connection to that server and add to the maps
-        const newWs = new WebSocket(forwardingData.url);
+        const newWs = await new WebSocketConnector(forwardingData.url).connect();
+
+        // Now that the connection is open, stop adding to queue
         ws.on("message", (data) => {
-            if (newWs.readyState !== WebSocket.OPEN) {
-                forwardingData.clientMsgQueue.push(data); // Add incoming messages to the msg queue
-            }
-            else {
-                this.forwardClientMsg(data, ws, newWs);
-            }
+            this.forwardClientMsg(data, ws, newWs);
         });
+        ws.off("message", addToQueue); 
 
         ws.on("close", () => {
             newWs.close();
@@ -125,15 +130,6 @@ export class WSReverseProxy implements ProxyService {
             forwardingData?.sockets.delete(newWs);
         });
 
-        newWs.on("open", () => {
-            // Work through the message queue now that the connection is open
-            forwardingData.clientMsgQueue.forEach(data => {
-                this.forwardClientMsg(data, ws, newWs);
-            });
-
-            forwardingData.clientMsgQueue = []; // Clear the queue
-        });
-        
         newWs.on("close", () => {
             ws.close();
             const forwardingData = this.gameIdMap.get(gameId);
@@ -142,6 +138,13 @@ export class WSReverseProxy implements ProxyService {
         });
 
         newWs.on("message", (data) => this.forwardServerMsg(data, ws, newWs));
+
+        // Work through the queue of messages that arrived before the server connection was open 
+        forwardingData.clientMsgQueue.forEach(data => {
+            this.forwardClientMsg(data, ws, newWs);
+        });
+
+        forwardingData.clientMsgQueue = []; // Clear the queue
 
         // Add it to the map so they can be closed if the stopForwarding method is called
         forwardingData.sockets.add(newWs);

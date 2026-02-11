@@ -7,16 +7,9 @@ export function getCreateRouter(cluster: Cluster): Router {
     const createRouter = Router();
 
     createRouter.get('/', async (req, res) => {
-        // Get the Spotify API code to request an access token
-        if (req.query.code === undefined || typeof req.query.code !== 'string') {
-            res.status(400).json({
-                error: 'Expected "code" query parameter in /create request'
-            });
-
-            return;
-        }
-
-        const clusterInfo: ClusterCreateResponse = await cluster.createGame(req.query.code);
+        const clusterInfo: ClusterCreateResponse = await cluster.createGame({
+            name: "spotify"
+        });
 
         const gameInfo: ClientGameInfo = {
             host_token: clusterInfo.hostToken,

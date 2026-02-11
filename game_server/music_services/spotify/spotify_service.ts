@@ -1,3 +1,5 @@
+import { MusicService, TrackInfo } from "../music_service.js";
+
 interface SpotifyTrackResult {
     name: string;
     id: string;
@@ -20,21 +22,7 @@ interface SpotifySearchResult {
     }
 };
 
-interface TrackImg {
-    url: string;
-    width: number;
-    height: number;
-};
-
-export interface TrackInfo {
-    name: string;
-    id: string;
-    artists: string[];
-    image: TrackImg;
-    track_uri: string;
-};
-
-export class SpotifyAPI {
+export class SpotifyService implements MusicService {
     access_token: string | undefined;
     connected: boolean;
     constructor() {
@@ -42,10 +30,9 @@ export class SpotifyAPI {
         this.connected = false;
     }
 
-    async connect(code: string, redirect_uri: string) {
+    async connect(redirect_uri: string) {
         const data = new URLSearchParams({
-            grant_type: 'authorization_code',
-            code: code,
+            grant_type: 'client_credentials',
             redirect_uri: redirect_uri
         });
         const res = await fetch('https://accounts.spotify.com/api/token', {
@@ -53,11 +40,11 @@ export class SpotifyAPI {
             body: data,
             headers: {
                 'Authorization': 'Basic ' + Buffer.from(`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`).toString('base64'),
-                'content-type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/x-www-form-urlencoded'
             }
         });
 
-        if (res.status !== 200) {
+        if (!res.ok) {
             throw new Error(`Received status ${res.status} from Spotify API while requesting access token`);
         }
 
@@ -100,7 +87,7 @@ export class SpotifyAPI {
         });
     }
 
-    async getSongById(id: string): Promise<TrackInfo> {
+    async getTrackInfoById(id: string): Promise<TrackInfo> {
         if(!this.isReady()) {
             throw new Error("Attempt to get song by id using Spotify API without valid connection");
         }

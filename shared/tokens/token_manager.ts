@@ -1,4 +1,4 @@
-import * as jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
 type Token = string;
 
@@ -25,6 +25,8 @@ export class JWTTokenManager implements TokenManager {
     }
 
     exchangeToken<RoleData extends object>(token: Token): RoleData | undefined {
+        console.log(this.jwtSecret);
+        console.log(jwt);
         try {
             const data: RoleData = jwt.verify(token, this.jwtSecret, {
                 algorithms: [this.alg]
@@ -32,7 +34,8 @@ export class JWTTokenManager implements TokenManager {
 
             return data;
         }
-        catch {
+        catch(err) {
+            console.warn(err);
             return undefined;
         }
     }

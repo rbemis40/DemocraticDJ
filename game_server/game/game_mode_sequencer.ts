@@ -1,12 +1,12 @@
 import { JSONSchemaType } from "ajv";
-import { Validator } from "../handlers/validator";
-import { GameMode, GMEventContext } from "../modes/game_mode";
-import { LobbyMode } from "../modes/lobby/lobby_mode";
-import { SelectVotersMode } from "../modes/select_voters/select_voters_mode";
-import { Action, buildActionSchema } from "../action";
-import { EventProvider } from "../event_provider";
-import { PlayerList } from "../player_list";
-import { SpotifyAPI } from "../spotify/spotify_api";
+import { Validator } from "../handlers/validator.js";
+import { GameMode, GMEventContext } from "../modes/game_mode.js";
+import { LobbyMode } from "../modes/lobby/lobby_mode.js";
+import { SelectVotersMode } from "../modes/select_voters/select_voters_mode.js";
+import { Action, buildActionSchema } from "../action.js";
+import { EventProvider } from "../event_provider.js";
+import { PlayerList } from "../player_list.js";
+import { MusicService } from "../music_services/music_service.js";
 
 interface NextGameModeData {}
 
@@ -18,14 +18,14 @@ export class GameModeSequencer {
     private mode: GameMode;
     private eventProvider: EventProvider<GMEventContext>;
     private playerList: PlayerList;
-    private songManager: SpotifyAPI;
+    private musicService: MusicService;
 
     private validator: Validator<GMEventContext>;
 
-    constructor(eventProvider: EventProvider<GMEventContext>, playerList: PlayerList, songManager: SpotifyAPI) {
+    constructor(eventProvider: EventProvider<GMEventContext>, playerList: PlayerList, musicService: MusicService) {
         this.eventProvider = eventProvider;
         this.playerList = playerList;
-        this.songManager = songManager;
+        this.musicService = musicService;
 
         this.validator = new Validator();
         this.validator.addPair({
@@ -61,7 +61,7 @@ export class GameModeSequencer {
         console.log(action);
         switch(action.action) {
             case "next_game_mode": {
-                this.switchModes(new SelectVotersMode(this.eventProvider, this.playerList, this.songManager));
+                this.switchModes(new SelectVotersMode(this.eventProvider, this.playerList, this.musicService));
                 this.playerList.broadcast({
                     action: "change_mode",
                     data: {

@@ -1,26 +1,25 @@
 import { RawData, WebSocketServer } from "ws";
-import { GameId, PlayerTokenData } from "../shared/shared_types";
-import { GameModeSequencer } from "./game/game_mode_sequencer";
-import { GameServer } from "../shared/shared_types";
-import { PlayerLeaveData } from "./server_types";
-import { Player } from "./player";
-import { Validator } from "./handlers/validator";
-import { Action } from "./action";
-import { EventProvider } from "./event_provider";
-import { SpotifyAPI } from "./spotify/spotify_api";
-import { GMEventContext } from "./modes/game_mode";
-import { ConnectionHandler } from "./connection_handler";
-import { Connection } from "./connection";
-import { PlayerList } from "./player_list";
-import { SongManager } from "./spotify/song_manager";
-import { SongQueue } from "./song_queue";
-import { JWTTokenManager, TokenManager } from "../shared/tokens/token_manager";
+import { GameId } from "../shared/shared_types.js";
+import { GameModeSequencer } from "./game/game_mode_sequencer.js";
+import { PlayerLeaveData } from "./server_types.js";
+import { Player } from "./player.js";
+import { Validator } from "./handlers/validator.js";
+import { Action } from "./action.js";
+import { EventProvider } from "./event_provider.js";
+import { GMEventContext } from "./modes/game_mode.js";
+import { ConnectionHandler } from "./connection_handler.js";
+import { Connection } from "./connection.js";
+import { PlayerList } from "./player_list.js";
+import { SongQueue } from "./song_queue.js";
+import { JWTTokenManager, TokenManager } from "../shared/tokens/token_manager.js";
+import { MusicService } from "./music_services/music_service.js";
+import { MusicServiceEventHandler } from "./music_services/music_service_event_handler.js";
 
 /*
     - A game server that simply runs on the same system as the HTTP server
     - TODO: For now, only supports one game at a time
 */
-export class SimpleGameServer implements GameServer {
+export class SimpleGameServer {
     private wss: WebSocketServer;
     private url: URL;
     private validator: Validator<GMEventContext>;
@@ -28,14 +27,12 @@ export class SimpleGameServer implements GameServer {
     private gameModeSeq: GameModeSequencer;
     private playerList: PlayerList;
     private eventProvider: EventProvider<GMEventContext>; // Used for internal dispatching of events from game modes
-    private spotifyAPI: SpotifyAPI;
     private tokenManager: TokenManager;
-    private songManager: SongManager;
+    private musicService: MusicService;
     private songQueue: SongQueue;
     private gameId: GameId;
 
-    constructor(gameId: GameId, tokenSecret: string, port=8081) {
-        this.wss = new WebSocketServer({port: port}, () => console.log(`Game server running on port ${port}`));
+    constructor(gameId: GameId, musicService: MusicService, tokenSecret: string, port=8081) {
         this.url = new URL(`ws://${process.env.HOST_NAME}:8081`);
         this.gameId = gameId;
         
@@ -50,31 +47,23 @@ export class SimpleGameServer implements GameServer {
         this.connectionHandler = new ConnectionHandler(this.eventProvider, this.tokenManager);
         this.playerList = new PlayerList(this.eventProvider);
 
-        this.spotifyAPI = new SpotifyAPI();
-        this.songManager = new SongManager(this.spotifyAPI, this.eventProvider);
+        // Setup the music service and the event handler for it
+        this.musicService = musicService;
+        new MusicServiceEventHandler(this.musicService, this.eventProvider);
         
-        this.songQueue = new SongQueue(this.eventProvider, this.playerList, this.spotifyAPI);
+        this.songQueue = new SongQueue(this.eventProvider, this.playerList);
         
-        this.gameModeSeq = new GameModeSequencer(this.eventProvider, this.playerList, this.spotifyAPI);
+        this.gameModeSeq = new GameModeSequencer(this.eventProvider, this.playerList, this.musicService);
 
-        this.setupServerHandler();
-    }
-
-    async connectSpotify(spotifyCode: string): Promise<boolean> {
-        if (process.env.SPOTIFY_REDIRECT_URI === undefined) {
-            throw new Error("Missing environment variable 'SPOTIFY_REDIRECT_URI'!");
-        }
-
-        await this.spotifyAPI.connect(spotifyCode, process.env.SPOTIFY_REDIRECT_URI);
-
-        return true;
+        this.setupServerHandler(port);
     }
 
     async getServerURL(): Promise<URL> {
         return this.url;
     }
 
-    private setupServerHandler() {
+    private setupServerHandler(port: number) {
+        this.wss = new WebSocketServer({port: port}, () => console.log(`Game server running on port ${port}`));
         this.wss.on('connection', async (ws, req) => {
             const newCon = new Connection(ws);
             let player: Player | undefined = undefined;

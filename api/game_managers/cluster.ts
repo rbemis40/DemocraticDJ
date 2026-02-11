@@ -1,7 +1,7 @@
 import { GameId, UserInfo } from '../../shared/shared_types';
 import { TokenManager } from '../../shared/tokens/token_manager';
 import { ClusterCreateResponse, ClusterJoinResponse } from "../../shared/responses";
-import { Cluster } from './cluster_types';
+import { Cluster, MusicServiceInfo } from './cluster_types';
 
 /**
  * The bridge between the create / join API and each cluster. Locates an appropriate cluster to perform the action,
@@ -16,10 +16,9 @@ export class SimpleCluster implements Cluster {
         this.tm = tokenManager;
     }
 
-    async createGame(spotifyCode: string): Promise<ClusterCreateResponse> {
-        console.log(this.hostname);
+    async createGame(musicService: MusicServiceInfo): Promise<ClusterCreateResponse> {
         const url = new URL("/create", this.hostname);
-        url.searchParams.append("code", spotifyCode);
+        url.searchParams.append("service", musicService.name);
         
         // Generate a token signed by this server, otherwise the cluster will not create the game
         const token: string = this.tm.generateToken({

@@ -1,8 +1,8 @@
-import { PlayerData } from "../player";
-import { Connection } from "../connection";
-import { EventProvider } from "../event_provider";
-import { Validator } from "../handlers/validator";
-import { Action, buildActionSchema } from "../action";
+import { PlayerData } from "../player.js";
+import { Connection } from "../connection.js";
+import { EventProvider } from "../event_provider.js";
+import { Validator } from "../handlers/validator.js";
+import { Action, buildActionSchema } from "../action.js";
 
 export interface GMEventContext {
     source?: {

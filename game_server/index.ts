@@ -1,4 +1,6 @@
-import { SimpleGameServer } from "./simple_gs";
+import { MusicService } from "./music_services/music_service.js";
+import { MusicServiceFactory } from "./music_services/music_service_factory.js";
+import { SimpleGameServer } from "./simple_gs.js";
 
 const tokenSecret = process.env.TOKEN_SECRET;
 if (tokenSecret === undefined) {
@@ -10,11 +12,12 @@ if (gameIdStr === undefined) {
     throw new Error("Environment var GAME_ID not set!");
 }
 
-const spotifyCode = process.env.SPOTIFY_CODE;
-if (spotifyCode === undefined) {
-    throw new Error("Environment var SPOTIFY_CODE not set!");
+const serviceName = process.env.MUSIC_SERVICE;
+if (serviceName === undefined) {
+    throw new Error("Environment var MUSIC_SERVICE not set!");
 }
 
 let gameId = Number.parseInt(gameIdStr, 10);
-const gameServer = new SimpleGameServer(gameId, tokenSecret);
-gameServer.connectSpotify(spotifyCode);
+
+const musicService: MusicService = await new MusicServiceFactory().buildMusicService(serviceName);
+const gameServer = new SimpleGameServer(gameId, musicService, tokenSecret);

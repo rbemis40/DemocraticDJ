@@ -1,13 +1,13 @@
 import { JSONSchemaType } from "ajv";
-import { Validator } from "./handlers/validator";
-import { Action, buildActionSchema } from "./action";
-import { EventProvider } from "./event_provider";
-import { InGameInfo, Player } from "./player";
-import { Connection } from "./connection";
-import { PlayerLeaveData, playerLeaveDataSchema } from "./server_types";
-import { GMEventContext } from "./modes/game_mode";
-import { TokenManager } from "../shared/tokens/token_manager";
-import { PlayerTokenData } from "../shared/shared_types";
+import { Validator } from "./handlers/validator.js";
+import { Action, buildActionSchema } from "./action.js";
+import { EventProvider } from "./event_provider.js";
+import { InGameInfo, Player } from "./player.js";
+import { Connection } from "./connection.js";
+import { PlayerLeaveData, playerLeaveDataSchema } from "./server_types.js";
+import { GMEventContext } from "./modes/game_mode.js";
+import { TokenManager } from "../shared/tokens/token_manager.js";
+import { PlayerTokenData } from "../shared/shared_types.js";
 
 interface PlayerJoinData {
     token: string;

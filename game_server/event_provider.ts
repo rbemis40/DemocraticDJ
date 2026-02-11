@@ -1,4 +1,4 @@
-import { Action } from "./action";
+import { Action } from "./action.js";
 
 type EventCallback<ContextType> = (action: Action<object>, context: ContextType) => void;
 

@@ -1,10 +1,10 @@
 import { JSONSchemaType } from "ajv";
-import { Validator } from "./handlers/validator";
-import { SpotifyAPI, TrackInfo } from "./spotify/spotify_api";
-import { Action, buildActionSchema } from "./action";
-import { EventProvider } from "./event_provider";
-import { GMEventContext } from "./modes/game_mode";
-import { PlayerList } from "./player_list";
+import { Validator } from "./handlers/validator.js";
+import { Action, buildActionSchema } from "./action.js";
+import { EventProvider } from "./event_provider.js";
+import { GMEventContext } from "./modes/game_mode.js";
+import { PlayerList } from "./player_list.js";
+import { TrackInfo } from "./music_services/music_service.js";
 
 interface AddToQueueData {
     track_info: object; // Should be TrackInfo
@@ -24,13 +24,11 @@ export class SongQueue {
     private trackQueue: TrackInfo[];
 
     private playerList: PlayerList;
-    private songManager: SpotifyAPI;
     
-    constructor(eventProvider: EventProvider<GMEventContext>, playerList: PlayerList, songManager: SpotifyAPI) {
+    constructor(eventProvider: EventProvider<GMEventContext>, playerList: PlayerList) {
         this.trackQueue = [];
 
         this.playerList = playerList;
-        this.songManager = songManager;
 
         this.eventProvider = eventProvider;
         this.validator = new Validator();
@@ -60,7 +58,5 @@ export class SongQueue {
                 track_info: trackInfo
             }
         });
-
-        this.songManager.queue(trackInfo.track_uri);
     }
 }

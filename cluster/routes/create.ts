@@ -44,8 +44,8 @@ function makeCreateRouter(containerService: ContainerService, proxyService: Prox
                 return;
             }
 
-            if (req.query.code === undefined || typeof req.query.code !== "string") {
-                console.warn("User attempted to create game without spotify code query param");
+            if (req.query.service === undefined || typeof req.query.service !== "string") {
+                console.warn(`User attempted to create game with invalid service param: ${req.query.service}`);
                 res.sendStatus(400);
                 return;
             }
@@ -54,12 +54,13 @@ function makeCreateRouter(containerService: ContainerService, proxyService: Prox
             secretStore.generateNewSecret(gameId, 256);
 
             const tokenSecret = secretStore.getSecret(gameId)!;
+            console.log(tokenSecret);
             const tokenManager: TokenManager = new JWTTokenManager(tokenSecret, "HS256");
                        
             const containerInfo = await containerService.startContainer("democraticdj-gameserver:latest", {
                 GAME_ID: gameId.toString(),
                 TOKEN_SECRET: tokenSecret,
-                SPOTIFY_CODE: req.query.code
+                MUSIC_SERVICE: req.query.service
             }); // Starts a containerized game server with the game id in it's environment
 
             const port = containerInfo.port;

@@ -1,5 +1,5 @@
 import { WebSocket } from "ws";
-import { Action } from "./action";
+import { Action } from "./action.js";
 
 export class Connection {
     private ws: WebSocket;

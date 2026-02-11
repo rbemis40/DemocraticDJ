@@ -1,9 +1,9 @@
-import { Validator } from "./handlers/validator"
-import { GMEventContext } from "./modes/game_mode";
-import { Action, buildActionSchema } from "./action";
-import { EventProvider } from "./event_provider";
-import { Player } from "./player";
-import { PlayerLeaveData, playerLeaveDataSchema } from "./server_types";
+import { Validator } from "./handlers/validator.js"
+import { GMEventContext } from "./modes/game_mode.js";
+import { Action, buildActionSchema } from "./action.js";
+import { EventProvider } from "./event_provider.js";
+import { Player } from "./player.js";
+import { PlayerLeaveData, playerLeaveDataSchema } from "./server_types.js";
 
 export class PlayerList {
     private players: Map<string | undefined, Player>;

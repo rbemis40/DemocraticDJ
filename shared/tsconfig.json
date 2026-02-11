@@ -1,8 +1,10 @@
 {
     "compilerOptions": {
         "module": "nodenext",
-        "outDir": "./build/",
         "strictNullChecks": true,
         "noImplicitAny": true,
-    },
+        "composite": true,
+        "rootDir": "../",
+        "outDir": "build/"
+    }
 }

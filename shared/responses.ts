@@ -1,4 +1,4 @@
-import { GameId } from "./shared_types";
+import { GameId } from "./shared_types.js";
 
 export interface ClusterCreateResponse {
     gameId: GameId;

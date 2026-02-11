@@ -1,4 +1,4 @@
-import { Connection } from "./connection";
+import { Connection } from "./connection.js";
 
 export type InGameInfo = {
     username?: string;

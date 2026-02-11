@@ -1,11 +1,11 @@
-import { Action, buildActionSchema } from "../../action";
-import { PlayerList } from "../../player_list";
-import { Player } from "../../player";
-import { GameMode, GMEventContext } from "../game_mode";
-import { chooseSongSchema, ChooseSongData } from "./select_voters_schemas";
+import { Action, buildActionSchema } from "../../action.js";
+import { PlayerList } from "../../player_list.js";
+import { Player } from "../../player.js";
+import { GameMode, GMEventContext } from "../game_mode.js";
+import { chooseSongSchema, ChooseSongData } from "./select_voters_schemas.js";
 import { JSONSchemaType } from "ajv";
-import { SpotifyAPI, TrackInfo } from "../../spotify/spotify_api";
-import { EventProvider } from "../../event_provider";
+import { EventProvider } from "../../event_provider.js";
+import { MusicService, TrackInfo } from "../../music_services/music_service.js";
 
 interface SongSelectOverData {}
 
@@ -36,15 +36,15 @@ export class SelectVotersMode extends GameMode {
     private state: State;
 
     private playerList: PlayerList;
-    private songManager: SpotifyAPI;
+    private musicService: MusicService; 
     
-    constructor(eventProvider: EventProvider<GMEventContext>, playerList: PlayerList, songManager: SpotifyAPI) {
+    constructor(eventProvider: EventProvider<GMEventContext>, playerList: PlayerList, musicService: MusicService) {
         super("select_voters", eventProvider);
 
         this.state = "select";
 
         this.playerList = playerList;
-        this.songManager = songManager;
+        this.musicService = musicService;
 
         this.voteMap = new Map();
 
@@ -146,7 +146,7 @@ export class SelectVotersMode extends GameMode {
         }
         
         const songId = action.data.song_id;
-        const songInfo = await this.songManager.getSongById(songId);
+        const songInfo = await this.musicService.getTrackInfoById(songId);
 
         this.chooser.set(context.source!.playerData!.username!, songInfo); // Update the state
         
