@@ -26,6 +26,7 @@ export class WebSocketConnector {
                     console.warn(err);
                     ws.close();
                     if (numTries < this.maxRetries) {
+                        numTries += 1;
                         setTimeout(makeWs, this.retryInterval);
                     }
                     else {

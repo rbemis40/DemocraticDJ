@@ -1,11 +1,9 @@
-import * as express  from 'express';
-import * as cors from 'cors';
+import express  from 'express';
+import cors from 'cors';
 import { getCreateRouter } from './routes/create';
 import { getJoinRouter } from './routes/join';
-import * as http from 'http';
-import * as jwt from "jsonwebtoken";
+import http from 'http';
 
-import { PrivilegeToken } from '../shared/tokens/token_types';
 import { JWTTokenManager, TokenManager } from '../shared/tokens/token_manager';
 import { Cluster } from './game_managers/cluster_types';
 import { SimpleCluster } from './game_managers/cluster';

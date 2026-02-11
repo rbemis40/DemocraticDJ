@@ -2,6 +2,7 @@
     "compilerOptions": {
         "outDir": "./build/",
         "strictNullChecks": true,
-        "noImplicitAny": true
+        "noImplicitAny": true,
+        "module": "nodenext"
     },
 }

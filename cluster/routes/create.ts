@@ -54,7 +54,6 @@ function makeCreateRouter(containerService: ContainerService, proxyService: Prox
             secretStore.generateNewSecret(gameId, 256);
 
             const tokenSecret = secretStore.getSecret(gameId)!;
-            console.log(tokenSecret);
             const tokenManager: TokenManager = new JWTTokenManager(tokenSecret, "HS256");
                        
             const containerInfo = await containerService.startContainer("democraticdj-gameserver:latest", {
