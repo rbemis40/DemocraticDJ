@@ -1,5 +1,5 @@
-import * as express from "express";
-import * as http from "http";
+import express from "express";
+import http from "http";
 import { WSReverseProxy } from "./proxy/proxy";
 import { WebSocket } from "ws";
 import { DockerService } from "./container/docker_service";

@@ -75,6 +75,8 @@ function makeCreateRouter(containerService: ContainerService, proxyService: Prox
                 .then((id) => {
                     console.log(`Container with id "${id}" stopped!`);
                     proxyService.stopForwarding(gameId);
+                    gameIdGenerator.freeId(gameId);
+                    secretStore.freeSecret(gameId);
                 })
 
             // Generate a token that verifies that this user is the host when joining the game server

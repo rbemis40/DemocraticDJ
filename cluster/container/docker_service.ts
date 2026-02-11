@@ -1,6 +1,5 @@
-import { GameId } from "../../shared/shared_types";
 import { ContainerInfo, ContainerService } from "./container_service";
-import * as Docker from "dockerode";
+import Docker from "dockerode";
 
 const DOCKER_PATH = process.env.DOCKER_SOCK_PATH;
 if (DOCKER_PATH === undefined) {

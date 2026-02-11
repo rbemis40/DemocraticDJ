@@ -15,4 +15,8 @@ export class SecretStore {
     getSecret(gameId: GameId): string | undefined {
         return this.gameIdToSecret.get(gameId);
     }
+
+    freeSecret(gameId: GameId): boolean {
+        return this.gameIdToSecret.delete(gameId);
+    }
 }
