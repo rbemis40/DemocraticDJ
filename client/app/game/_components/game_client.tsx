@@ -94,7 +94,7 @@ export default function GameClient(props: GameInfoProps) {
         ws.addEventListener('close', () => {
             console.log(`Closing connection to game server`);
             ws.close();
-            router.replace(`http://${process.env.NEXT_PUBLIC_HOST}:${process.env.NEXT_PUBLIC_PORT}/`);
+            router.replace(`http://${process.env.NEXT_PUBLIC_HOSTNAME}/`);
         });
     }, [ws, router, smTrigger, props.server_url, props.user_token]);
 
