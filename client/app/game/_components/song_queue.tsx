@@ -4,13 +4,12 @@ import SongCard from "./song_card/song_card";
 import useServerMsg from "../_hooks/server_msg_hook";
 import { ServerMsg } from "../_types/server_msg";
 
-interface SongQueueProps {};
 
 interface SongAddedData {
     track_info: SpotifySearchResult;
 }
 
-export default function SongQueue(props: SongQueueProps) {
+export default function SongQueue() {
     const [queuedSongs, setQueuedSongs] = useState<SpotifySearchResult[]>([]);
 
     useServerMsg((msg: ServerMsg) => {

@@ -8,7 +8,7 @@ export default function Countdown(props: CountdownProps) {
     const [timeRem, setTimeRem] = useState<number>(props.initTime);
 
     useEffect(() => {
-        let timeoutId: any;
+        let timeoutId: NodeJS.Timeout;
 
         const repeat = (timeLeft: number) => {
             if (timeLeft <= 0) {

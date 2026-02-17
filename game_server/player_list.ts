@@ -55,6 +55,10 @@ export class PlayerList {
         return this.players.get(undefined);
     }
 
+    isUsernameTaken(username: string): boolean {
+        return this.players.has(username);
+    }
+
     get numPlayers() {
         return this.players.size;
     }

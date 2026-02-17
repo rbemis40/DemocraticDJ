@@ -65,7 +65,7 @@ export class SelectVotersMode extends GameMode {
             handler: (action, context) => this.onVoteCast(action, context)
         })
 
-        this.timerLength = 10;
+        this.timerLength = 30;
         this.timerStart = -1;
 
         this.startTimer(() => this.onSongSelectEnd(playerList));

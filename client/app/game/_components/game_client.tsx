@@ -4,14 +4,11 @@ import { useContext, useEffect, useState } from "react";
 import HostLobby from "./_host/lobby";
 import PlayerLobby from "./_player/lobby";
 import { useRouter } from "next/navigation";
-import HostVoting from "./_host/voting";
-import PlayerVoting from "./_player/voting";
 import { ServerMsgContext } from "./server_msg_provider";
 import useServerMsg from "../_hooks/server_msg_hook";
 import { ChangeVoterStateData, ModeChangeData, ServerMsg, WelcomeData } from "../_types/server_msg";
 import SpotifySearch from "./spotify_search";
 import SongQueue from "./song_queue";
-import { SpotifySearchResult } from "../_types/spotify_types";
 import HostSelectVoters from "./_host/select_voters";
 import PlayerSelectVoters from "./_player/select_voters";
 
@@ -43,8 +40,6 @@ export default function GameClient(props: GameInfoProps) {
             switch (gameMode) {
                 case 'lobby':
                     return <HostLobby sendMsg={sendMsg} gameId={props.game_id}/>
-                case 'voting':
-                    return <HostVoting sendMsg={sendMsg}/>
                 case 'select_voters':
                     return <HostSelectVoters sendMsg={sendMsg}/>
             }
@@ -53,8 +48,6 @@ export default function GameClient(props: GameInfoProps) {
             switch (gameMode) {
                 case 'lobby':
                     return <PlayerLobby sendMsg={sendMsg}/>
-                case 'voting':
-                    return <PlayerVoting sendMsg={sendMsg}/>
                 case 'select_voters':
                     return <PlayerSelectVoters sendMsg={sendMsg}/>
             }
@@ -64,6 +57,7 @@ export default function GameClient(props: GameInfoProps) {
     // Connect to game server
     useEffect(() => {
         const newWs = new WebSocket(props.server_url);
+
         setWs(newWs);
         
         return () => {setWs(undefined); newWs.close()};
@@ -75,8 +69,9 @@ export default function GameClient(props: GameInfoProps) {
             return;
         }
 
-        ws.addEventListener('error', () => {
+        ws.addEventListener('error', (err) => {
             console.error('A websocket error was encountered!');
+            console.error(err);
         });
 
         ws.addEventListener('open', () => {

@@ -13,7 +13,14 @@ const app = express();
 const server = http.createServer(app);
 
 const containerService: ContainerService = new DockerService();
-const proxyService = new WSReverseProxy(8082);
+
+const proxyPort = process.env.PROXY_PORT;
+if (proxyPort === undefined) {
+    throw new Error("Environment var PROXY_PORT not set!");
+}
+
+
+const proxyService = new WSReverseProxy(Number.parseInt(proxyPort, 10));
 proxyService.listen();
 
 const gameIdGenerator = new GameIdGenerator(100000, 999999);

@@ -2,10 +2,9 @@ import { FormEvent, useRef, useState } from "react";
 import { UIProps } from "../types";
 import useServerMsg from "../_hooks/server_msg_hook";
 import { SpotifySearchResult } from "../_types/spotify_types";
-import Image from "next/image";
 import SongCard from "./song_card/song_card";
 
-interface SpotifySearchUI extends UIProps {};
+type SpotifySearchUI = UIProps;
 interface SpotifyResultsData {
     results: SpotifySearchResult[]
 };

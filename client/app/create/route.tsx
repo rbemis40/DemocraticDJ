@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { GameInfo } from "../_types/types";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
     const res = await fetch(`http://${process.env.NEXT_PUBLIC_API_HOST}:${process.env.NEXT_PUBLIC_API_PORT}/create`);
     if (!res.ok) {
         console.log(`Error response while trying to create game: ${res.status}, ${res.statusText}`);

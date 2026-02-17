@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { SpotifySearchResult } from "../../_types/spotify_types";
 import styles from "./song_card_style.module.css";
 
@@ -7,7 +6,7 @@ interface SongCardProps {
 };
 
 export default function SongCard(props: SongCardProps) {
-    let artistNames = props.info.artists.reduce((curText, artist, i) => {
+    const artistNames = props.info.artists.reduce((curText, artist, i) => {
         if (i === props.info.artists.length - 1) {
             return curText + artist;
         }

@@ -115,7 +115,14 @@ export class SimpleGameServer {
             });
 
             // Complete the handshake sequence with the new connection
-            player = await this.connectionHandler.completeHandshake(newCon); 
+            player = await this.connectionHandler.completeHandshake(newCon);
+
+            // Make sure the username isn't taken
+            if (player.username !== undefined && this.playerList.isUsernameTaken(player.username)) {
+                player.getConnection().disconnect();
+                return;
+            }
+            
             this.playerList.addPlayer(player);
         });
     }

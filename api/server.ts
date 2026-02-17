@@ -11,7 +11,7 @@ import { SimpleCluster } from './game_managers/cluster';
 const app = express();
 const server = http.createServer(app)
 
-app.use(cors({origin: 'http://localhost:3000', credentials: true}));
+app.use(cors({origin: 'http://192.168.1.36:3000', credentials: true}));
 
 const jwtSecret: string | undefined = process.env.JWT_SECRET;
 if (jwtSecret === undefined) {
