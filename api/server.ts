@@ -7,25 +7,18 @@ import http from 'http';
 import { JWTTokenManager, TokenManager } from '../shared/tokens/token_manager';
 import { Cluster } from './game_managers/cluster_types';
 import { SimpleCluster } from './game_managers/cluster';
+import { loadVars } from "../shared/utils/envvars";
 
 const app = express();
 const server = http.createServer(app)
 
-app.use(cors({origin: 'http://192.168.1.36:3000', credentials: true}));
+const [CLIENT_URL, JWT_SECRET, CLUSTER_URL] = loadVars(["CLIENT_URL", "JWT_SECRET", "CLUSTER_URL"]);
 
-const jwtSecret: string | undefined = process.env.JWT_SECRET;
-if (jwtSecret === undefined) {
-    throw new Error("JWT_SECRET environment var not set!");
-}
+app.use(cors({origin: CLIENT_URL, credentials: true}));
 
-const tm: TokenManager = new JWTTokenManager(jwtSecret, "HS256");
+const tm: TokenManager = new JWTTokenManager(JWT_SECRET, "HS256");
 
-const clusterHostname = process.env.CLUSTER_HOSTNAME;
-if (clusterHostname === undefined) {
-    throw new Error("CLUSTER_HOSTNAME environment var not set!");
-}
-
-const cluster: Cluster = new SimpleCluster(clusterHostname, tm);
+const cluster: Cluster = new SimpleCluster(CLUSTER_URL, tm);
 
 // Add routes
 app.use('/create', getCreateRouter(cluster));

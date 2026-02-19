@@ -8,16 +8,16 @@ import { Cluster, MusicServiceInfo } from './cluster_types';
  * and returns the GameId, hostname for the cluster, and token information for the user to use when connecting
  */
 export class SimpleCluster implements Cluster {
-    private hostname: string;
+    private url: string;
     private tm: TokenManager;
 
-    constructor(hostname: string, tokenManager: TokenManager) {
-        this.hostname = hostname;
+    constructor(url: string, tokenManager: TokenManager) {
+        this.url = url;
         this.tm = tokenManager;
     }
 
     async createGame(musicService: MusicServiceInfo): Promise<ClusterCreateResponse> {
-        const url = new URL("/create", this.hostname);
+        const url = new URL("/create", this.url);
         url.searchParams.append("service", musicService.name);
         
         // Generate a token signed by this server, otherwise the cluster will not create the game
@@ -45,7 +45,7 @@ export class SimpleCluster implements Cluster {
      * @param userInfo 
      */
     async joinGame(gameId: GameId, userInfo: UserInfo): Promise<ClusterJoinResponse> {
-        const url = new URL(`/join/${gameId}`, this.hostname);
+        const url = new URL(`/join/${gameId}`, this.url);
 
         if (userInfo.username !== undefined) {
             url.searchParams.append("name", userInfo.username);
