@@ -159,8 +159,8 @@ export class WSReverseProxy implements ProxyService {
             return;
         }
 
-        console.log("Forwarding to server:");
-        console.log(data.toString());
+        //console.log("Forwarding to server:");
+        //console.log(data.toString());
 
         serverWs.send(data);
     }
@@ -171,8 +171,8 @@ export class WSReverseProxy implements ProxyService {
             return;
         }
 
-        console.log("Forwarding to client:");
-        console.log(data.toString());
+        //console.log("Forwarding to client:");
+        //console.log(data.toString());
         
         clientWs.send(data);
     }

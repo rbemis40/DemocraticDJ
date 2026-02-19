@@ -11,16 +11,16 @@ export async function GET(request: NextRequest) {
     const gameId = params.get('game_id');
     const name = params.get('name');
 
-    const res = await fetch(`http://${process.env.NEXT_PUBLIC_API_HOSTNAME}/join/${gameId}?name=${name}`);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/join/${gameId}?name=${name}`);
     if(!res.ok) {
         console.log(`Error encountered while trying to join game: ${res.status}, ${res.statusText}`);
-        return NextResponse.redirect(`http://${process.env.NEXT_PUBLIC_HOSTNAME}`);
+        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_URL}`);
     }
 
     try {
         const gameInfo: GameInfo = await res.json(); 
         
-        const response = NextResponse.redirect(`http://${process.env.NEXT_PUBLIC_HOSTNAME}/game`);
+        const response = NextResponse.redirect(`${process.env.NEXT_PUBLIC_URL}/game`);
         response.cookies.set('user_token', gameInfo.user_token);
         response.cookies.set('game_id', gameInfo.game_id.toString());
         response.cookies.set('server_url', gameInfo.server_url);
@@ -29,6 +29,6 @@ export async function GET(request: NextRequest) {
     }
     catch(err) {
         console.log(err);
-        return NextResponse.redirect(`http://${process.env.NEXT_PUBLIC_HOSTNAME}`);
+        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_URL}`);
     }
 }

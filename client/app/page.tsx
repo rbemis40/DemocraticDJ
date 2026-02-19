@@ -1,7 +1,7 @@
 export default function Home() {
   return ( 
     <div>
-      <form action={`http://${process.env.NEXT_PUBLIC_HOSTNAME}/join`}>
+      <form action={`${process.env.NEXT_PUBLIC_URL}/join`}>
           <label htmlFor="game_id">Join Game</label>
           <input
             id="game_id"
@@ -14,7 +14,7 @@ export default function Home() {
           />
           <button id="joinButton">Join</button>
       </form>
-      <form action={`http://${process.env.NEXT_PUBLIC_HOSTNAME}/create/`}>
+      <form action={`${process.env.NEXT_PUBLIC_URL}/create/`}>
           <label htmlFor="createGame">Create Game</label>
           <button id="createGame">Create</button>
       </form>
