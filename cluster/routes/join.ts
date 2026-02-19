@@ -12,17 +12,6 @@ function makeJoinRouter(proxyService: ProxyService, secretStore: SecretStore): e
         throw new Error("JWT_SECRET environment var not set!");
     }
 
-    const PROXY_HOSTNAME = process.env.PROXY_HOSTNAME;
-    if (PROXY_HOSTNAME === undefined) {
-        throw new Error("PROXY_HOSTNAME environment var not set!");
-    }
-
-    const PROXY_PORT = process.env.PROXY_PORT;
-
-    if (PROXY_PORT === undefined) {
-        throw new Error("PROXY_PORT environment var not set!");
-    }
-    
     const joinRouter = express.Router();
     joinRouter.get("/:game_id",
         expressjwt({

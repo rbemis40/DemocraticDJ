@@ -1,10 +1,8 @@
+import { loadVars } from "../../shared/utils/envvars";
 import { ContainerInfo, ContainerService } from "./container_service";
 import Docker from "dockerode";
 
-const DOCKER_PATH = process.env.DOCKER_SOCK_PATH;
-if (DOCKER_PATH === undefined) {
-    throw new Error("Environment var DOCKER_SOCK_PATH not set!");
-}
+const [DOCKER_PATH] = loadVars(["DOCKER_SOCK_PATH"]);
 
 export class DockerService implements ContainerService {
     private docker: Docker;

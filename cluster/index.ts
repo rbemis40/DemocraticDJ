@@ -1,26 +1,22 @@
 import express from "express";
 import http from "http";
 import { WSReverseProxy } from "./proxy/proxy";
-import { WebSocket } from "ws";
 import { DockerService } from "./container/docker_service";
 import makeCreateRouter from "./routes/create";
 import { ContainerService } from "./container/container_service";
 import { GameIdGenerator } from "./gameid_generator";
 import makeJoinRouter from "./routes/join";
 import { SecretStore } from "./secret_store";
+import { loadVar, loadVars } from "../shared/utils/envvars";
 
 const app = express();
 const server = http.createServer(app);
 
 const containerService: ContainerService = new DockerService();
 
-const proxyPort = process.env.PROXY_PORT;
-if (proxyPort === undefined) {
-    throw new Error("Environment var PROXY_PORT not set!");
-}
+const [PROXY_PORT, PROXY_URL] = loadVars(["PROXY_PORT", "PROXY_URL"]);
 
-
-const proxyService = new WSReverseProxy(Number.parseInt(proxyPort, 10));
+const proxyService = new WSReverseProxy(PROXY_URL, Number.parseInt(PROXY_PORT, 10));
 proxyService.listen();
 
 const gameIdGenerator = new GameIdGenerator(100000, 999999);
@@ -38,46 +34,8 @@ app.use("/join", makeJoinRouter(
     secretStore
 ))
 
-const port = 8081;
-server.listen(port, () => {
-    console.log(`Running cluster on port ${port}`);
+const CLUSTER_SERVER_PORT = loadVar("CLUSTER_SERVER_PORT");
+
+server.listen(CLUSTER_SERVER_PORT, () => {
+    console.log(`Running cluster on port ${CLUSTER_SERVER_PORT}`);
 });
-
-// const proxy = new WSReverseProxy();
-// proxy.forward(123456, new URL("ws://127.0.0.1:8081"));
-// proxy.listen(8080);
-
-// const host = new WebSocket("ws://127.0.0.1:8080/?gameid=123456");
-// const player = new WebSocket("ws://127.0.0.1:8080/?gameid=123456");
-
-// host.on("message", (data) => {
-//     console.log("Host: ");
-//     console.log(data.toString());
-// });
-
-// player.on("message", (data) => {
-//     console.log("Player: ");
-//     console.log(data.toString());
-// }) ;
-
-// setTimeout(() => {
-//     host.send(JSON.stringify({
-//         action: "player_join",
-//         data: {
-//             isHost: true
-//         }
-//     }));
-
-//     player.send(JSON.stringify({
-//         action: "player_join",
-//         data: {
-//             username: "hello",
-//             isHost: false
-//         }
-//     }));
-
-//     player.send(JSON.stringify({
-//         action: "joined_mode",
-//         data: {}
-//     }));
-// }, 1000);

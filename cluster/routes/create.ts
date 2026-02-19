@@ -1,4 +1,4 @@
-import * as express from "express";
+import express from "express";
 import { expressjwt, Request } from "express-jwt";
 import { GameId, PlayerTokenData } from "../../shared/shared_types";
 import { JWTTokenManager, TokenManager } from "../../shared/tokens/token_manager";
@@ -6,18 +6,10 @@ import { ContainerService } from "../container/container_service";
 import { ProxyService } from "../proxy/proxy";
 import { GameIdGenerator } from "../gameid_generator";
 import { ClusterCreateResponse } from "../../shared/responses";
-import { randomBytes } from "crypto";
 import { SecretStore } from "../secret_store";
+import { loadVars } from "../../shared/utils/envvars";
 
-const JOIN_HOSTNAME = process.env.JOIN_HOSTNAME;
-if (JOIN_HOSTNAME === undefined) {
-    throw new Error("Environment var JOIN_HOSTNAME not set!");
-}
-
-const GAME_SERVER_HOST = process.env.GAME_SERVER_HOST;
-if (GAME_SERVER_HOST === undefined) {
-    throw new Error("Environment var GAME_SERVER_HOST not set!");
-}
+const [ GAME_SERVER_BASE_URL ] = loadVars(["GAME_SERVER_BASE_URL"]);
 
 function makeCreateRouter(containerService: ContainerService, proxyService: ProxyService, gameIdGenerator: GameIdGenerator, secretStore: SecretStore): express.Router {
     const jwtSecret: string | undefined = process.env.JWT_SECRET;
@@ -65,7 +57,7 @@ function makeCreateRouter(containerService: ContainerService, proxyService: Prox
             const port = containerInfo.port;
             console.log(`Container info: ${containerInfo.id}`);
 
-            if(!proxyService.forward(gameId, new URL(`ws://${GAME_SERVER_HOST}:${port}`))) { // Requests sent to the game with gameId will be forwarded to the server running on the corresponding url (the container)
+            if(!proxyService.forward(gameId, new URL(`${GAME_SERVER_BASE_URL}:${port}`))) { // Requests sent to the game with gameId will be forwarded to the server running on the corresponding url (the container)
                 throw new Error(`Failed to forward on proxy using game id "${gameId}"`);
             }
 

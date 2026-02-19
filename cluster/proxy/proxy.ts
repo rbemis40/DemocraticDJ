@@ -44,10 +44,12 @@ export class WSReverseProxy implements ProxyService {
     private wss: WebSocketServer;
     private gameIdMap: Map<GameId, ForwardingData>;
     private port: number;
-    
-    constructor(port: number) {
+    private url: string;
+
+    constructor(url: string, port: number) {
         this.gameIdMap = new Map();
         this.port = port;
+        this.url = url;
     }
 
     listen() {
@@ -211,6 +213,6 @@ export class WSReverseProxy implements ProxyService {
     }
 
     getUrl(): string {
-        return `ws://127.0.0.1:${this.port}`;
+        return this.url;
     }
 }
