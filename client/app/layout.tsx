@@ -1,3 +1,9 @@
+import "./global.css";
+
+import { Tilt_Neon } from "next/font/google";
+
+const tiltNeon = Tilt_Neon();
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -5,7 +11,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
+      <body className={tiltNeon.className}>
         {children}
       </body>
     </html>
