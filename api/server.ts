@@ -12,7 +12,7 @@ import { loadVars } from "../shared/utils/envvars";
 const app = express();
 const server = http.createServer(app)
 
-const [CLIENT_URL, JWT_SECRET, CLUSTER_URL] = loadVars(["CLIENT_URL", "JWT_SECRET", "CLUSTER_URL"]);
+const [CLIENT_URL, JWT_SECRET, CLUSTER_URL, SERVER_PORT] = loadVars(["CLIENT_URL", "JWT_SECRET", "CLUSTER_URL", "SERVER_PORT"]);
 
 app.use(cors({origin: CLIENT_URL, credentials: true}));
 
@@ -24,7 +24,7 @@ const cluster: Cluster = new SimpleCluster(CLUSTER_URL, tm);
 app.use('/create', getCreateRouter(cluster));
 app.use('/join', getJoinRouter(cluster));
 
-const port = 8080;
+const port = SERVER_PORT;
 server.listen(port, () => {
     console.log(`Running game management server on port ${port}`);
 });
