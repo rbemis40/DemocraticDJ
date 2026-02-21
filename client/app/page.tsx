@@ -2,7 +2,7 @@ import styles from "./styles.module.css";
 
 export default function Home() {
   return ( 
-    <div>
+    <div className={styles.wall}>
       <div className={styles.logo}>
         <img src="/logo/sign.svg"></img>
       </div>
