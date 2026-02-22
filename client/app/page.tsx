@@ -3,13 +3,13 @@ import styles from "./styles.module.css";
 import { mainTheme } from "./_theme/maintheme";
 import UIBox from "./_components/uibox/uibox";
 import UIButton from "./_components/uibutton/uibutton";
+import GlassBox from "./_components/glassbox/glassbox";
 
 export default function Home() {
   return ( 
     <div className={styles.mainContainer}>
       <div className={styles.logo}>
-        <img src="https://as2.ftcdn.net/jpg/03/24/93/31/1000_F_324933141_WgPQPeuxUOW2RhXNZx6iTz9AyLFz2rKP.jpg" className={styles.wall}></img>
-        <img src="/logo/sign.svg"></img>
+        <img src="/logo/sign.svg" className={styles.logoImg}></img>
       </div>
       <div className={styles.container}>
         <div className={styles.content}>
@@ -41,9 +41,9 @@ export default function Home() {
             </GlowBox>
           </div>
           <div className={styles.textContainer}>
-            <UIBox>
+            <GlassBox>
                 <p>Democratic DJ is</p>
-            </UIBox>
+            </GlassBox>
           </div>
         </div>
       </div>
