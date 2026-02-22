@@ -1,4 +1,3 @@
-import { ColorContext } from "./_components/colortheme/colorcontext";
 import "./global.css";
 
 import { Tilt_Neon } from "next/font/google";
