@@ -13,5 +13,7 @@ export const mainTheme: AppTheme = {
 
         cyanHighlight: "#C5FBFF",
         cyanGlow: "#17F0FF",
+
+        uiContainerBg: "#2d284f",
     }
 };

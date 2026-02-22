@@ -11,8 +11,8 @@ export default function GlowBox(props: GlowBoxProps) {
     return ( 
     <div className={styles.box} style={
         {
-            outlineStyle: "solid",
-            outlineColor: props.highlight,
+            borderStyle: "solid",
+            borderColor: props.highlight,
             boxShadow: `0 0 15px 1px ${props.glow} inset, 0 0 15px 1px ${props.glow}`
         }
     }>
