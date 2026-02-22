@@ -1,0 +1,7 @@
+.box {
+    outline-width: var(--stroke-width);
+    border-radius: 10px;
+    width: min-content;
+    padding: 10px;
+    margin: var(--stroke-width);
+}
