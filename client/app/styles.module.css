@@ -19,8 +19,9 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background-image: url("https://as2.ftcdn.net/jpg/03/24/93/31/1000_F_324933141_WgPQPeuxUOW2RhXNZx6iTz9AyLFz2rKP.jpg");
+    backdrop-filter: blur(10px);
     background-size: cover;
+    background-image: linear-gradient(to bottom, var(--logo-dark), color-mix(in srgb, var(--logo-dark) 50%, var(--logo-light)));
 }
 
 .mainBox {
