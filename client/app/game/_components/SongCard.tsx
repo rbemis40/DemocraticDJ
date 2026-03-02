@@ -1,5 +1,5 @@
-import { SpotifySearchResult } from "../../_types/spotify_types";
-import styles from "./song_card_style.module.css";
+import { SpotifySearchResult } from "../_types/spotify_types";
+import styles from "./SongCard.module.css";
 
 interface SongCardProps {
     info: SpotifySearchResult;

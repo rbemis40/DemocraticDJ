@@ -1,16 +1,18 @@
 'use client';
 
 import { useContext, useEffect, useState } from "react";
-import HostLobby from "./_host/lobby";
-import PlayerLobby from "./_player/lobby";
+import HostLobby from "./_components/_host/lobby";
+import PlayerLobby from "./_components/_player/lobby";
 import { useRouter } from "next/navigation";
-import { ServerMsgContext } from "./server_msg_provider";
-import useServerMsg from "../_hooks/server_msg_hook";
-import { ChangeVoterStateData, ModeChangeData, ServerMsg, WelcomeData } from "../_types/server_msg";
-import SpotifySearch from "./spotify_search";
-import SongQueue from "./song_queue";
-import HostSelectVoters from "./_host/select_voters";
-import PlayerSelectVoters from "./_player/select_voters";
+import { ServerMsgContext } from "./_components/server_msg_provider";
+import useServerMsg from "./_hooks/server_msg_hook";
+import { ChangeVoterStateData, ModeChangeData, ServerMsg, WelcomeData } from "./_types/server_msg";
+import SpotifySearch from "./_components/spotify_search";
+import SongQueue from "./_components/SongQueue";
+import HostSelectVoters from "./_components/_host/select_voters";
+import PlayerSelectVoters from "./_components/_player/select_voters";
+
+import styles from "./GameClient.module.css";
 
 interface GameInfoProps {
     game_id: number;
@@ -118,12 +120,10 @@ export default function GameClient(props: GameInfoProps) {
     }, ['welcome', 'change_mode', 'change_voter_state']);
 
     return (
-    <>
-        {
-            isVoter && <SpotifySearch sendMsg={sendMsg}/>
-        }
-        {isHost && <SongQueue/>}
-        {getUIPage()}
-    </>
+        <div className={styles.container}>
+            { isVoter && <SpotifySearch sendMsg={sendMsg}/> }
+            { isHost && <SongQueue/> }
+            { getUIPage() }
+        </div>
     )
 }

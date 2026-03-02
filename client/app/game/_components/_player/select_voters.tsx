@@ -4,7 +4,7 @@ import useServerMsg from "../../_hooks/server_msg_hook";
 import { ServerMsg } from "../../_types/server_msg";
 import { UIProps } from "../../types";
 import { SpotifySearchResult } from "../../_types/spotify_types";
-import SongCard from "../song_card/song_card";
+import SongCard from "../SongCard";
 import Countdown from "../countdown";
 
 type UIVoteState = {
