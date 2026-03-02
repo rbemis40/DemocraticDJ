@@ -5,7 +5,7 @@ export class WebSocketConnector {
     private retryInterval: number;
     private maxRetries: number;
     
-    constructor(url: URL | string, retryInterval: number=500, maxRetries: number=3) {
+    constructor(url: URL | string, retryInterval: number=1000, maxRetries: number=5) {
         this.url = url;
         this.retryInterval = retryInterval;
         this.maxRetries = maxRetries;
@@ -15,7 +15,7 @@ export class WebSocketConnector {
         return new Promise((resolve, reject) => {
             let numTries = 1;
             const makeWs = () => {
-                console.log("Attempting to connect...");
+                console.log(`Attempting to connect (${numTries}/${this.maxRetries})...`);
                 const ws = new WebSocket(this.url);
                 ws.onopen = () => {
                     ws.onerror = null;
@@ -23,7 +23,7 @@ export class WebSocketConnector {
                 }
 
                 ws.onerror = (err) => {
-                    console.warn(err);
+                    console.warn(`Failed to connect (${numTries}/${this.maxRetries})...`);
                     ws.close();
                     if (numTries < this.maxRetries) {
                         numTries += 1;
