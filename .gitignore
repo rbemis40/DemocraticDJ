@@ -3,5 +3,5 @@ server/build/
 server/node_modules/
 client/node_modules/
 client/.next/
-**/.env
+**/.env**
 test/
