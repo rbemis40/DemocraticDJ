@@ -4,6 +4,7 @@ import SongCard from "./SongCard";
 import useServerMsg from "../_hooks/server_msg_hook";
 import { ServerMsg } from "../_types/server_msg";
 import styles from "./SongQueue.module.css";
+import NeonDivider from "@/app/_components/NeonDivider";
 
 interface SongAddedData {
     track_info: SpotifySearchResult;
@@ -26,6 +27,7 @@ export default function SongQueue() {
     return (
         <div className={`glass-card ${styles.songQueue}`}>
             <h1 className={`neon-text-magenta`}>Song Queue</h1>
+            <NeonDivider width="90%"/>
             {
                 queuedSongs.map((song => <SongCard key={song.track_uri} info={song}/>))
             }

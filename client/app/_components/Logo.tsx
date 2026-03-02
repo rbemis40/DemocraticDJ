@@ -23,7 +23,7 @@ export default function Logo() {
         <span className="neon-text-magenta">DJ</span>
       </h1>
 
-      <p className={styles.tagline}>
+      <p className={`text-spaced`}>
         Where the crowd controls the beat
       </p>
     </header>

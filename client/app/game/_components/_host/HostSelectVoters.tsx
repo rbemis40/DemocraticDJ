@@ -3,6 +3,8 @@ import useServerMsg from "../../_hooks/server_msg_hook";
 import { ServerMsg } from "../../_types/server_msg";
 import { UIProps } from "../../types";
 
+import styles from "./HostSelectVoters.module.css";
+
 export default function HostSelectVoters(props: UIProps) {
     useServerMsg((msg: ServerMsg) => {
         console.log(msg);
@@ -10,5 +12,9 @@ export default function HostSelectVoters(props: UIProps) {
 
     useSendJoinedMode("select_voters", props.sendMsg);
 
-    return <h1>Host Select Voters</h1>
+    return (
+        <div className={styles.container}>
+            <h1>Host Select Voters</h1>
+        </div>
+    );
 }

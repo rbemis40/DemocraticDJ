@@ -4,8 +4,8 @@ export default function CreateGameCard() {
   return (
     <div className={`glass-card ${styles.card}`}>
       <div className={styles.textCenter}>
-        <p className={styles.label}>
-          Host a session
+        <p className={`text-spaced`}>
+          Host a game 
         </p>
         <p className={`neon-text-cyan ${styles.title}`}>
           Start the Party

@@ -4,6 +4,9 @@ import { UIProps } from "../../types";
 import useSendModeChanged from "../../_hooks/send_joined_mode";
 import { NewPlayerData, ServerMsg, UserListData } from "../../_types/server_msg";
 
+import styles from "./HostLobby.module.css";
+import NeonDivider from "@/app/_components/NeonDivider";
+
 interface HostLobbyProps extends UIProps {
     gameId: number;
 };
@@ -44,16 +47,18 @@ export default function HostLobby(props: HostLobbyProps) {
     }
 
     return (
-        <>
-            <h1>You are the host.</h1>
-            <h1>Join the game using {props.gameId}</h1>
-            <button onClick={() => startGame()}>Start Game!</button>
-            <h1>Users:</h1>
+        <div className={styles.container}>
+            <h1 className={`neon-text-magenta ${styles.heading}`}><span className={`neon-text-cyan`}>Join Using Game ID: </span>{props.gameId}</h1>
+            <NeonDivider/>
+            <h1 className={`text-spaced ${styles.playerHeading}`}>Players</h1>
+            <div className={styles.playerList}>
             {userList.map((username, i) => {
                 return (
-                    <button key={i} onClick={() => removeUser(username)}>{username}</button>
+                    <button key={i} className={`neon-text-cyan ${styles.playerButton}`} onClick={() => removeUser(username)}>{username}</button>
                 );
             })}
-        </>
+            </div>
+            <button className={`neon-btn-cyan`} onClick={() => startGame()}>Start Game</button>
+        </div>
     );
 }

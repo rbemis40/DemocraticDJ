@@ -4,8 +4,8 @@ export default function JoinGameCard() {
   return (
     <div className={`glass-card ${styles.card}`}>
       <div className={styles.textCenter}>
-        <p className={styles.label}>
-          Join a session
+        <p className={`text-spaced`}>
+          Join a game 
         </p>
         <p className={`neon-text-magenta ${styles.title}`}>
           Hit the Floor

@@ -100,6 +100,12 @@ body {
   box-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
 }
 
+.text-spaced {
+  letter-spacing: 0.25em;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+}
+
 .scanline {
   position: fixed;
   top: 0;
