@@ -4,6 +4,7 @@ services:
       context: .
       dockerfile: api/Dockerfile
     network_mode: "host"
+    image: ryanbemis40/democraticdj:api-latest
   cluster:
     build:
       context: .
@@ -11,13 +12,16 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
     network_mode: "host"
+    image: ryanbemis40/democraticdj:cluster-latest
   nextjs:
     build:
       context: ./client
       dockerfile: Dockerfile
     network_mode: "host"
+    image: ryanbemis40/democraticdj:nextjs-latest
   gameserver:
     build:
       context: .
       dockerfile: game_server/Dockerfile
     profiles: ["gameserver"]
+    image: ryanbemis40/democraticdj:gameserver-latest
