@@ -19,9 +19,6 @@ export default function Home() {
       <div className={styles.cardsWrapper}>
         <CreateGameCard />
 
-        {/* Vertical divider */}
-        <div className={styles.verticalDivider} />
-
         <JoinGameCard />
       </div>
 
