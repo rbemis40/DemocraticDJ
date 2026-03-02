@@ -1,0 +1,23 @@
+.equalizer {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 28px;
+}
+
+.bar {
+  width: 4px;
+  border-radius: 2px;
+  animation: eq-bounce 0.8s ease-in-out infinite alternate;
+}
+
+.bar:nth-child(1) { background: var(--neon-cyan); animation-delay: 0s; height: 40%; }
+.bar:nth-child(2) { background: var(--neon-magenta); animation-delay: 0.15s; height: 80%; }
+.bar:nth-child(3) { background: var(--neon-purple); animation-delay: 0.3s; height: 60%; }
+.bar:nth-child(4) { background: var(--neon-cyan); animation-delay: 0.1s; height: 100%; }
+.bar:nth-child(5) { background: var(--neon-magenta); animation-delay: 0.25s; height: 50%; }
+
+@keyframes eq-bounce {
+  from { transform: scaleY(0.3); }
+  to { transform: scaleY(1); }
+}

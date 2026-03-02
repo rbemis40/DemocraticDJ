@@ -1,0 +1,6 @@
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--neon-cyan), var(--neon-magenta), transparent);
+  opacity: 0.5;
+  margin: 8px 0;
+}
