@@ -9,7 +9,7 @@ import { ClusterCreateResponse } from "../../shared/responses";
 import { SecretStore } from "../secret_store";
 import { loadVars } from "../../shared/utils/envvars";
 
-const [ GAME_SERVER_BASE_URL ] = loadVars(["GAME_SERVER_BASE_URL"]);
+const [ GAME_SERVER_BASE_URL, GAME_SERVER_IMG_NAME ] = loadVars(["GAME_SERVER_BASE_URL", "GAME_SERVER_IMG_NAME"]);
 
 function makeCreateRouter(containerService: ContainerService, proxyService: ProxyService, gameIdGenerator: GameIdGenerator, secretStore: SecretStore): express.Router {
     const jwtSecret: string | undefined = process.env.JWT_SECRET;
@@ -48,7 +48,7 @@ function makeCreateRouter(containerService: ContainerService, proxyService: Prox
             const tokenSecret = secretStore.getSecret(gameId)!;
             const tokenManager: TokenManager = new JWTTokenManager(tokenSecret, "HS256");
                        
-            const containerInfo = await containerService.startContainer("democraticdj-gameserver:latest", {
+            const containerInfo = await containerService.startContainer(GAME_SERVER_IMG_NAME, {
                 GAME_ID: gameId.toString(),
                 TOKEN_SECRET: tokenSecret,
                 MUSIC_SERVICE: req.query.service

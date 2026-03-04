@@ -42,7 +42,7 @@ export function getJoinRouter(cluster: Cluster): Router {
         res.status(200).json({
             game_id: gameInfo.gameId, 
             user_token: gameInfo.playerToken, 
-            server_url: gameInfo.serverUrl
+            server_url: gameInfo.serverUrl,
         });
     });
 

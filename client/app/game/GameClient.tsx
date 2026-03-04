@@ -2,7 +2,7 @@
 
 import { useContext, useEffect, useState } from "react";
 import HostLobby from "./_components/_host/HostLobby";
-import PlayerLobby from "./_components/_player/lobby";
+import PlayerLobby from "./_components/_player/Lobby";
 import { useRouter } from "next/navigation";
 import { ServerMsgContext } from "./_components/server_msg_provider";
 import useServerMsg from "./_hooks/server_msg_hook";
@@ -13,6 +13,7 @@ import HostSelectVoters from "./_components/_host/HostSelectVoters";
 import PlayerSelectVoters from "./_components/_player/select_voters";
 
 import styles from "./GameClient.module.css";
+import JoinScreen from "../_components/JoinScreen";
 
 interface GameInfoProps {
     game_id: number;
@@ -25,6 +26,7 @@ export default function GameClient(props: GameInfoProps) {
     const [isVoter, setIsVoter] = useState<boolean>(false);
     const [ws, setWs] = useState<WebSocket | undefined>();
     const [gameMode, setGameMode] = useState<string>('join');
+    const [playerName, setPlayerName] = useState<string | undefined>(undefined);
     const router = useRouter();
     const [smTrigger] = useContext(ServerMsgContext);
 
@@ -35,7 +37,7 @@ export default function GameClient(props: GameInfoProps) {
 
     function getUIPage() {
         if (gameMode === 'join') {
-            return <h1>Joining...</h1>
+            return <JoinScreen/> 
         }
 
         if (isHost) {   
@@ -49,7 +51,7 @@ export default function GameClient(props: GameInfoProps) {
         else {
             switch (gameMode) {
                 case 'lobby':
-                    return <PlayerLobby sendMsg={sendMsg}/>
+                    return <PlayerLobby sendMsg={sendMsg} playerName={playerName!}/>
                 case 'select_voters':
                     return <PlayerSelectVoters sendMsg={sendMsg}/>
             }
@@ -105,8 +107,9 @@ export default function GameClient(props: GameInfoProps) {
         switch (serverMsg.action) {
             case 'welcome':
                 const welcomeData = serverMsg.data as WelcomeData;
-                setGameMode(welcomeData.gamemode);
+                setGameMode(welcomeData.game_mode);
                 setIsHost(welcomeData.role === 'host');
+                setPlayerName(welcomeData.player_name);
                 break;
             case 'change_mode':
                 const modeChangeData = serverMsg.data as ModeChangeData;

@@ -7,7 +7,8 @@ export type ServerMsg = {
 
 export interface WelcomeData {
     role: string;
-    gamemode: string;
+    game_mode: string;
+    player_name: string;
 };
 
 export interface ModeChangeData {

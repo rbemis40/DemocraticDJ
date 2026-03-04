@@ -89,7 +89,8 @@ export class ConnectionHandler {
                 action: 'welcome',
                 data: {
                     role: player.isHost ? 'host' : 'player',
-                    gamemode: context.gameMode
+                    game_mode: context.gameMode,
+                    player_name: player.username, 
                 }
             };
 
