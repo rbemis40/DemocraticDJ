@@ -31,7 +31,10 @@ export default function PlayerLobby(props: PlayerLobbyProps) {
 
     return (
         <div className={styles.container}>
-            <h1 className={`neon-text-cyan`}>You have joined the game as <span className={`neon-text-magenta`}>{props.playerName}</span></h1>
+            <h1>
+                <span className={`neon-text-cyan`}>You have joined the game as </span>
+                <span className={`neon-text-magenta`}>{props.playerName}</span>
+            </h1>
             <NeonDivider/>
             <p className={`text-spaced`}>Waiting for the game to start</p>
         </div>

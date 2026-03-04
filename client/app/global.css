@@ -32,20 +32,18 @@ body {
 
 .neon-text-cyan {
   color: var(--neon-cyan);
-  text-shadow:
-    0 0 7px var(--neon-cyan),
-    0 0 20px var(--neon-cyan),
-    0 0 40px var(--neon-cyan),
-    0 0 80px rgba(0, 245, 255, 0.5);
+
+  filter: 
+    drop-shadow(0px 0px 7px var(--neon-cyan))
+    drop-shadow(0px 0px 20px var(--neon-cyan))
 }
 
 .neon-text-magenta {
   color: var(--neon-magenta);
-  text-shadow:
-    0 0 7px var(--neon-magenta),
-    0 0 20px var(--neon-magenta),
-    0 0 40px var(--neon-magenta),
-    0 0 80px rgba(255, 0, 229, 0.5);
+  
+  filter:
+    drop-shadow(0px 0px 7px var(--neon-magenta))
+    drop-shadow(0px 0px 20px var(--neon-magenta))
 }
 
 .glass-card {
