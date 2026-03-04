@@ -1,6 +1,7 @@
 {
   "scripts": {
     "start": "node --env-file=.env build/cluster/index",
+    "dev": "node --env-file=.env.local build/cluster/index",
     "build": "tsc",
     "restart": "npm run build && npm run start",
     "clean": "rm -r build/"

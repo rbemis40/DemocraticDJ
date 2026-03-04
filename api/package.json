@@ -1,6 +1,7 @@
 {
   "scripts": {
     "start": "node --env-file=.env build/api/server",
+    "dev": "node --env-file=.env.local build/api/server",
     "build": "tsc",
     "restart": "npm run build && npm run start",
     "clean": "rm -r build/"
