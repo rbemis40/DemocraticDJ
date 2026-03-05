@@ -1,5 +1,5 @@
 import { useContext, useEffect } from "react";
-import { ServerMsgContext, ServerMsgHandler } from "../_components/server_msg_provider";
+import { ServerMsgContext, ServerMsgHandler } from "../_components/ServerMsgProvider";
 
 export type MsgTypes = string[];
 

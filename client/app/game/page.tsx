@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import GameClient from "./GameClient";
-import ServerMsgProvider from "./_components/server_msg_provider";
+import ServerMsgProvider from "./_components/ServerMsgProvider";
 
 // This page must be a server component that reads the cookies in order to establish a connection to the game server (responsibility of GameClient)
 export default async function Game() {

@@ -4,7 +4,7 @@ import { useContext, useEffect, useState } from "react";
 import HostLobby from "./_components/_host/HostLobby";
 import PlayerLobby from "./_components/_player/Lobby";
 import { useRouter } from "next/navigation";
-import { ServerMsgContext } from "./_components/server_msg_provider";
+import { ServerMsgContext } from "./_components/ServerMsgProvider";
 import useServerMsg from "./_hooks/server_msg_hook";
 import { ChangeVoterStateData, ModeChangeData, ServerMsg, WelcomeData } from "./_types/server_msg";
 import SpotifySearch from "./_components/spotify_search";
@@ -73,12 +73,11 @@ export default function GameClient(props: GameInfoProps) {
             return;
         }
 
-        ws.addEventListener('error', (err) => {
+        const onError = () => {
             console.error('A websocket error was encountered!');
-            console.error(err);
-        });
+        };
 
-        ws.addEventListener('open', () => {
+        const onOpen = () => {
             console.log(`Websocket connection established to game server ${props.server_url}`);
             // Send the token to authenticate with the server
             ws.send(JSON.stringify({
@@ -87,19 +86,31 @@ export default function GameClient(props: GameInfoProps) {
                     token: props.user_token 
                 }
             }));
-        });
+        };
 
-        ws.addEventListener('message', async (e) => {
+        const onMessage = async (e: MessageEvent<any>) => {
             const serverMsg: ServerMsg = JSON.parse(await e.data.text());
             console.log(serverMsg);
             smTrigger(serverMsg.action, serverMsg);
-        });
+        };
 
-        ws.addEventListener('close', () => {
+        const onClose = () => {
             console.log(`Closing connection to game server`);
             ws.close();
             router.replace(`${process.env.NEXT_PUBLIC_URL}/`);
-        });
+        }
+
+        ws.addEventListener('error', onError);
+        ws.addEventListener('open', onOpen);
+        ws.addEventListener('message', onMessage);
+        ws.addEventListener('close', onClose);
+
+        return () => {
+            ws.removeEventListener("error", onError);
+            ws.removeEventListener("open", onOpen);
+            ws.removeEventListener("message", onMessage);
+            ws.removeEventListener("close", onClose);
+        }
     }, [ws, router, smTrigger, props.server_url, props.user_token]);
 
     useServerMsg((serverMsg: ServerMsg) => {
