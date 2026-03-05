@@ -1,35 +1,14 @@
 import { useState } from "react";
 import useSendJoinedMode from "../../_hooks/send_joined_mode";
 import useServerMsg from "../../_hooks/server_msg_hook";
-import { ServerMsg } from "../../_types/server_msg";
+import { ServerMsg, SongSelectedData, SongSelectOverData, VoterStateData } from "../../_types/server_msg";
 import { UIProps } from "../../types";
 import { SpotifySearchResult } from "../../_types/spotify_types";
 import SongCard from "../SongCard";
-import Countdown from "../countdown";
+import Countdown from "../Countdown";
 
 type UIVoteState = {
     [username: string]: SpotifySearchResult | undefined;
-}
-
-interface VoteInfo {
-    username: string;
-    choice?: SpotifySearchResult;
-}
-
-interface VoterStateData {
-    voters: VoteInfo[];
-    timeRem: number;
-    state: string;
-}
-
-interface SongSelectedData {
-    username: string;
-    song_data: SpotifySearchResult;
-}
-
-interface SongSelectOverData {
-    state: string;
-    timeRem: number;
 }
 
 export default function PlayerSelectVoters(props: UIProps) {

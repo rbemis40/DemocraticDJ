@@ -4,7 +4,7 @@ import { UIProps } from "../../types";
 import useSendModeChanged from "../../_hooks/send_joined_mode";
 import { NewPlayerData, ServerMsg, UserListData } from "../../_types/server_msg";
 
-import styles from "./Lobby.module.css";
+import styles from "./PlayerLobby.module.css";
 import NeonDivider from "@/app/_components/NeonDivider";
 
 interface PlayerLobbyProps extends UIProps {

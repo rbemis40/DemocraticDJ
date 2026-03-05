@@ -27,6 +27,26 @@ export interface ChangeVoterStateData {
     isVoter: boolean;
 }
 
+interface VoteInfo {
+    username: string;
+    choice?: SpotifySearchResult;
+}
+
+export interface VoterStateData {
+    voters: VoteInfo[];
+    timeRem: number;
+    state: string;
+}
+
+export interface SongSelectedData {
+    username: string;
+    song_data: SpotifySearchResult;
+}
+
+export interface SongSelectOverData {
+    state: string;
+    timeRem: number;
+}
 
 /* Begin deprecated types */
 

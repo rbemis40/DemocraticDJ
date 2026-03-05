@@ -2,15 +2,15 @@
 
 import { useContext, useEffect, useState } from "react";
 import HostLobby from "./_components/_host/HostLobby";
-import PlayerLobby from "./_components/_player/Lobby";
+import PlayerLobby from "./_components/_player/PlayerLobby";
 import { useRouter } from "next/navigation";
 import { ServerMsgContext } from "./_components/ServerMsgProvider";
 import useServerMsg from "./_hooks/server_msg_hook";
 import { ChangeVoterStateData, ModeChangeData, ServerMsg, WelcomeData } from "./_types/server_msg";
-import SpotifySearch from "./_components/spotify_search";
+import SpotifySearch from "./_components/SpotifySearch";
 import SongQueue from "./_components/SongQueue";
 import HostSelectVoters from "./_components/_host/HostSelectVoters";
-import PlayerSelectVoters from "./_components/_player/select_voters";
+import PlayerSelectVoters from "./_components/_player/PlayerSelectVoters";
 
 import styles from "./GameClient.module.css";
 import JoinScreen from "../_components/JoinScreen";
@@ -110,7 +110,7 @@ export default function GameClient(props: GameInfoProps) {
             ws.removeEventListener("open", onOpen);
             ws.removeEventListener("message", onMessage);
             ws.removeEventListener("close", onClose);
-        }
+        };
     }, [ws, router, smTrigger, props.server_url, props.user_token]);
 
     useServerMsg((serverMsg: ServerMsg) => {
