@@ -27,7 +27,7 @@ export default function SongQueue() {
     return (
         <div className={`glass-card ${styles.songQueue}`}>
             <h1 className={`neon-text-magenta`}>Song Queue</h1>
-            <NeonDivider width="90%"/>
+            <NeonDivider width="10rem"/>
             {
                 queuedSongs.map((song => <SongCard key={song.track_uri} info={song}/>))
             }

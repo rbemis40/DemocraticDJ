@@ -1,4 +1,5 @@
 .songQueue {
+    min-width: 25rem;
     width: 25rem;
     height: 100%;
     text-align: center;

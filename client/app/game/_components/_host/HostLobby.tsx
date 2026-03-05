@@ -52,7 +52,7 @@ export default function HostLobby(props: HostLobbyProps) {
                 <span className={`neon-text-cyan`}>Join Using Game ID: </span>
                 <span className={`neon-text-magenta`}>{props.gameId}</span>
             </h1>
-            <NeonDivider/>
+            <NeonDivider width={`20rem`}/>
             <h1 className={`text-spaced ${styles.playerHeading}`}>Players</h1>
             <div className={styles.playerList}>
             {userList.map((username, i) => {
