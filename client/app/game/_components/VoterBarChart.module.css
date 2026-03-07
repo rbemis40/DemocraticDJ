@@ -2,10 +2,11 @@
     display: flex;
     justify-content: space-between;
     gap: 3rem;
+    width: fit-content;
 }
 
 .playerContainer {
-    width: 4rem;
+    min-width: 4rem;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -15,7 +16,15 @@
     gap: 0.5rem;
 }
 
+.barContainer {
+    position: relative;
+    width: 4rem;
+    height: 100%;
+}
+
 .bar {
+    position: absolute;
     width: 100%;
     background-color: var(--neon-cyan);
+    bottom: 0;
 }

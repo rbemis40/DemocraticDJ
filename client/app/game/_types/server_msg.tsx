@@ -48,6 +48,13 @@ export interface SongSelectOverData {
     timeRem: number;
 }
 
+export interface VoteCountData {
+    count: {
+        username: string;
+        count: number;
+    }[];
+}
+
 /* Begin deprecated types */
 
 export interface ModeChangeMsg {
