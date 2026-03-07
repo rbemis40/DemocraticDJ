@@ -69,13 +69,16 @@ export default function HostSelectVoters(props: UIProps) {
         <div className={styles.container}>
             <h1>Host Select Voters</h1>
             <Countdown initTime={timeRem}/>
-            <VoterBarChart height="500px" playerInfo={
-                repNames.map(name => ({
-                    name: name,
-                    choice: songChoices[name]?.song,
-                    voteCount: songChoices[name]?.votes
-                }))
-            }/>
+            <div className={styles.votingContainer}>
+                <VoterBarChart height="45rem" playerInfo={
+                    repNames.map(name => ({
+                        name: name,
+                        choice: songChoices[name]?.song,
+                        voteCount: songChoices[name]?.votes
+                    }))
+                }/>
+            </div>
+            
         </div>
     );
 }

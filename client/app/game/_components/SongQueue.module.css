@@ -1,6 +1,6 @@
 .songQueue {
-    min-width: 25rem;
-    width: 25rem;
+    min-width: 20rem;
+    width: 20rem;
     height: 100%;
     text-align: center;
 
@@ -10,5 +10,6 @@
 
     padding: 2rem 2rem;
 
-    overflow: scroll;
+    overflow-x: hidden;
+    overflow-y: scroll;
 }

@@ -3,6 +3,7 @@ import { UIProps } from "../types";
 import useServerMsg from "../_hooks/server_msg_hook";
 import { SpotifySearchResult } from "../_types/spotify_types";
 import SongCard from "./SongCard";
+import styles from "./SpotifySearch.module.css";
 
 type SpotifySearchUI = UIProps;
 interface SpotifyResultsData {
@@ -50,23 +51,26 @@ export default function SpotifySearch(props: SpotifySearchUI) {
     }, ['spotify_results']);
 
     return (
-        <>
-            <form onSubmit={search}>
-                <input onChange={(e) => queryRef.current = e.target.value}></input>
-                <button type='submit'>Submit</button>
+        <div className={styles.container}>
+            <form className={styles.searchForm} onSubmit={search}>
+                <input
+                    className={styles.searchInput}
+                    placeholder="Search for a song..."
+                    onChange={(e) => queryRef.current = e.target.value}
+                />
+                <button className="neon-btn-cyan" type='submit'>Search</button>
             </form>
             {
                 results &&
-                <div>
+                <div className={styles.resultsList}>
                     {results?.map(result =>
-                        <div key={result.id}>
+                        <div className={styles.resultItem} key={result.id} onClick={() => chooseSong(result.id)}>
                             <SongCard info={result}/>
-                            <button onClick={() => chooseSong(result.id)}>Choose Song</button>
                         </div>
                     )}
-                    <button onClick={closeSearch}>Close</button>
+                    <button className="neon-btn-outline" onClick={closeSearch}>Close</button>
                 </div>
             }
-        </>
+        </div>
     );
 }

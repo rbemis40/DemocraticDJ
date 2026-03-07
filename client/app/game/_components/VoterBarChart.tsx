@@ -21,9 +21,11 @@ export default function VoterBarChart(props: VoterBarChartProps) {
         <div className={styles.container} style={{ height: props.height }}>
             {props.playerInfo.map(info =>
                 <div className={styles.playerContainer} key={info.name}>
+                    {info.voteCount !== undefined && 
                     <div className={styles.barContainer}>
-                        {info.voteCount !== undefined && <div className={styles.bar} style={{ height: `${info.voteCount / totalVotes * 100}%` }}></div>}
+                        <div className={styles.bar} style={{ height: `${info.voteCount / totalVotes * 100}%` }}></div>
                     </div>
+                    }
                     {info.choice && <SongCard info={info.choice}/>}
                     <p className={`text-spaced ${styles.name}`}>{info.name}</p>
                 </div>

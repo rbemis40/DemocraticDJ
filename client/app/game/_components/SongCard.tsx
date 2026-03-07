@@ -16,11 +16,11 @@ export default function SongCard(props: SongCardProps) {
     
 
     return (
-        <div className={styles.song_card_container}>
-            <img src={props.info.image.url} alt={props.info.name} width={100} height={100}/>
+        <div className={styles.songCardContainer}>
+            <img className={styles.albumCover} src={props.info.image.url} alt={props.info.name} width={75} height={75}/>
             <div className={styles.textContainer}>
-                <h2 className={styles.songName}>{props.info.name}</h2>
-                <p>{artistNames}</p>
+                <p className={styles.songName}>{props.info.name}</p>
+                <p className={styles.artistName}>{artistNames}</p>
             </div>
         </div>
     );
