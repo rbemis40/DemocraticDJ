@@ -5,6 +5,7 @@ import NeonDivider from "./_components/NeonDivider";
 import CreateGameCard from "./_components/CreateGameCard";
 import JoinGameCard from "./_components/JoinGameCard";
 import styles from "./page.module.css";
+import ErrorBanner from "./_components/ErrorBanner";
 
 export default function Home() {
   return (
@@ -21,6 +22,8 @@ export default function Home() {
 
         <JoinGameCard />
       </div>
+
+      <ErrorBanner text={`Error: Failed to join game! Please try again.`} autoCloseInterval={3}/>
 
       <footer className={styles.footer}>
         <Link href="/about">
