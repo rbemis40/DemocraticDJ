@@ -1,3 +1,4 @@
+import assert from "assert";
 import { NextRequest, NextResponse } from "next/server";
 
 interface GameInfo {
@@ -7,17 +8,19 @@ interface GameInfo {
 };
 
 export async function GET(request: NextRequest) {
+    assert(process.env.NEXT_PUBLIC_API_URL !== undefined);
+    assert(process.env.NEXT_PUBLIC_URL !== undefined);
+
     const params = request.nextUrl.searchParams;
     const gameId = params.get('game_id');
     const name = params.get('name');
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/join/${gameId}?name=${name}`);
-    if(!res.ok) {
-        console.log(`Error encountered while trying to join game: ${res.status}, ${res.statusText}`);
-        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_URL}`);
-    }
-
     try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/join/${gameId}?name=${name}`);
+        if(!res.ok) {
+            throw new Error(`Error: Received error response ${res.status}: ${res.statusText}`);
+        }
+
         const gameInfo: GameInfo = await res.json(); 
         
         const response = NextResponse.redirect(`${process.env.NEXT_PUBLIC_URL}/game`);
@@ -28,7 +31,9 @@ export async function GET(request: NextRequest) {
         return response;
     }
     catch(err) {
-        console.log(err);
-        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_URL}`);
+        console.error(err);
+        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_URL}/?${new URLSearchParams({
+            "error": "Error: Failed to join game. Please try again."
+        }).toString()}`);
     }
 }

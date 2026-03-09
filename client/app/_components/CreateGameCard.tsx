@@ -1,6 +1,9 @@
+import assert from "assert";
 import styles from "./CreateGameCard.module.css";
 
 export default function CreateGameCard() {
+  assert(process.env.NEXT_PUBLIC_URL !== undefined);
+
   return (
     <div className={`glass-card ${styles.card}`}>
       <div className={styles.textCenter}>

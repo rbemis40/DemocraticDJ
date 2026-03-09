@@ -5,7 +5,7 @@
     align-items: center;
     gap: 0.5em;
 
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
@@ -17,20 +17,9 @@
     padding: 1em;
 
     transition: top 0.5s;
+    z-index: 1;
 }
 
 .closed {
     top: -2em;
-}
-
-.closeButton {
-    all: unset;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 0.75em;
-}
-
-.closeButton:hover {
-    cursor: pointer;
 }

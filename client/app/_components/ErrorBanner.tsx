@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AiFillCloseCircle } from "react-icons/ai";
+import { AiFillExclamationCircle } from "react-icons/ai";
 import styles from "./ErrorBanner.module.css";
 
 interface ErrorBannerProps {
@@ -26,9 +26,7 @@ export default function ErrorBanner(props: ErrorBannerProps) {
 
     return (
         <div className={`${styles.bannerContainer} ${isClosed ? styles.closed : ""}`}>
-            <button className={styles.closeButton} onClick={() => setIsClosed(true)}>
-                <AiFillCloseCircle style={{width: "100%", height: "100%"}}/>
-            </button>
+            <AiFillExclamationCircle size={"1.2em"}/>
             <p>{props.text}</p>
         </div>
     );

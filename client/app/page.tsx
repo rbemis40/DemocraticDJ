@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import AmbientBackground from "./_components/AmbientBackground";
 import Logo from "./_components/Logo";
@@ -6,8 +8,12 @@ import CreateGameCard from "./_components/CreateGameCard";
 import JoinGameCard from "./_components/JoinGameCard";
 import styles from "./page.module.css";
 import ErrorBanner from "./_components/ErrorBanner";
+import { useSearchParams } from "next/navigation";
 
 export default function Home() {
+  const searchParams = useSearchParams();
+  const errorText = searchParams.get("error");
+
   return (
     <div className={styles.container}>
       <AmbientBackground />
@@ -23,7 +29,7 @@ export default function Home() {
         <JoinGameCard />
       </div>
 
-      <ErrorBanner text={`Error: Failed to join game! Please try again.`} autoCloseInterval={3}/>
+      {errorText && <ErrorBanner text={errorText} autoCloseInterval={3}/>}
 
       <footer className={styles.footer}>
         <Link href="/about">
