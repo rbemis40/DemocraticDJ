@@ -60,7 +60,11 @@ export class WSReverseProxy implements ProxyService {
         });
 
         this.wss.on("connection", (ws, req) => {
-            this.handleClientConnect(ws, req);
+            this.handleClientConnect(ws, req)
+                .catch(err => {
+                    console.warn(err);
+                    ws.close();
+                });
         });
     }
 
@@ -95,19 +99,22 @@ export class WSReverseProxy implements ProxyService {
         return gameId;
     }
 
+    /**
+     * 
+     * @param ws The client connection
+     * @param req The request the client used to connect to the WebSocketServer. Provides the server's Game Id
+     * @throws Error - If a connection to the corresponding game server fails (invalid Game Id or if the server is not ready)
+     */
     private async handleClientConnect(ws: WebSocket, req: IncomingMessage) {
         const gameId = this.parseRequestURL(req);
         if (gameId === undefined) { // Check if it failed to parse
-            ws.close();
-            return;
+            throw new Error("Client connected to proxy with no gameId in request!");
         }
 
         // Look up if there is a server that correlates with this game id
         const forwardingData = this.gameIdMap.get(gameId);
         if (forwardingData === undefined) {
-            console.warn(`Unknown gameId: ${gameId}`);
-            ws.close();
-            return;
+            throw new Error("Client provided an unknown gameId while connecting to proxy!");
         }
 
         const addToQueue = (data: RawData) => {
@@ -117,9 +124,10 @@ export class WSReverseProxy implements ProxyService {
         ws.on("message", addToQueue); // Until the other half of the connection is established, add messages to a queue to be processed after
 
         // Create a new connection to that server and add to the maps
-        const newWs = await new WebSocketConnector(forwardingData.url).connect();
-
-        // Now that the connection is open, stop adding to queue
+        const newWs = await new WebSocketConnector(forwardingData.url)
+            .connect()
+        
+            // Now that the connection is open, stop adding to queue
         ws.on("message", (data) => {
             this.forwardClientMsg(data, ws, newWs);
         });
