@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import AmbientBackground from "./_components/AmbientBackground";
 import Logo from "./_components/Logo";
@@ -8,12 +6,10 @@ import CreateGameCard from "./_components/CreateGameCard";
 import JoinGameCard from "./_components/JoinGameCard";
 import styles from "./page.module.css";
 import ErrorBanner from "./_components/ErrorBanner";
-import { useSearchParams } from "next/navigation";
 
-export default function Home() {
-  const searchParams = useSearchParams();
-  const errorText = searchParams.get("error");
-
+export default async function Home(props: PageProps<"/">) {
+  const { error } = await props.searchParams;
+  
   return (
     <div className={styles.container}>
       <AmbientBackground />
@@ -29,7 +25,7 @@ export default function Home() {
         <JoinGameCard />
       </div>
 
-      {errorText && <ErrorBanner text={errorText} autoCloseInterval={3}/>}
+      {error && (typeof error === "string") && <ErrorBanner text={error} autoCloseInterval={3}/>}
 
       <footer className={styles.footer}>
         <Link href="/about">
