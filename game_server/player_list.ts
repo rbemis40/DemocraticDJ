@@ -7,24 +7,16 @@ import { PlayerLeaveData, playerLeaveDataSchema } from "./server_types.js";
 
 export class PlayerList {
     private players: Map<string | undefined, Player>;
-    private eventProvider: EventProvider<GMEventContext>;
-    private validator: Validator<GMEventContext>;
 
-    constructor(eventProvider: EventProvider<GMEventContext>) {
+    constructor() {
         this.players = new Map<string | undefined, Player>();
-        this.validator = new Validator();
-        this.validator.addPair({
-            schema: buildActionSchema("player_leave", playerLeaveDataSchema),
-            handler: (action, context) => this.onPlayerLeave(action, context)
-        });
-
-        this.eventProvider = eventProvider;
-        this.eventProvider.onAction((action, context) => {{
-            this.validator.validateAndHandle(action, context);
-        }});
     }
 
     addPlayer(player: Player) {
+        if (this.players.has(player.username)) {
+            throw new Error(`Attempt to add duplicate username "${player.username}"`);
+        }
+
         this.players.set(player.username, player);
     }
 
@@ -33,7 +25,7 @@ export class PlayerList {
     }
 
     broadcast(action: Action<object>) {
-        this.players.forEach(player => player.getConnection().sendAction(action));
+        this.players.forEach(player => player.getConnection().sendObj(action));
     }
 
     getUsernames(): string[] {
@@ -59,12 +51,11 @@ export class PlayerList {
         return this.players.has(username);
     }
 
-    get numPlayers() {
-        return this.players.size;
+    getPlayerById(id: string) {
+        
     }
 
-    private onPlayerLeave(action: Action<PlayerLeaveData>, context: GMEventContext) {
-        const player: Player = action.data.player as Player;
-        this.removePlayer(player);
+    get numPlayers() {
+        return this.players.size;
     }
 }

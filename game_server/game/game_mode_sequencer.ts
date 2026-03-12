@@ -8,42 +8,11 @@ import { EventProvider } from "../event_provider.js";
 import { PlayerList } from "../player_list.js";
 import { MusicService } from "../music_services/music_service.js";
 
-interface NextGameModeData {}
-
-const nextGameModeSchema: JSONSchemaType<NextGameModeData> = {
-    type: "object"
-};
-
 export class GameModeSequencer {
-    private mode: GameMode;
-    private eventProvider: EventProvider<GMEventContext>;
-    private playerList: PlayerList;
-    private musicService: MusicService;
+    private curMode: GameMode;
 
-    private validator: Validator<GMEventContext>;
-
-    constructor(eventProvider: EventProvider<GMEventContext>, playerList: PlayerList, musicService: MusicService) {
-        this.eventProvider = eventProvider;
-        this.playerList = playerList;
-        this.musicService = musicService;
-
-        this.validator = new Validator();
-        this.validator.addPair({
-            schema: buildActionSchema("next_game_mode", nextGameModeSchema),
-            handler: (data, context) => this.onNextGameMode(data, context)
-        });
-
-        this.validator.addPair({
-            schema: buildActionSchema("go_back_to_lobby", nextGameModeSchema),
-            handler: (data, context) => this.onNextGameMode(data, context)
-        })
-
-        this.eventProvider.onAction((action: Action<object>, context: GMEventContext) => {
-            this.validator.validateAndHandle(action, context);
-        });
-
-        this.mode = new LobbyMode(this.eventProvider, this.playerList);
-        this.mode.makeActive();
+    constructor() {
+        this.curMode = new LobbyMode()
     }
 
     getCurrentModeName(): string {

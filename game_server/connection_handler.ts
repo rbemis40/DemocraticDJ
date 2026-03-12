@@ -8,6 +8,7 @@ import { PlayerLeaveData, playerLeaveDataSchema } from "./server_types.js";
 import { GMEventContext } from "./modes/game_mode.js";
 import { TokenManager } from "../shared/tokens/token_manager.js";
 import { PlayerTokenData } from "../shared/shared_types.js";
+import { IdProvider } from "./id_provider.js";
 
 interface PlayerJoinData {
     token: string;
@@ -31,10 +32,12 @@ export class ConnectionHandler {
     private validator: Validator<GMEventContext>;
     private conPromises: Map<Connection, PromiseFns>;
     private tokenManager: TokenManager;
+    private idProvider: IdProvider;
     
-    constructor(eventProvider: EventProvider<GMEventContext>, tokenManager: TokenManager) {
+    constructor(eventProvider: EventProvider<GMEventContext>, tokenManager: TokenManager, idProvider: IdProvider) {
         this.eventProvider = eventProvider;
         this.tokenManager = tokenManager;
+        this.idProvider = idProvider;
 
         this.conPromises = new Map();
 
@@ -77,8 +80,8 @@ export class ConnectionHandler {
         try {
             const player: Player = new Player({
                 ...userTokenData,
-                isActiveVoter: false
-            } satisfies InGameInfo, con);
+                isActiveVoter: false,
+            } satisfies InGameInfo, con, this.idProvider.generateId());
             
             player.isHost ? 
                 console.log('Added host!') : 

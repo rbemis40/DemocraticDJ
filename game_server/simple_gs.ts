@@ -14,6 +14,7 @@ import { SongQueue } from "./song_queue.js";
 import { JWTTokenManager, TokenManager } from "../shared/tokens/token_manager.js";
 import { MusicService } from "./music_services/music_service.js";
 import { MusicServiceEventHandler } from "./music_services/music_service_event_handler.js";
+import { IdProvider, SeqIdProvider } from "./id_provider.js";
 
 /*
     - A game server that simply runs on the same system as the HTTP server
@@ -29,6 +30,7 @@ export class SimpleGameServer {
     private eventProvider: EventProvider<GMEventContext>; // Used for internal dispatching of events from game modes
     private tokenManager: TokenManager;
     private musicService: MusicService;
+    private idProvider: IdProvider;
     private songQueue: SongQueue;
     private gameId: GameId;
 
@@ -44,7 +46,8 @@ export class SimpleGameServer {
         });
 
         this.tokenManager = new JWTTokenManager(tokenSecret, "HS256");
-        this.connectionHandler = new ConnectionHandler(this.eventProvider, this.tokenManager);
+        this.idProvider = new SeqIdProvider();
+        this.connectionHandler = new ConnectionHandler(this.eventProvider, this.tokenManager, this.idProvider);
         this.playerList = new PlayerList(this.eventProvider);
 
         // Setup the music service and the event handler for it

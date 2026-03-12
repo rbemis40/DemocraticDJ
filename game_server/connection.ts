@@ -1,17 +1,68 @@
-import { WebSocket } from "ws";
-import { Action } from "./action.js";
+import WebSocket from "ws";
+import { Action, isAction } from "./action.js";
+
+interface ConnectionOptions {
+    pingInterval?: number;
+}
+
+const defaultOptions: ConnectionOptions = {
+    pingInterval: 5000
+}
 
 export class Connection {
     private ws: WebSocket;
-    constructor(ws: WebSocket) {
+    private pingInterval: NodeJS.Timeout;
+    private msgResolvers: ((msg: Action<object>) => void)[]; // TODO: Need to queue messages if there are no resolvers
+
+    constructor(ws: WebSocket, options?: ConnectionOptions) {
         this.ws = ws;
+        this.ws.on("message", this.onMsg);
+    
+        this.pingInterval = setInterval(
+            () => this.ping(),
+            options?.pingInterval || defaultOptions.pingInterval
+        );
     }
 
-    sendAction<T extends object>(msg: Action<T>) {
-        this.ws.send(JSON.stringify(msg));
+    sendObj(obj: object) {
+        this.ws.send(JSON.stringify(obj));
     }
 
-    disconnect() {
+    sendStr(str: string) {
+        this.ws.send(str);
+    }
+
+    waitForAction(): Promise<Action<object>> {
+        return new Promise((resolve) => {
+            this.msgResolvers.push(resolve);
+        });
+    }
+
+    close() {
+        clearInterval(this.pingInterval);
         this.ws.close();
+    }
+
+    private onMsg(data: WebSocket.RawData) {
+        const dataStr = data.toString();
+        try {
+            const dataObj = JSON.parse(dataStr) as unknown;
+
+            if (!isAction(dataObj)) {
+                throw new Error("msg object must be a valid Action");
+            }
+
+            // Resolve all promises that are waiting on an action
+            this.msgResolvers.forEach(resolve => resolve(dataObj));
+            this.msgResolvers = [];
+        }
+        catch(err) {
+            console.warn(err);
+            // TODO: Send back an error 
+        }
+    }
+
+    private ping() {
+        console.log("Pinging ws..."); // TEMPORARY
     }
 }

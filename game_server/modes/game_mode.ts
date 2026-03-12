@@ -1,8 +1,9 @@
-import { PlayerData } from "../player.js";
+import { Player, PlayerData } from "../player.js";
 import { Connection } from "../connection.js";
 import { EventProvider } from "../event_provider.js";
 import { Validator } from "../handlers/validator.js";
 import { Action, buildActionSchema } from "../action.js";
+import { JoinedModeData } from "../game/game_actions.js";
 
 export interface GMEventContext {
     source?: {
@@ -19,26 +20,10 @@ export interface GMEventContext {
  */
 export abstract class GameMode {
     protected name: string;
-    protected eventProvider: EventProvider<GMEventContext>;
     protected validator: Validator<GMEventContext>;
-    private eventCallbackId: number;
 
-    constructor(name: string, eventProvider: EventProvider<GMEventContext>) {
+    constructor(name: string) {
         this.name = name;
-
-        this.eventProvider = eventProvider;
-        this.eventCallbackId = -1; // Placeholder until the game mode is made active
-
-        // Force each GameMode to handle a player joining the mode, used to send init data for the client
-        this.validator = new Validator();
-        this.validator.addPair({
-            schema: buildActionSchema("joined_mode", {
-                type: "object"
-            }),
-            handler: (data, context) => this.onJoinMode(data, context)
-        });
-
-        
     }
 
     getName(): string {
@@ -46,21 +31,14 @@ export abstract class GameMode {
     }
 
     /**
-     * Makes the game mode respond to events and respond to player messages by listening to events
-     * dispatched by the EventProvider
+     * Called externally when a player sends an action, allowing the game mode to update it's state and other players as necessary
+     * @param action 
+     * @param player 
      */
-    makeActive() {
-        this.eventCallbackId = this.eventProvider.onAction((action, context) => {
-            this.validator.validateAndHandle(action, context);
-        });
-    }
-
-    /**
-     * Detaches the game mode from the EventProvider, preventing this mode from listening and
-     * responding to user messages. Should be called when switching out of the game mode.
-     */
-    makeInactive() {
-        this.eventProvider.removeCallback(this.eventCallbackId);
+    handleAction(action: Action<object>, player: Player) {
+        if (action.action === "joined_mode") {
+            this.onJoinMode(action, player);
+        }
     }
 
     /**
@@ -69,5 +47,6 @@ export abstract class GameMode {
      * @param data - The join mode action
      * @param context - Includes information such as who has just joined the mode and all of the other players
      */
-    protected abstract onJoinMode(data: Action<object>, context: GMEventContext): void;
+    protected abstract onJoinMode(data: Action<JoinedModeData>, player: Player): void;
+    abstract removePlayer(player: Player): void;
 }

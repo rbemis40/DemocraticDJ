@@ -1,4 +1,6 @@
-import { JSONSchemaType } from "ajv";
+import Ajv, { JSONSchemaType } from "ajv";
+
+const ajv = new Ajv.Ajv();
 
 export type Action<T extends object> = {
     action: string,
@@ -28,3 +30,7 @@ export const actionSchema: JSONSchemaType<Action<object>> = {
     required: ['action', 'data'],
     additionalProperties: false
 };
+
+export function isAction(data: unknown): data is Action<object> {
+    return ajv.validate(actionSchema, data);
+}
