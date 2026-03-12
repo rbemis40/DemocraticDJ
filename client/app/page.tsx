@@ -18,10 +18,8 @@ export default async function Home(props: PageProps<"/">) {
 
       <NeonDivider />
 
-      {/* Action cards */}
       <div className={styles.cardsWrapper}>
         <CreateGameCard />
-
         <JoinGameCard />
       </div>
 

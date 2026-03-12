@@ -1,0 +1,63 @@
+.container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.header {
+  text-align: center;
+  z-index: 1;
+}
+
+.heading {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  line-height: 1.15;
+}
+
+.contentCard {
+  padding: 2rem 2.5rem;
+  max-width: 560px;
+  width: 90%;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.sectionLabel {
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.sectionBody {
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.7;
+  font-size: 0.9rem;
+}
+
+.inlineDivider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 0, 229, 0.3), transparent);
+}
+
+.howToPlayList {
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.9;
+  font-size: 0.88rem;
+  padding-left: 1.25rem;
+}
+
+.ctaButton {
+  z-index: 1;
+  position: relative;
+}
