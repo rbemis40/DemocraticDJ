@@ -1,9 +1,9 @@
 import AmbientCircle from "./AmbientCircle";
-
+import styles from "./AmbientBackground.module.css";
 
 export default function AmbientBackground() {
   return (
-    <>
+    <div className={styles.container}>
       <div className="scanline" />
       <AmbientCircle
         color="rgba(180,0,255,0.08)"
@@ -23,6 +23,6 @@ export default function AmbientBackground() {
         right={true}
         bottom={true}
       />
-    </>
+    </div>
   );
 }
