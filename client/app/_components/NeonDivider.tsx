@@ -4,6 +4,6 @@ interface NeonDividerProps {
   width?: string;
 }
 
-export default function NeonDivider({ width = "min(420px, 80vw)" }: NeonDividerProps) {
+export default function NeonDivider({ width = "min(420px, 80%)" }: NeonDividerProps) {
   return <div className={styles.divider} style={{ width }} />;
 }

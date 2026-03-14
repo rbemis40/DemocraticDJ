@@ -1,8 +1,10 @@
 .container {
     display: flex;
     justify-content: space-between;
-    gap: 3rem;
+    gap: clamp(1rem, 3vw, 3rem);
     width: fit-content;
+    max-width: 100%;
+    overflow-x: auto;
 }
 
 .playerContainer {

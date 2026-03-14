@@ -17,7 +17,7 @@
 html,
 body {
   height: 100%;
-  overflow: hidden;
+  overflow: auto;
   background: var(--bg-dark);
   color: #ffffff;
   font-family: "Arial", sans-serif;
