@@ -5,15 +5,17 @@ import { PlayerList } from "../../player_list.js";
 import { Player } from "../../player.js";
 import { GameModeSequencer } from "../../game/game_mode_sequencer.js";
 
+type NextModeFn = () => void;
+
 export class LobbyMode extends GameMode {
     private playerList: PlayerList;
-    private gmSequencer: GameModeSequencer;
+    private nextMode: NextModeFn;
 
-    constructor(playerList: PlayerList, gmSequencer: GameModeSequencer) {
+    constructor(playerList: PlayerList, nextMode: NextModeFn) {
         super('lobby');
         
         this.playerList = playerList;
-        this.gmSequencer = gmSequencer;
+        this.nextMode = nextMode;
     }
 
     handleAction(action: Action<object>, player: Player): void {
@@ -49,6 +51,6 @@ export class LobbyMode extends GameMode {
     }
 
     private onStartGame(action: Action<StartGameData>, player: Player) {
-        this.gmSequencer.nextMode();
+        this.nextMode();
     }
 }

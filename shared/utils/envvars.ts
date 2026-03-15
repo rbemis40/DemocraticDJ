@@ -25,3 +25,11 @@ export function loadVars(names: string[]): string[] {
 
     return values;
 }
+
+export function loadVarsObj<T extends string>(...args: T[]): Record<T, string> {
+    return args.reduce((obj: Partial<Record<T, string>>, name) => {
+        const value = loadVar(name);
+        obj[name] = value;
+        return obj;
+    }, {}) as Record<T, string>; // It's guaranteed to fully satisfy the Record type because every string in T is added to the object
+}

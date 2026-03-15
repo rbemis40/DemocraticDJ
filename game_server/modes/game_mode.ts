@@ -24,6 +24,7 @@ export abstract class GameMode {
 
     constructor(name: string) {
         this.name = name;
+        this.validator = new Validator();
     }
 
     getName(): string {

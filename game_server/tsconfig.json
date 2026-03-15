@@ -3,6 +3,7 @@
         "module": "nodenext",
         "outDir": "./build/",
         "strictNullChecks": true,
+        "strictPropertyInitialization": true,
         "noImplicitAny": true,
     },
 }

@@ -16,7 +16,9 @@ export class Connection {
 
     constructor(ws: WebSocket, options?: ConnectionOptions) {
         this.ws = ws;
-        this.ws.on("message", this.onMsg);
+        this.msgResolvers = [];
+
+        this.ws.on("message", (data: WebSocket.RawData) => this.onMsg(data));
     
         this.pingInterval = setInterval(
             () => this.ping(),
