@@ -15,7 +15,7 @@ let gameId = Number.parseInt(GAME_ID, 10);
 let port = Number.parseInt(PORT, 10);
 
 const musicService: MusicService = await new MusicServiceFactory().buildMusicService(MUSIC_SERVICE);
-const game = new Game();
+const game = new Game(musicService);
 const tokenManager = new JWTTokenManager(TOKEN_SECRET, "HS256");
 const idProvider = new SeqIdProvider();
 const playerFactory = new PlayerFactory(tokenManager, idProvider);

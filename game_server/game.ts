@@ -1,23 +1,23 @@
 import { Action } from "./action.js";
-import { EventProvider } from "./event_provider.js";
 import { GameModeSequencer } from "./game/game_mode_sequencer.js";
-import { GameMode, GMEventContext } from "./modes/game_mode.js";
 import { LobbyMode } from "./modes/lobby/lobby_mode.js";
 import { SelectVotersMode } from "./modes/select_voters/select_voters_mode.js";
 import { MusicService } from "./music_services/music_service.js";
-import { MusicServiceFactory } from "./music_services/music_service_factory.js";
 import { Player } from "./player.js";
 import { PlayerList } from "./player_list.js";
 
 export class Game {
     private gmSequencer: GameModeSequencer;
     private playerList: PlayerList;
+    private musicService: MusicService;
     private onCloseCallback: () => void;
     
-    constructor() {
+    constructor(musicService: MusicService) {
         this.playerList = new PlayerList();
+        this.musicService = musicService;
         this.gmSequencer = new GameModeSequencer([
             () => new LobbyMode(this.playerList, () => this.nextMode(), (player) => this.removePlayer(player)),
+            () => new SelectVotersMode(this.playerList, this.musicService, 3),
         ]);
         this.onCloseCallback = () => {};
     }
