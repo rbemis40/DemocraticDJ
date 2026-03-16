@@ -12,12 +12,14 @@ import { PlayerList } from "./player_list.js";
 export class Game {
     private gmSequencer: GameModeSequencer;
     private playerList: PlayerList;
+    private onCloseCallback: () => void;
     
     constructor() {
         this.playerList = new PlayerList();
         this.gmSequencer = new GameModeSequencer([
-            () => new LobbyMode(this.playerList, this.nextMode),
+            () => new LobbyMode(this.playerList, () => this.nextMode(), (player) => this.removePlayer(player)),
         ]);
+        this.onCloseCallback = () => {};
     }
 
     addPlayer(player: Player) {
@@ -35,13 +37,27 @@ export class Game {
 
     removePlayer(player: Player) {
         console.log("Removing player");
-        this.gmSequencer.getCurrentMode().removePlayer(player);
+        player.getConnection().close(); // Ensure the connection is closed. Might not be closed if removed by host for example.
+        if (player.isHost) {
+            this.playerList.getUsernames().forEach(username => {
+                const player = this.playerList.getPlayerByUsername(username);
+                player?.getConnection().close();
+            });
+            this.onCloseCallback();
+            return;
+        }
+
         this.playerList.removePlayer(player);
+        this.gmSequencer.getCurrentMode().onPlayerDisconnect(player);
     }
 
     handlePlayerAction(action: Action<object>, player: Player) {
         console.log("Handling action");
         this.gmSequencer.getCurrentMode().handleAction(action, player);
+    }
+
+    onClose(callback: () => void) {
+        this.onCloseCallback = callback;
     }
 
     private nextMode() {

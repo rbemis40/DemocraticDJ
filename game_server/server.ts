@@ -16,9 +16,15 @@ export class Server {
             console.log(`WebSocketServer running on port ${port}...`);
         });
 
+        this.game.onClose(() => this.close());
+
         this.wss.on("connection", (clientWs: WebSocket) => this.onConnection(clientWs));
     }
 
+    close() {
+        this.wss.close();
+    }
+    
     private onConnection(clientWs: WebSocket) {
         this.clientHandler.newClient(clientWs);
     }

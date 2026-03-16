@@ -28,7 +28,7 @@ export class SelectVotersMode extends GameMode {
         throw new Error("Method not implemented.");
     }
 
-    removePlayer(player: Player): void {
+    onPlayerDisconnect(player: Player): void {
         throw new Error("Method not implemented.");
     }
 
