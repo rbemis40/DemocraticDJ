@@ -17,13 +17,13 @@ export class Connection {
     constructor(ws: WebSocket, options?: ConnectionOptions) {
         this.ws = ws;
         this.msgResolvers = [];
-
-        this.ws.on("message", (data: WebSocket.RawData) => this.onMsg(data));
-    
+ 
         this.pingInterval = setInterval(
             () => this.ping(),
             options?.pingInterval || defaultOptions.pingInterval
         );
+
+        this.ws.on("message", (data: WebSocket.RawData) => this.onMsg(data));
     }
 
     sendObj(obj: object) {
@@ -65,6 +65,6 @@ export class Connection {
     }
 
     private ping() {
-        console.log("Pinging ws..."); // TEMPORARY
+        //console.log("Pinging ws..."); // TEMPORARY
     }
 }

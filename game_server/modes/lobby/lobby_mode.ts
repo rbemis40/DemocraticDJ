@@ -9,14 +9,14 @@ import Ajv, { JSONSchemaType } from "ajv";
 const ajv = new Ajv.Ajv();
 
 type RemovePlayerData = {
-    username: string;
+    playerId: string;
 }
 const removePlayerSchema: JSONSchemaType<RemovePlayerData> = {
     type: "object",
     properties: {
-        username: {type: "string"}
+        playerId: {type: "string"}
     },
-    required: ["username"],
+    required: ["playerId"],
     additionalProperties: false
 };
 
@@ -47,11 +47,12 @@ export class LobbyMode extends GameMode {
                     return;
                 }
 
-                const playerToRemove = this.playerList.getPlayerByUsername(action.data.username);
+                const playerToRemove = this.playerList.getPlayerById(action.data.playerId);
                 if (playerToRemove === undefined) {
-                    console.warn(`Attempt to remove unknown user "${action.data.username}"`);
+                    console.warn(`Attempt to remove unknown player with id ${action.data.playerId}`);
                     return;
                 }
+
                 if (playerToRemove.isHost) {
                     console.warn(`Attempt to remove host player!`);
                     return;
@@ -66,25 +67,27 @@ export class LobbyMode extends GameMode {
     protected onJoinMode(action: Action<JoinedModeData>, player: Player) {
         /* A user joined the lobby, so send them the list of active players */
         console.log("LobbyMode.handleJoinedMode: Lobby joined mode!!");
-        this.playerList.broadcast({
-            action: "user_list",
-            data: {
-                user_list: this.playerList.getUsernames()
-            }
-        });
+        this.sendUserList();
     }
 
     onPlayerDisconnect(player: Player) {
         // Send the updated user list for the remaining players
-        this.playerList.broadcast({
-            action: "user_list",
-            data: {
-                user_list: this.playerList.getUsernames()
-            }
-        });
+        this.sendUserList();
     }
 
     private onStartGame(action: Action<StartGameData>, player: Player) {
         this.nextModeService();
+    }
+
+    private sendUserList() {
+        this.playerList.broadcast({
+            action: "user_list",
+            data: {
+                user_list: this.playerList.all().filter(player => player.username !== undefined).map(player => ({
+                    username: player.username,
+                    playerId: player.playerId
+                }))
+            }
+        });
     }
 }

@@ -2,26 +2,37 @@ import { Validator } from "./handlers/validator.js";
 import { GMEventContext } from "./modes/game_mode.js";
 import { Action, buildActionSchema } from "./action.js";
 import { EventProvider } from "./event_provider.js";
-import { Player } from "./player.js";
+import { Player, PlayerId } from "./player.js";
 import { PlayerLeaveData, playerLeaveDataSchema } from "./server_types.js";
 
 export class PlayerList {
-    private players: Map<string | undefined, Player>;
+    private players: Map<PlayerId, Player>;
+    private takenUsernames: Set<string | undefined>;
 
     constructor() {
-        this.players = new Map<string | undefined, Player>();
+        this.players = new Map();
+        this.takenUsernames = new Set();
     }
 
     addPlayer(player: Player) {
-        if (this.players.has(player.username)) {
-            throw new Error(`Attempt to add duplicate username "${player.username}"`);
+        if (this.players.has(player.playerId)) {
+            throw new Error("Player id is already taken");
         }
 
-        this.players.set(player.username, player);
+        if (this.takenUsernames.has(player.username)) {
+            throw new Error("Username is already taken");
+        }
+
+        this.players.set(player.playerId, player);
+        this.takenUsernames.add(player.username);
     }
 
-    removePlayer(player: Player) {
-        this.players.delete(player.username);
+    removePlayer(playerId: PlayerId) {
+        const player = this.players.get(playerId);
+        if (player !== undefined) {
+            this.players.delete(player.playerId);
+            this.takenUsernames.delete(player.username);
+        }
     }
 
     broadcast(action: Action<object>) {
@@ -39,20 +50,16 @@ export class PlayerList {
         return usernameArray
     }
 
-    getPlayerByUsername(username: string): Player | undefined {
-        return this.players.get(username);
-    }
-
-    getHost(): Player | undefined {
-        return this.players.get(undefined);
+    getPlayerById(playerId: PlayerId): Player | undefined {
+        return this.players.get(playerId);
     }
 
     isUsernameTaken(username: string): boolean {
-        return this.players.has(username);
+        return this.takenUsernames.has(username);
     }
 
-    getPlayerById(id: string) {
-        
+    all(): Player[] {
+        return Array.from(this.players.values());
     }
 
     get numPlayers() {

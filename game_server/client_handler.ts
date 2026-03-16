@@ -5,7 +5,7 @@ import { Game } from "./game.js";
 import { isAction } from "./action.js";
 import { Player } from "./player.js";
 
-export class ClientHandler {
+export class ClientEventHandler {
     private game: Game;
     private playerFactory: PlayerFactoryI;
 
@@ -19,8 +19,9 @@ export class ClientHandler {
         const player = await this.playerFactory.createPlayer(clientCon); // Handles game-level logic
         this.game.addPlayer(player);
 
-        clientWs.on("message", (data: WebSocket.RawData) => this.onClientMsg(data, player))
-        clientWs.on("close", () => this.onClientClose(player));    
+        // TODO: These should be abstracted away in the Connection class (ie clientCon.onAction and clientCon.onClose)
+        clientWs.on("message", (data: WebSocket.RawData) => this.onClientMsg(data, player));
+        clientWs.on("close", () => this.onClientClose(player));
     }
 
     private onClientMsg(data: WebSocket.RawData, player: Player) {
@@ -41,6 +42,6 @@ export class ClientHandler {
     }
 
     private onClientClose(player: Player) {
-        this.game.removePlayer(player);
+        this.game.onPlayerDisconnect(player);
     }
-}
+ }

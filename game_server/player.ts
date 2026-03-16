@@ -12,14 +12,16 @@ export interface PlayerData {
     isVoter: boolean;
 };
 
+export type PlayerId = string;
+
 export class Player implements PlayerData {
     username?: string;
     isHost: boolean;
     isVoter: boolean;
-    playerId: string;
+    playerId: PlayerId;
     private con: Connection;
 
-    constructor(info: InGameInfo, con: Connection, playerId: string) {
+    constructor(info: InGameInfo, con: Connection, playerId: PlayerId) {
         this.con = con;
         this.username = info.username;
         this.isHost = info.isHost;

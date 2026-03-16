@@ -24,7 +24,14 @@ export class Game {
 
     addPlayer(player: Player) {
         console.log("Adding player");
+        if (player.username !== undefined && this.playerList.isUsernameTaken(player.username)) {
+            console.warn(`Player attempted to join with taken username ${player.username}`);
+            player.getConnection().close(); // TODO: Send some sort of descriptive error, so the user knows what went wrong
+            return;
+        }
+
         this.playerList.addPlayer(player);
+
         player.getConnection().sendObj({
             action: "welcome",
             data: {
@@ -37,17 +44,27 @@ export class Game {
 
     removePlayer(player: Player) {
         console.log("Removing player");
-        player.getConnection().close(); // Ensure the connection is closed. Might not be closed if removed by host for example.
         if (player.isHost) {
-            this.playerList.getUsernames().forEach(username => {
-                const player = this.playerList.getPlayerByUsername(username);
+            console.warn("Attempt to remove host");
+            return;
+        }
+
+        player.getConnection().close();
+        this.playerList.removePlayer(player.playerId);
+        this.gmSequencer.getCurrentMode().onPlayerDisconnect(player);
+    }
+
+    onPlayerDisconnect(player: Player) {
+        console.log("Player disconnected");
+        if (player.isHost) {
+            this.playerList.all().forEach(player => {
                 player?.getConnection().close();
             });
             this.onCloseCallback();
             return;
         }
 
-        this.playerList.removePlayer(player);
+        this.playerList.removePlayer(player.playerId);
         this.gmSequencer.getCurrentMode().onPlayerDisconnect(player);
     }
 

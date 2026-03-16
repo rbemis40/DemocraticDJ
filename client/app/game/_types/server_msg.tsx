@@ -16,7 +16,10 @@ export interface ModeChangeData {
 };
 
 export interface UserListData {
-    user_list: string[];
+    user_list: {
+        username: string,
+        playerId: string
+    }[];
 };
 
 export interface NewPlayerData {

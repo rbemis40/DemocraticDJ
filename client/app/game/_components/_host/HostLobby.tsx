@@ -11,8 +11,13 @@ interface HostLobbyProps extends UIProps {
     gameId: number;
 };
 
+type PlayerData = {
+    username: string;
+    playerId: string;
+}
+
 export default function HostLobby(props: HostLobbyProps) {
-    const [userList, setUserList] = useState<string[]>([]);
+    const [userList, setUserList] = useState<PlayerData[]>([]);
 
     useServerMsg((serverMsg: ServerMsg) => {
         switch (serverMsg.action) {
@@ -20,20 +25,16 @@ export default function HostLobby(props: HostLobbyProps) {
                 const userListData = serverMsg.data as UserListData;
                 setUserList(userListData.user_list);
                 break;
-            case 'new_player':
-                const newPlayerData = serverMsg.data as NewPlayerData;
-                setUserList(userList.concat([newPlayerData.username]));
-                break;
         }
-    }, ['user_list', 'new_player']);
+    }, ['user_list']);
 
     useSendModeChanged('lobby', props.sendMsg);
 
-    function removeUser(name: string) {
+    function removeUser(playerId: string) {
         props.sendMsg(JSON.stringify({
             action: 'remove_player',
             data: {
-                username: name
+                playerId: playerId
             }
         }));
     }
@@ -55,9 +56,9 @@ export default function HostLobby(props: HostLobbyProps) {
             <NeonDivider width={`20rem`}/>
             <h1 className={`text-spaced ${styles.playerHeading}`}>Players</h1>
             <div className={styles.playerList}>
-            {userList.map((username, i) => {
+            {userList.map((playerData, i) => {
                 return (
-                    <button key={i} className={`neon-text-cyan ${styles.playerButton}`} onClick={() => removeUser(username)}>{username}</button>
+                    <button key={i} className={`neon-text-cyan ${styles.playerButton}`} onClick={() => removeUser(playerData.playerId)}>{playerData.username}</button>
                 );
             })}
             </div>
