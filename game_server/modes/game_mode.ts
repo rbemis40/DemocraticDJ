@@ -49,5 +49,5 @@ export abstract class GameMode {
      * @param context - Includes information such as who has just joined the mode and all of the other players
      */
     protected abstract onJoinMode(data: Action<JoinedModeData>, player: Player): void;
-    abstract onPlayerDisconnect(player: Player): void;
+    abstract playerLeft(player: Player): void;
 }

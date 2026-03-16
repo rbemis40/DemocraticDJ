@@ -13,6 +13,8 @@ export class Connection {
     private ws: WebSocket;
     private pingInterval: NodeJS.Timeout;
     private msgResolvers: ((msg: Action<object>) => void)[]; // TODO: Need to queue messages if there are no resolvers
+    private wsCloseHandler: () => void;
+    private discCallback: () => void;
 
     constructor(ws: WebSocket, options?: ConnectionOptions) {
         this.ws = ws;
@@ -23,7 +25,13 @@ export class Connection {
             options?.pingInterval || defaultOptions.pingInterval
         );
 
+        this.discCallback = () => {};
+        this.wsCloseHandler = () => {
+            this.discCallback();
+        };
+
         this.ws.on("message", (data: WebSocket.RawData) => this.onMsg(data));
+        this.ws.on("close", this.wsCloseHandler);
     }
 
     sendObj(obj: object) {
@@ -42,7 +50,12 @@ export class Connection {
 
     close() {
         clearInterval(this.pingInterval);
+        this.ws.off("close", this.wsCloseHandler); // Deregister the callback, so that the natural disconnect handler is not fired
         this.ws.close();
+    }
+
+    onClientDisconnect(callback: () => void) {
+        this.discCallback = callback;
     }
 
     private onMsg(data: WebSocket.RawData) {

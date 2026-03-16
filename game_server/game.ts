@@ -51,21 +51,21 @@ export class Game {
 
         player.getConnection().close();
         this.playerList.removePlayer(player.playerId);
-        this.gmSequencer.getCurrentMode().onPlayerDisconnect(player);
+        this.gmSequencer.getCurrentMode().playerLeft(player);
     }
 
     onPlayerDisconnect(player: Player) {
         console.log("Player disconnected");
         if (player.isHost) {
             this.playerList.all().forEach(player => {
-                player?.getConnection().close();
+                player?.getConnection().close(); // No need to remove from the playerlist or anything, since the game has ended anyway
             });
             this.onCloseCallback();
             return;
         }
 
         this.playerList.removePlayer(player.playerId);
-        this.gmSequencer.getCurrentMode().onPlayerDisconnect(player);
+        this.gmSequencer.getCurrentMode().playerLeft(player);
     }
 
     handlePlayerAction(action: Action<object>, player: Player) {

@@ -2,7 +2,7 @@ import { GameMode } from "../game_mode.js";
 import { JoinedModeData, StartGameData } from "./lobby_schemas.js";
 import { Action } from "../../action.js";
 import { PlayerList } from "../../player_list.js";
-import { Player } from "../../player.js";
+import { Player, PlayerId } from "../../player.js";
 import { NextModeService, RemovePlayerService } from "../../game_services.js";
 import Ajv, { JSONSchemaType } from "ajv";
 
@@ -47,18 +47,7 @@ export class LobbyMode extends GameMode {
                     return;
                 }
 
-                const playerToRemove = this.playerList.getPlayerById(action.data.playerId);
-                if (playerToRemove === undefined) {
-                    console.warn(`Attempt to remove unknown player with id ${action.data.playerId}`);
-                    return;
-                }
-
-                if (playerToRemove.isHost) {
-                    console.warn(`Attempt to remove host player!`);
-                    return;
-                }
-
-                this.removePlayerService(playerToRemove);
+                this.onRemovePlayer(action.data.playerId);
                 break;
             }
         }
@@ -70,13 +59,28 @@ export class LobbyMode extends GameMode {
         this.sendUserList();
     }
 
-    onPlayerDisconnect(player: Player) {
+    playerLeft(player: Player) {
         // Send the updated user list for the remaining players
         this.sendUserList();
     }
 
     private onStartGame(action: Action<StartGameData>, player: Player) {
         this.nextModeService();
+    }
+
+    private onRemovePlayer(playerId: PlayerId) {
+        const playerToRemove = this.playerList.getPlayerById(playerId);
+        if (playerToRemove === undefined) {
+            console.warn(`Attempt to remove unknown player with id ${playerId}`);
+            return;
+        }
+
+        if (playerToRemove.isHost) {
+            console.warn(`Attempt to remove host player!`);
+            return;
+        }
+
+        this.removePlayerService(playerToRemove);
     }
 
     private sendUserList() {

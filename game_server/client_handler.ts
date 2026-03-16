@@ -19,9 +19,9 @@ export class ClientEventHandler {
         const player = await this.playerFactory.createPlayer(clientCon); // Handles game-level logic
         this.game.addPlayer(player);
 
-        // TODO: These should be abstracted away in the Connection class (ie clientCon.onAction and clientCon.onClose)
+        // TODO: This should be abstracted away in the Connection class (ie clientCon.onAction)
         clientWs.on("message", (data: WebSocket.RawData) => this.onClientMsg(data, player));
-        clientWs.on("close", () => this.onClientClose(player));
+        clientCon.onClientDisconnect(() => this.onClientDisconnect);
     }
 
     private onClientMsg(data: WebSocket.RawData, player: Player) {
@@ -41,7 +41,7 @@ export class ClientEventHandler {
         }
     }
 
-    private onClientClose(player: Player) {
+    private onClientDisconnect(player: Player) {
         this.game.onPlayerDisconnect(player);
     }
  }
