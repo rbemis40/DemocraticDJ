@@ -17,7 +17,7 @@ export class Game {
         this.musicService = musicService;
         this.gmSequencer = new GameModeSequencer([
             () => new LobbyMode(this.playerList, () => this.nextMode(), (player) => this.removePlayer(player)),
-            () => new SelectVotersMode(this.playerList, this.musicService, 3),
+            () => new SelectVotersMode(this.playerList, this.musicService, 3, () => this.nextMode()),
         ]);
         this.onCloseCallback = () => {};
     }

@@ -1,0 +1,41 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+@keyframes nameReveal {
+    from {
+        font-size: 0em;
+        opacity: 0;
+    }
+    to {
+        font-size: 2.5em;
+        opacity: 1;
+    }
+}
+
+.name {
+    font-size: 0em;
+    opacity: 0;
+    animation: nameReveal ease-out forwards;
+}
+
+@keyframes songCardReveal {
+    from {
+        height: 0;
+    }
+    to {
+        height: 100px;
+    }
+}
+
+.songCardContainer {
+    animation-name: songCardReveal;
+    animation-duration: 0.5s;
+    animation-fill-mode: forwards;
+    animation-timing-function: ease-out;
+
+    height: 0;
+    overflow: hidden;
+}

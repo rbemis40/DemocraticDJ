@@ -21,7 +21,7 @@ export class ClientEventHandler {
 
         // TODO: This should be abstracted away in the Connection class (ie clientCon.onAction)
         clientWs.on("message", (data: WebSocket.RawData) => this.onClientMsg(data, player));
-        clientCon.onClientDisconnect(() => this.onClientDisconnect);
+        clientCon.onClientDisconnect(() => this.onClientDisconnect(player));
     }
 
     private onClientMsg(data: WebSocket.RawData, player: Player) {

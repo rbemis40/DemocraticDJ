@@ -5,6 +5,11 @@ export type ServerMsg = {
     data: object
 };
 
+export type PlayerData = {
+    username: string;
+    playerId: string;
+}
+
 export interface WelcomeData {
     role: string;
     game_mode: string;

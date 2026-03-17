@@ -2,7 +2,7 @@ import { useState } from "react";
 import useServerMsg from "../../_hooks/server_msg_hook";
 import { UIProps } from "../../types";
 import useSendModeChanged from "../../_hooks/send_joined_mode";
-import { NewPlayerData, ServerMsg, UserListData } from "../../_types/server_msg";
+import { NewPlayerData, PlayerData, ServerMsg, UserListData } from "../../_types/server_msg";
 
 import styles from "./HostLobby.module.css";
 import NeonDivider from "@/app/_components/NeonDivider";
@@ -11,10 +11,6 @@ interface HostLobbyProps extends UIProps {
     gameId: number;
 };
 
-type PlayerData = {
-    username: string;
-    playerId: string;
-}
 
 export default function HostLobby(props: HostLobbyProps) {
     const [userList, setUserList] = useState<PlayerData[]>([]);
