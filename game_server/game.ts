@@ -65,6 +65,7 @@ export class Game {
             return;
         }
 
+        player.getConnection().close();
         this.playerList.removePlayer(player.playerId);
         this.gmSequencer.getCurrentMode().playerLeft(player);
     }

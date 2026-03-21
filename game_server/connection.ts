@@ -27,6 +27,7 @@ export class Connection {
 
         this.discCallback = () => {};
         this.wsCloseHandler = () => {
+            this.cleanup();
             this.discCallback();
         };
 
@@ -49,7 +50,7 @@ export class Connection {
     }
 
     close() {
-        clearInterval(this.pingInterval);
+        this.cleanup();
         this.ws.off("close", this.wsCloseHandler); // Deregister the callback, so that the natural disconnect handler is not fired
         this.ws.close();
     }
@@ -79,5 +80,9 @@ export class Connection {
 
     private ping() {
         //console.log("Pinging ws..."); // TEMPORARY
+    }
+
+    private cleanup() {
+        clearInterval(this.pingInterval);
     }
 }
