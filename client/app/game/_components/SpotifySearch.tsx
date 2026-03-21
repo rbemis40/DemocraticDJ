@@ -42,13 +42,13 @@ export default function SpotifySearch(props: SpotifySearchUI) {
 
     useServerMsg((msg) => {
         switch (msg.action) {
-            case 'spotify_results': {
+            case 'search_results': {
                 const resultData = msg.data as SpotifyResultsData;
                 setResults(resultData.results);
                 break;
             }
         }
-    }, ['spotify_results']);
+    }, ['search_results']);
 
     return (
         <div className={styles.container}>

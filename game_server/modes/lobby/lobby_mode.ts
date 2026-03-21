@@ -1,12 +1,10 @@
-import { GameMode } from "../game_mode.js";
+import { ajv, GameMode } from "../game_mode.js";
 import { JoinedModeData, StartGameData } from "./lobby_schemas.js";
 import { Action } from "../../action.js";
 import { PlayerList } from "../../player_list.js";
 import { Player, PlayerId } from "../../player.js";
 import { NextModeService, RemovePlayerService } from "../../game_services.js";
-import Ajv, { JSONSchemaType } from "ajv";
-
-const ajv = new Ajv.Ajv();
+import { JSONSchemaType } from "ajv";
 
 type RemovePlayerData = {
     playerId: string;

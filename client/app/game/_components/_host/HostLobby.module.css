@@ -1,6 +1,7 @@
 .container {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
     height: 100%;
     flex: 1;
@@ -20,7 +21,8 @@
 
 .playerList {
     width: 100%;
-    flex: 1;
+    min-height: 3rem;
+    margin: 1rem;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -30,17 +32,27 @@
     align-content: flex-start;
 }
 
+@keyframes makeSpace {
+    from {
+        max-width: 0;
+        min-width: 0;
+    }
+    to {
+        max-width: 20rem;
+        min-width: 5rem;
+    }
+}
+
 .playerButton {
     text-align: center;
     padding: 0.5rem;
     font-size: 1.2rem;
-    min-width: 5rem;
-    max-width: 20rem;
     background: none;
     border: none;
-    white-space: no-wrap;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    animation: makeSpace 0.5s ease-out forwards,
 }
 
 .playerButton:hover {

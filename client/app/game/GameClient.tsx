@@ -23,7 +23,6 @@ interface GameInfoProps {
 
 export default function GameClient(props: GameInfoProps) {
     const [isHost, setIsHost] = useState<boolean>(false);
-    const [isVoter, setIsVoter] = useState<boolean>(false);
     const [ws, setWs] = useState<WebSocket | undefined>();
     const [gameMode, setGameMode] = useState<string>('join');
     const [playerName, setPlayerName] = useState<string | undefined>(undefined);
@@ -126,16 +125,11 @@ export default function GameClient(props: GameInfoProps) {
                 const modeChangeData = serverMsg.data as ModeChangeData;
                 setGameMode(modeChangeData.gamemode);
                 break;
-            case 'change_voter_state':
-                const voterChangeData = serverMsg.data as ChangeVoterStateData;
-                setIsVoter(voterChangeData.isVoter);
-                break;
         }
-    }, ['welcome', 'change_mode', 'change_voter_state']);
+    }, ['welcome', 'change_mode']);
 
     return (
         <div className={styles.container}>
-            { isVoter && <SpotifySearch sendMsg={sendMsg}/> }
             { getUIPage() }
             { isHost && <SongQueue/> }
         </div>

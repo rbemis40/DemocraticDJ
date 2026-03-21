@@ -1,9 +1,24 @@
 import { Action } from "../../action.js";
 import { PlayerList } from "../../player_list.js";
 import { Player } from "../../player.js";
-import { GameMode } from "../game_mode.js";
-import { MusicService } from "../../music_services/music_service.js";
+import { ajv, GameMode } from "../game_mode.js";
+import { MusicService, TrackInfo } from "../../music_services/music_service.js";
 import { NextModeService } from "../../game_services.js";
+import { JSONSchemaType } from "ajv";
+
+type SongSearchData = {
+    query: string;
+};
+
+const songSearchSchema: JSONSchemaType<SongSearchData> = {
+    type: "object",
+    properties: {
+        query: {type: "string"}
+    },
+    required: ["query"],
+    additionalProperties: false
+};
+
 
 export class SelectVotersMode extends GameMode {
     private playerList: PlayerList;
@@ -23,7 +38,7 @@ export class SelectVotersMode extends GameMode {
 
         this.voters = this.chooseVoters();
 
-        const timerLengthMs = 10000;
+        const timerLengthMs = 30000;
         this.timerEndTime = Date.now() + timerLengthMs;
 
         setTimeout(() => this.nextModeService(), timerLengthMs + 1000);
@@ -32,13 +47,35 @@ export class SelectVotersMode extends GameMode {
     handleAction(action: Action<object>, player: Player): void {
         super.handleAction(action, player);
         switch(action.action) {
+            case "song_search": {
+                if(!ajv.validate(songSearchSchema, action.data)) {
+                    console.warn("Invalid song_search action!");
+                    return;
+                }
 
+                if (!this.voters.includes(player)) {
+                    console.warn("Non-voter player attempted to search for songs");
+                    return;
+                }
+
+                this.musicService.search(action.data.query)
+                    .then(tracks => {
+                        this.sendSearchResults(tracks, player);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                    });
+                break;
+            }
         }
     }
 
     protected onJoinMode(data: Action<object>, player: Player) {
         this.sendVoterList(player);
         this.sendTimerUpdate(player);
+        if (this.voters.includes(player)) {
+            this.sendMakeVoter(player);
+        }
     }
 
     playerLeft(player: Player): void {}
@@ -74,6 +111,24 @@ export class SelectVotersMode extends GameMode {
             data: {
                 timer_expires: this.timerEndTime
             }
+        });
+    }
+
+    private sendMakeVoter(player: Player) {
+        player.getConnection().sendObj({
+            action: "make_voter",
+            data: {
+                isVoter: true
+            }
+        });
+    }
+
+    private sendSearchResults(tracks: TrackInfo[], player: Player) {
+        player.getConnection().sendObj({
+             action: "search_results",
+             data: {
+                results: tracks
+             }
         });
     }
 }

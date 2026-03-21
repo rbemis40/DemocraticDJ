@@ -1,7 +1,6 @@
 .songCardContainer {
     display: flex;
     flex-direction: row;
-    max-width: 16rem;
     width: 100%;
     height: min-content;
     overflow: hidden;

@@ -4,6 +4,9 @@ import { EventProvider } from "../event_provider.js";
 import { Validator } from "../handlers/validator.js";
 import { Action, buildActionSchema } from "../action.js";
 import { JoinedModeData } from "../game/game_actions.js";
+import Ajv from "ajv";
+
+export const ajv = new Ajv.Ajv();
 
 export interface GMEventContext {
     source?: {

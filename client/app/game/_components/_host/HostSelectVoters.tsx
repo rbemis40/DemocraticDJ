@@ -8,6 +8,7 @@ import { UIProps } from "../../types";
 
 import styles from "./HostSelectVoters.module.css";
 import Countdown from "../Countdown";
+import { SpotifySearchResult } from "../../_types/spotify_types";
 
 interface VoterListData {
     voter_list: {
@@ -18,6 +19,11 @@ interface VoterListData {
 
 interface TimerUpdateData {
     timer_expires: number;
+}
+
+interface SongChosenData {
+    username: string;
+    track: SpotifySearchResult;
 }
 
 export default function HostSelectVoters(props: UIProps) {
@@ -36,8 +42,12 @@ export default function HostSelectVoters(props: UIProps) {
                 setTimeRem(data.timer_expires - Date.now());
                 break;
             }
+            case "song_chosen": {
+                const data = msg.data as SongChosenData;
+                break;
+            }
         }
-    }, ["voter_list", "timer_update"]);
+    }, ["voter_list", "timer_update", "song_chosen"]);
 
     useSendJoinedMode("select_voters", props.sendMsg);
 

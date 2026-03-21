@@ -6,41 +6,40 @@ import { UIProps } from "../../types";
 import { SpotifySearchResult } from "../../_types/spotify_types";
 import SongCard from "../SongCard";
 import Countdown from "../Countdown";
+import SpotifySearch from "../SpotifySearch";
+
+import styles from "./PlayerSelectVoters.module.css";
 
 type UIVoteState = {
     [username: string]: SpotifySearchResult | undefined;
 }
 
+type MakeVoterData = {
+    isVoter: boolean;
+}
+
+type TimerUpdateData = {
+    timer_expires: number;
+}
+
 export default function PlayerSelectVoters(props: UIProps) {
     const [timerVal, setTimerVal] = useState<number>(30000);
-    const [voteInfo, setVoteInfo] = useState<UIVoteState>({});
-    const [gameState, setGameState] = useState<string>("");
+    const [isVoter, setIsVoter] = useState<boolean>(false);
 
     useServerMsg((msg: ServerMsg) => {
         switch(msg.action) {
-            case "voter_mode_state":
-                const stateData = msg.data as VoterStateData;
-                setVoteInfo(stateData.voters.reduce((obj, info) => {
-                    obj[info.username!] = info.choice;
-                    return obj;
-                }, {} as UIVoteState));
-                setTimerVal(stateData.timeRem);
-                setGameState(stateData.state);
+            case "make_voter": {
+                const data = msg.data as MakeVoterData;
+                setIsVoter(data.isVoter);
                 break;
-            case "song_selected":
-                const selectData = msg.data as SongSelectedData;
-                const newObj = {...voteInfo};
-                newObj[selectData.username] = selectData.song_data;
-
-                setVoteInfo(newObj);
+            }
+            case "time_update": {
+                const data = msg.data as TimerUpdateData;
+                setTimerVal(data.timer_expires - Date.now());
                 break;
-            case "song_select_over":
-                const selectOverData = msg.data as SongSelectOverData;
-                setGameState(selectOverData.state);
-                setTimerVal(selectOverData.timeRem);
-                break;
+            }
         }
-    }, ["voter_mode_state", "song_selected", "song_select_over"]);
+    }, ["make_voter", "timer_update"]);
 
     useSendJoinedMode("select_voters", props.sendMsg);
 
@@ -54,17 +53,9 @@ export default function PlayerSelectVoters(props: UIProps) {
     }
 
     return (
-    <div>
+    <div className={styles.container}>
         <Countdown initTime={timerVal}></Countdown>
-        <h1>State: {gameState}</h1>
-        <h1>Voters:</h1>
-        {Object.keys(voteInfo).map(username => 
-            <div key={username}>
-                <h2>{username}</h2>
-                {voteInfo[username] && <SongCard info={voteInfo[username]}/>}
-                {gameState === "vote" && <button onClick={() => castVote(username)}>Cast Vote</button>}
-            </div>
-        )}
+        {isVoter && <SpotifySearch sendMsg={props.sendMsg}/>}
     </div>
     );
 }
