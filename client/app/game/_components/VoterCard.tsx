@@ -12,7 +12,7 @@ export default function VoterCard(props: VoterCardProps) {
     return (
         <div className={styles.container}>
             {props.children && 
-            <div className={styles.songCardContainer} style={{ animationDelay: `${props.delay ?? 0}ms` }}>
+            <div className={styles.songCardContainer}>
                 {props.children}
             </div>
             }

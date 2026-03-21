@@ -18,6 +18,20 @@
     flex-shrink: 0;
 }
 
+.albumCoverPlaceholder {
+    width: 75px;
+    height: 75px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    background: var(--card-border);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
 .textContainer {
     display: flex;
     flex-direction: column;

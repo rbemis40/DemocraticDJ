@@ -1,4 +1,29 @@
 .container {
     width: 100%;
     height: 100%;
+
+    display: flex;
+    flex-direction: row;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    height: 100%;
+}
+
+.mainContent {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    flex: 1;
+}
+
+.songCardContainer {
+    width: 20rem;
 }

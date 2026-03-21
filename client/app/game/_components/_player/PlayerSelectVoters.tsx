@@ -7,6 +7,7 @@ import { SpotifySearchResult } from "../../_types/spotify_types";
 import SongCard from "../SongCard";
 import Countdown from "../Countdown";
 import SpotifySearch from "../SpotifySearch";
+import NeonDivider from "../../../_components/NeonDivider";
 
 import styles from "./PlayerSelectVoters.module.css";
 
@@ -25,6 +26,7 @@ type TimerUpdateData = {
 export default function PlayerSelectVoters(props: UIProps) {
     const [timerVal, setTimerVal] = useState<number>(30000);
     const [isVoter, setIsVoter] = useState<boolean>(false);
+    const [songChoice, setSongChoice] = useState<SpotifySearchResult | undefined>(undefined);
 
     useServerMsg((msg: ServerMsg) => {
         switch(msg.action) {
@@ -52,10 +54,32 @@ export default function PlayerSelectVoters(props: UIProps) {
         }))
     }
 
+    function onSongChoice(choice: SpotifySearchResult) {
+        setSongChoice(choice);
+    }
+
     return (
     <div className={styles.container}>
-        <Countdown initTime={timerVal}></Countdown>
-        {isVoter && <SpotifySearch sendMsg={props.sendMsg}/>}
+        <div className={styles.content}>
+            <Countdown initTime={timerVal}></Countdown>
+            <div className={styles.mainContent}>
+                {!songChoice ?
+                    <h1>
+                        <span className="neon-text-cyan">You are a voter!</span>
+                        <span className="neon-text-magenta"> Select your song.</span>
+                    </h1>
+                    :
+                    <>
+                        <h1 className="neon-text-cyan">You have selected:</h1>
+                        <NeonDivider width="20rem"/>
+                        <div className={styles.songCardContainer}>
+                            <SongCard info={songChoice} />
+                        </div>
+                    </>
+                }
+            </div>
+        </div>
+        {isVoter && <SpotifySearch sendMsg={props.sendMsg} onChoice={(choice) => onSongChoice(choice)}/>}
     </div>
     );
 }
