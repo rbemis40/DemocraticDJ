@@ -4,6 +4,7 @@ import { Action, buildActionSchema } from "./action.js";
 import { EventProvider } from "./event_provider.js";
 import { Player, PlayerId } from "./player.js";
 import { PlayerLeaveData, playerLeaveDataSchema } from "./server_types.js";
+import assert from "assert";
 
 export class PlayerList {
     private players: Map<PlayerId, Player>;
@@ -60,6 +61,12 @@ export class PlayerList {
 
     all(): Player[] {
         return Array.from(this.players.values());
+    }
+
+    getHost(): Player {
+        const hostArray = this.all().filter(player => player.isHost);
+        assert(hostArray.length === 1);
+        return hostArray[0];
     }
 
     get numPlayers() {

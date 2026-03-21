@@ -19,6 +19,19 @@ const songSearchSchema: JSONSchemaType<SongSearchData> = {
     additionalProperties: false
 };
 
+type ChooseSongData = {
+    song_id: string;
+}
+
+const chooseSongSchema: JSONSchemaType<ChooseSongData> = {
+    type: "object",
+    properties: {
+        song_id: {type: "string"}
+    },
+    required: ["song_id"],
+    additionalProperties: false
+}
+
 
 export class SelectVotersMode extends GameMode {
     private playerList: PlayerList;
@@ -53,7 +66,7 @@ export class SelectVotersMode extends GameMode {
                     return;
                 }
 
-                if (!this.voters.includes(player)) {
+                if (!this.isVoter(player)) {
                     console.warn("Non-voter player attempted to search for songs");
                     return;
                 }
@@ -66,6 +79,25 @@ export class SelectVotersMode extends GameMode {
                         console.error(err);
                     });
                 break;
+            }
+            case "choose_song": {
+                if(!ajv.validate(chooseSongSchema, action.data)) {
+                    console.warn("Invalid choose_song action!");
+                    return;
+                }
+
+                if(!this.isVoter(player)) {
+                    console.warn("Non-voter attempted to choose song!");
+                    return;
+                }
+
+                this.musicService.getTrackInfoById(action.data.song_id)
+                    .then(track => {
+                        this.sendSongChosen(track, player);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                    });
             }
         }
     }
@@ -130,5 +162,19 @@ export class SelectVotersMode extends GameMode {
                 results: tracks
              }
         });
+    }
+
+    private sendSongChosen(track: TrackInfo, player: Player) {
+        this.playerList.getHost().getConnection().sendObj({
+            action: "song_chosen",
+            data: {
+                username: player.username,
+                choice: track
+            }
+        });
+    }
+
+    private isVoter(player: Player): boolean {
+        return this.voters.includes(player);
     }
 }

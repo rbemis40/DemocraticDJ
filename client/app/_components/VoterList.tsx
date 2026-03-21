@@ -13,10 +13,11 @@ interface VoterListProps {
 }
 
 export default function VoterList({ voters }: VoterListProps) {
+    console.log(voters);
     return (
         <div className={styles.nameList}>
             {voters.map((voter, index) =>
-                <VoterCard key={index} username={voter.username} delay={500 + (index * 750)}>
+                <VoterCard key={`${voter.username}`} username={voter.username} delay={500 + (index * 750)}>
                     {voter.choice && <SongCard info={voter.choice} />}
                 </VoterCard>
             )}

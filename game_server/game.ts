@@ -57,6 +57,7 @@ export class Game {
     onPlayerDisconnect(player: Player) {
         console.log("Player disconnected");
         if (player.isHost) {
+            console.log("Host disconnected");
             this.playerList.all().forEach(player => {
                 player?.getConnection().close(); // No need to remove from the playerlist or anything, since the game has ended anyway
             });

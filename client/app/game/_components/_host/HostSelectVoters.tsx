@@ -9,6 +9,8 @@ import { UIProps } from "../../types";
 import styles from "./HostSelectVoters.module.css";
 import Countdown from "../Countdown";
 import { SpotifySearchResult } from "../../_types/spotify_types";
+import VoterList from "@/app/_components/VoterList";
+import NeonDivider from "@/app/_components/NeonDivider";
 
 interface VoterListData {
     voter_list: {
@@ -23,18 +25,25 @@ interface TimerUpdateData {
 
 interface SongChosenData {
     username: string;
-    track: SpotifySearchResult;
+    choice: SpotifySearchResult;
+}
+
+interface VoterData {
+    [username: string]: SpotifySearchResult | undefined;
 }
 
 export default function HostSelectVoters(props: UIProps) {
     const [timeRem, setTimeRem] = useState<number>(10000);
-    const [voterList, setVoterList] = useState<PlayerData[]>([]);
+    const [voterData, setVoterData] = useState<VoterData>({});
 
     useServerMsg((msg: ServerMsg) => {
         switch (msg.action) {
             case "voter_list": {
                 const data = msg.data as VoterListData;
-                setVoterList(data.voter_list);
+                setVoterData(data.voter_list.reduce((curObj: VoterData, playerData) => {
+                    curObj[playerData.username] = undefined;
+                    return curObj;
+                }, {}));
                 break;
             }
             case "timer_update": {
@@ -44,6 +53,9 @@ export default function HostSelectVoters(props: UIProps) {
             }
             case "song_chosen": {
                 const data = msg.data as SongChosenData;
+                const newVoterData = {...voterData};
+                newVoterData[data.username] = data.choice;
+                setVoterData(newVoterData);
                 break;
             }
         }
@@ -54,7 +66,11 @@ export default function HostSelectVoters(props: UIProps) {
     return (
         <div className={styles.container}>
             <Countdown initTime={timeRem}/>
-            
+            <div className={styles.mainContent}>
+                <h1 className={`neon-text-cyan ${styles.heading}`}>The song choices are...</h1>
+                <NeonDivider/>
+                <VoterList voters={Object.keys(voterData).map(username => ({username: username, choice: voterData[username]}))}/>
+            </div>
         </div>
     );
 }

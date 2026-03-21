@@ -23,6 +23,7 @@ export class Server {
 
     close() {
         this.wss.close();
+        console.log("Closed wss server");
     }
     
     private onConnection(clientWs: WebSocket) {
