@@ -1,0 +1,73 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.heading {
+    font-size: clamp(1.5rem, 5vw, 3rem);
+    font-weight: 900;
+    text-align: center;
+}
+
+.choiceList {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    width: clamp(24rem, 70%, 52rem);
+    overflow-y: auto;
+    flex: 1;
+    padding: 1rem 0.25rem;
+}
+
+.choiceRow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.songInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    width: 16rem;
+    flex-shrink: 0;
+}
+
+.songCardWrap {
+    width: 100%;
+}
+
+.voterName {
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+.barTrack {
+    flex: 1;
+    height: 1.25rem;
+    background: rgba(0, 245, 255, 0.1);
+    border-radius: 0.625rem;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+}
+
+.barFill {
+    height: 100%;
+    background: linear-gradient(to right, var(--neon-cyan), var(--neon-magenta));
+    border-radius: inherit;
+    transition: width 0.4s ease;
+}
+
+.voteCount {
+    position: absolute;
+    right: 0.5rem;
+    font-size: 0.75rem;
+    color: white;
+    font-weight: 600;
+}
