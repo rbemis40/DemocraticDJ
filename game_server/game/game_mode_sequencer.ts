@@ -1,16 +1,19 @@
 import { GameMode } from "../modes/game_mode.js";
+import { ModeSequence, ModeSequenceFactory } from "./mode_sequence.js";
 
-type GameModeFactory = () => GameMode;
 
 export class GameModeSequencer {
-    private modeOrder: GameModeFactory[];
-    private curMode: GameMode;
-    private modeIndex: number;
+    private sequenceFactories: ModeSequenceFactory[];
+    private curSeqIndex: number;
 
-    constructor(modeOrder: GameModeFactory[]) {
-        this.modeOrder = modeOrder;
-        this.modeIndex = 0;
-        this.curMode = this.createNextMode();
+    private curSequence: ModeSequence;
+    private curMode: GameMode;
+
+    constructor(sequenceFactories: ModeSequenceFactory[]) {
+        this.sequenceFactories = sequenceFactories;
+        this.curSeqIndex = 0;
+        this.curSequence = this.createSequence();
+        this.curMode = this.getCurModeInSequence();
     }
 
     getCurrentMode(): GameMode {
@@ -18,15 +21,29 @@ export class GameModeSequencer {
     }
 
     nextMode() {
-        this.modeIndex = (this.modeIndex + 1) % this.modeOrder.length;
-        this.curMode = this.createNextMode();
-    }
-
-    private createNextMode() {
-        if (this.modeIndex < 0 || this.modeIndex >= this.modeOrder.length) {
-            throw new Error("Invalid mode");
+        let nextMode: GameMode | undefined = this.curSequence.nextMode();
+        if (nextMode === undefined) {
+            this.nextSequence();
         }
 
-        return this.modeOrder[this.modeIndex]();
+        this.curMode = this.getCurModeInSequence();
+    }
+
+    private nextSequence() {
+        this.curSeqIndex = (this.curSeqIndex + 1) % this.sequenceFactories.length; // If we reach the end, wrap around to the start
+        this.curSequence = this.createSequence();
+    }
+
+    private createSequence(): ModeSequence {
+        return this.sequenceFactories[this.curSeqIndex]();
+    }
+
+    private getCurModeInSequence(): GameMode {
+        const mode = this.curSequence.getMode();
+        if (mode === undefined) {
+            throw new Error(`Current sequence game mode is undefined, at sequence index ${this.curSeqIndex}`);
+        }
+
+        return mode;
     }
 }

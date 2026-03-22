@@ -38,6 +38,7 @@ export class SelectVotersMode extends GameMode {
     private musicService: MusicService;
     private maxNumVoters: number;
     private voters: Player[];
+    private songChoices: Map<Player, TrackInfo>;
     private timerEndTime: number;
     private nextModeService: NextModeService;
 
@@ -50,6 +51,7 @@ export class SelectVotersMode extends GameMode {
         this.nextModeService = nextModeService;
 
         this.voters = this.chooseVoters();
+        this.songChoices = new Map();
 
         const timerLengthMs = 30000;
         this.timerEndTime = Date.now() + timerLengthMs;
@@ -93,6 +95,7 @@ export class SelectVotersMode extends GameMode {
 
                 this.musicService.getTrackInfoById(action.data.song_id)
                     .then(track => {
+                        this.songChoices.set(player, track);
                         this.sendSongChosen(track, player);
                     })
                     .catch(err => {
@@ -111,6 +114,10 @@ export class SelectVotersMode extends GameMode {
     }
 
     playerLeft(player: Player): void {}
+
+    getVoterChoices(): Map<Player, TrackInfo> {
+        return this.songChoices;
+    }
 
     private chooseVoters(): Player[] {
         const players: Player[] = this.playerList.all().filter(player => !player.isHost);

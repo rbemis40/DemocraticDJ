@@ -11,6 +11,7 @@ import SpotifySearch from "./_components/SpotifySearch";
 import SongQueue from "./_components/SongQueue";
 import HostSelectVoters from "./_components/_host/HostSelectVoters";
 import PlayerSelectVoters from "./_components/_player/PlayerSelectVoters";
+import PlayerVoting from "./_components/_player/PlayerVoting";
 
 import styles from "./GameClient.module.css";
 import JoinScreen from "../_components/JoinScreen";
@@ -53,6 +54,8 @@ export default function GameClient(props: GameInfoProps) {
                     return <PlayerLobby sendMsg={sendMsg} playerName={playerName!}/>
                 case 'select_voters':
                     return <PlayerSelectVoters sendMsg={sendMsg}/>
+                case 'voting_mode':
+                    return <PlayerVoting sendMsg={sendMsg} playerName={playerName!}/>
             }
         }
     }
