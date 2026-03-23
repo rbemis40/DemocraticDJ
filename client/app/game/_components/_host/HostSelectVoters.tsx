@@ -67,7 +67,7 @@ export default function HostSelectVoters(props: UIProps) {
         <div className={styles.container}>
             <Countdown initTime={timeRem}/>
             <div className={styles.mainContent}>
-                <h1 className={`neon-text-cyan ${styles.heading}`}>The song choices are...</h1>
+                <h1 className={`neon-text-cyan ${styles.heading}`}>Players are choosing their songs...</h1>
                 <NeonDivider/>
                 <VoterList voters={Object.keys(voterData).map(username => ({username: username, choice: voterData[username]}))}/>
             </div>

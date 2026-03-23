@@ -14,6 +14,9 @@ interface SpotifyTrackResult {
         }[];
     };
     uri: string;
+    external_urls: {
+        spotify: string;
+    }
 };
 
 interface SpotifySearchResult {
@@ -81,7 +84,8 @@ export class SpotifyService implements MusicService {
                 id: item.id,
                 artists: item.artists.map(artist => artist.name),
                 image: item.album.images[0],
-                track_uri: item.uri
+                track_uri: item.uri,
+                open_url: item.external_urls.spotify
             };
             return info;
         });
@@ -109,7 +113,8 @@ export class SpotifyService implements MusicService {
             id: result.id,
             artists: result.artists.map(artist => artist.name),
             image: result.album.images[0],
-            track_uri: result.uri
+            track_uri: result.uri,
+            open_url: result.external_urls.spotify
         } satisfies TrackInfo;
     }
 

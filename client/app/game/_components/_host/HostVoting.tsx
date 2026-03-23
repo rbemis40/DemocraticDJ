@@ -59,7 +59,7 @@ export default function HostVoting(props: UIProps) {
     return (
         <div className={styles.container}>
             <Countdown initTime={timerVal} />
-            <h1 className={`neon-text-cyan ${styles.heading}`}>The votes are in...</h1>
+            <h1 className={`neon-text-cyan ${styles.heading}`}>Vote now!</h1>
             <NeonDivider />
             <div className={styles.choiceList}>
                 {voterChoices.map((choice) => {

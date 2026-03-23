@@ -29,7 +29,11 @@ export default function SongQueue() {
             <h1 className={`neon-text-magenta`}>Song Queue</h1>
             <NeonDivider width="10rem"/>
             {
-                queuedSongs.map((song, i) => <SongCard key={`${song.track_uri}-${i}`} info={song}/>)
+                queuedSongs.map((song, i) => (
+                    <a key={`${song.track_uri}-${i}`} href={song.open_url} target="_blank" rel="noopener noreferrer" className={styles.songLink}>
+                        <SongCard info={song}/>
+                    </a>
+                ))
             }
         </div>
     );

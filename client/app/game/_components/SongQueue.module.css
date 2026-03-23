@@ -12,3 +12,9 @@
     overflow-x: hidden;
     overflow-y: scroll;
 }
+
+.songLink {
+    display: block;
+    width: 100%;
+    text-decoration: none;
+}

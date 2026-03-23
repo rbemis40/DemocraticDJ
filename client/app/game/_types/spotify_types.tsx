@@ -8,4 +8,5 @@ export interface SpotifySearchResult {
         height: number;
     }
     track_uri: string;
+    open_url: string;
 }

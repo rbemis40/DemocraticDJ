@@ -10,6 +10,7 @@ export interface TrackInfo {
     artists: string[];
     image: TrackImg;
     track_uri: string;
+    open_url: string;
 };
 
 export interface MusicService {
