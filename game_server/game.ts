@@ -2,26 +2,28 @@ import { Action } from "./action.js";
 import { GameModeSequencer } from "./game/game_mode_sequencer.js";
 import { BasicSequence } from "./game/mode_sequence.js";
 import { LobbyMode } from "./modes/lobby/lobby_mode.js";
-import { SelectVotersMode } from "./modes/voting/select_voters_mode.js";
 import { VotingSequence } from "./modes/voting/voting_sequence.js";
 import { MusicService } from "./music_services/music_service.js";
 import { Player } from "./player.js";
 import { PlayerList } from "./player_list.js";
+import { SongQueue } from "./song_queue.js";
 
 export class Game {
     private gmSequencer: GameModeSequencer;
     private playerList: PlayerList;
     private musicService: MusicService;
+    private songQueue: SongQueue;
     private onCloseCallback: () => void;
     
     constructor(musicService: MusicService) {
         this.playerList = new PlayerList();
+        this.songQueue = new SongQueue(this.playerList);
         this.musicService = musicService;
         this.gmSequencer = new GameModeSequencer([
             () => new BasicSequence([
                 () => new LobbyMode(this.playerList, () => this.nextMode(), (player) => this.removePlayer(player)),
             ]),
-            () => new VotingSequence(this.playerList, this.musicService, () => this.nextMode())
+            () => new VotingSequence(this.playerList, this.musicService, this.songQueue, () => this.nextMode())
         ]);
         this.onCloseCallback = () => {};
     }

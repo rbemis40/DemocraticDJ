@@ -6,8 +6,8 @@ import { ServerMsg } from "../_types/server_msg";
 import styles from "./SongQueue.module.css";
 import NeonDivider from "@/app/_components/NeonDivider";
 
-interface SongAddedData {
-    track_info: SpotifySearchResult;
+interface AddToQueueData {
+    track: SpotifySearchResult;
 }
 
 export default function SongQueue() {
@@ -15,14 +15,14 @@ export default function SongQueue() {
 
     useServerMsg((msg: ServerMsg) => {
         switch(msg.action) {
-            case "song_added":
-                const songAddedData = msg.data as SongAddedData;
+            case "add_to_queue":
+                const songAddedData = msg.data as AddToQueueData;
                 const newQueue = [...queuedSongs];
-                newQueue.push(songAddedData.track_info);
+                newQueue.push(songAddedData.track);
                 setQueuedSongs(newQueue);
-                break;
+                break; 
         }
-    }, ["song_added"])
+    }, ["add_to_queue"])
 
     return (
         <div className={`glass-card ${styles.songQueue}`}>

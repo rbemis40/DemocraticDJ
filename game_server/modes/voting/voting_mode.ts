@@ -4,6 +4,7 @@ import { NextModeService } from "../../game_services.js";
 import { TrackInfo } from "../../music_services/music_service.js";
 import { Player } from "../../player.js";
 import { PlayerList } from "../../player_list.js";
+import { SongQueue } from "../../song_queue.js";
 import { ajv, GameMode } from "../game_mode.js";
 import { JSONSchemaType } from "ajv";
 
@@ -23,21 +24,23 @@ const castVoteSchema: JSONSchemaType<CastVoteData> = {
 export class VotingMode extends GameMode {
     private voterChoices: Map<Player, TrackInfo>;
     private playerList: PlayerList;
+    private songQueue: SongQueue;
     private nextModeService: NextModeService;
     private votes: Map<Player, Player>;
     private timerEndTime: number;
 
-    constructor(voterChoices: Map<Player, TrackInfo>, playerList: PlayerList, nextModeService: NextModeService) {
+    constructor(voterChoices: Map<Player, TrackInfo>, playerList: PlayerList, songQueue: SongQueue, nextModeService: NextModeService) {
         super("voting_mode");
 
         this.voterChoices = voterChoices;
         this.playerList = playerList;
+        this.songQueue = songQueue;
         this.nextModeService = nextModeService;
         this.votes = new Map();
 
         const timerLengthMs = 30000;
         this.timerEndTime = Date.now() + timerLengthMs;
-        setTimeout(() => this.nextModeService(), timerLengthMs + 1000);
+        setTimeout(() => this.onVotePeriodEnd(), timerLengthMs + 1000);
     }
 
     handleAction(action: Action<object>, player: Player): void {
@@ -113,6 +116,33 @@ export class VotingMode extends GameMode {
                 votes: this.buildVoteTally()
             }
         });
+    }
+
+    private onVotePeriodEnd() {
+        const winningTrack = this.getWinningTrack();
+        if (winningTrack) {
+            this.songQueue.add(winningTrack);
+        }
+        this.nextModeService();
+    }
+
+    private getWinningTrack(): TrackInfo | undefined {
+        const tally = this.buildVoteTally();
+        let winners: { voter_id: string; vote_count: number}[] = [];
+        
+        for (const curTally of tally) {
+            if (winners.length === 0 || curTally.vote_count === winners[0].vote_count) {
+                winners.push(curTally);
+            }
+            else if (curTally.vote_count > winners[0].vote_count) {
+                winners = [curTally];
+            }
+        }
+
+        if (winners.length === 0) return undefined;
+
+        const winner = winners[Math.floor(Math.random() * winners.length)];
+        return this.voterChoices.get([...this.voterChoices.keys()].find(v => v.playerId === winner.voter_id)!);
     }
 
     private buildVoteTally(): { voter_id: string; vote_count: number }[] {
